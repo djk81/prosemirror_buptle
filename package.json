@@ -1,20 +1,30 @@
 {
   "name": "setup-prosemirror",
   "dependencies": {
+    "cors": "^2.8.5",
+    "npm": "^6.9.0",
+    "prosemirror-collab": "^1.1.2",
     "prosemirror-example-setup": "^1.0.1",
     "prosemirror-model": "^1.6.4",
     "prosemirror-schema-basic": "^1.0.0",
+    "prosemirror-schema-list": "^1.0.1",
     "prosemirror-state": "^1.2.2",
     "prosemirror-view": "^1.6.8",
-    "prosemirror-collab": "^1.1.2"
+    "require": "^2.4.20"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
     "babel-loader": "^8.0.5",
+    "concurrently": "^4.1.0",
+    "http-server": "^0.11.1",
     "rollup": "^1.1.0",
     "rollup-plugin-babel": "^4.3.1",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0"
+  },
+  "scripts": {
+    "start": "npm run open",
+    "open": "concurrently \"http-server -a localhost -p 1234\" \"open http://localhost:1234/deploy/index.html\""
   }
 }

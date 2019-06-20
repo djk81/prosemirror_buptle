@@ -20725,6 +20725,7 @@ var ProseMirror = (function (exports) {
 	var collab_6 = collab_1.getVersion;
 
 	// export { EditorState } from "prosemirror-state";
+	 // export {app_index} from "app_index";
 
 	exports.DOMParser = dist_12;
 	exports.EditorState = dist_7$2;
