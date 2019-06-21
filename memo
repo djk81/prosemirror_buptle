@@ -1,6 +1,6 @@
 npm install
 npm build
-rollup -c
+rollup -c -w
 
 
 cors 관련
@@ -11,4 +11,6 @@ npm install http-server --save-dev
 npm install concurrently --save-dev
 
 npm start http://localhost:1234/deploy/index.html
+
+
 
