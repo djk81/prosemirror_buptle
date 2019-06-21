@@ -30,6 +30,7 @@ import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
+import {DOMParser} from "prosemirror-model"
 
 
 
@@ -38,6 +39,7 @@ export function EditorInit(element_id, content_id){
 
     let state = EditorState.create({
         schema,
+        doc: DOMParser.fromSchema(schema).parse(document.getElementById(content_id)),
         plugins:[
             history(),
             keymap({"Mod-z": undo, "Mod-y": redo}),
@@ -48,8 +50,7 @@ export function EditorInit(element_id, content_id){
     let view = new EditorView(document.querySelector("#"+element_id), {
         state,
         dispatchTransaction(transaction) {
-            console.log("Document size went from", transaction.before.content.size,
-                "to", transaction.doc.content.size)
+            console.log("Document size went from", transaction.before.content.size, "to", transaction.doc.content.size)
             let newState = view.state.apply(transaction)
             view.updateState(newState)
         },
