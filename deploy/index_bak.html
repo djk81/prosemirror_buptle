@@ -2,17 +2,6 @@
 <html>
 <head>
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
-	<style>
-		.blame-marker {
-		    background: #ff8;
-		  }
-		.commit:hover {
-    background: #ff8;
-  }
-  .commit-revert {
-    color: #a22;
-  }
-	</style>
 </head>
 <body>
 	<br/>
@@ -32,10 +21,8 @@
 
 
 	<form id="commit">
-        코멘트: <input type=text id=message name=message> <button id=commitbutton type="submit">저장</button>
-        <div class=blame-wrap>
-	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
-        </div>
+        Commit message: <input type=text id=message name=message> <button id=commitbutton type="submit">commit</button>
+        <div class=blame-wrap><button type=button id=blame>blame at cursor</button></div>
 	</form>
 
     <div id="commits" style="margin-bottom: 23px">

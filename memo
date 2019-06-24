@@ -7,6 +7,7 @@ cors 관련
 npm install cors
 
 서버설치관련
+npm install start
 npm install http-server --save-dev
 npm install concurrently --save-dev
 
