@@ -13,5 +13,8 @@ npm install concurrently --save-dev
 
 npm start http://localhost:1234/deploy/index.html
 
+collab 서버
+node src/collab/server/start.js
+
 
 

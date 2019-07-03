@@ -12,6 +12,14 @@
   .commit-revert {
     color: #a22;
   }
+
+.comment {
+    background-color: lightpink;
+}
+
+
+
+
 	</style>
 </head>
 <body>
@@ -41,12 +49,16 @@
     <div id="commits" style="margin-bottom: 23px">
 	    <!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
     </div>
+	<div id="changedoc">문서종류</div>
+	<div id="docname">문서명</div>
+	<div id="users">유저수</div>
 	<script src="../dist/buptle_ProseMirror.js"></script>
 	<script>
 
 		window.addEventListener('DOMContentLoaded', function(){
 		    //실행될 코드
-			ProseMirror.EditorInit('editor', 'content');
+			alert('ProseMirror init start! ' + ProseMirror);
+		    ProseMirror.EditorInit('editor', 'content');
 		})
 
 

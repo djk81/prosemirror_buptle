@@ -1,431 +1,319 @@
-// export { EditorState } from "prosemirror-state";
-// export { EditorView } from "prosemirror-view";
-// export { Schema, DOMParser, Node } from "prosemirror-model";
-// export { schema as basicSchema } from "prosemirror-schema-basic";
-// export { exampleSetup } from "prosemirror-example-setup";
+import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
+import {Step} from "prosemirror-transform"
+import {EditorState} from "prosemirror-state"
+import {EditorView} from "prosemirror-view"
+import {history} from "prosemirror-history"
+import {collab, receiveTransaction, sendableSteps, getVersion} from "prosemirror-collab"
+import {MenuItem} from "prosemirror-menu"
+import crel from "crel"
 
-// export {EditorState} from "prosemirror-state";
-// export {EditorView} from "prosemirror-view";
-// export {Schema, DOMParser} from "prosemirror-model";
-// export {schema} from "prosemirror-schema-basic";
-// export {addListNodes} from "prosemirror-schema-list";
-// export {exampleSetup} from "prosemirror-example-setup";
-// export {collab} from "prosemirror-collab";
-// export {app_index} from "app_index";
+// import {schema} from "./collab/schema"
+import {GET, POST} from "./collab/client/http"
+import {Reporter} from "./collab/client/reporter"
+import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment"
 
-
-// import {EditorState} from "prosemirror-state"
-// import {EditorView} from "prosemirror-view"
-// import {Schema, DOMParser} from "prosemirror-model"
-// import {schema} from "prosemirror-schema-basic"
-// import {addListNodes} from "prosemirror-schema-list"
-// import {exampleSetup} from "prosemirror-example-setup"
-
-// import {schema} from "prosemirror-schema-basic"
-// import {EditorState} from "prosemirror-state"
-// import {EditorView} from "prosemirror-view"
-// import {undo, redo, history} from "prosemirror-history"
-// import {keymap} from "prosemirror-keymap"
-// import {baseKeymap} from "prosemirror-commands"
-// import {DOMParser} from "prosemirror-model"
-// import {collab} from "prosemirror-collab"
-
-import {Mapping} from "prosemirror-transform"
-import {EditorState, Plugin} from "prosemirror-state"
-import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {schema} from "prosemirror-schema-basic"
-import {exampleSetup} from "prosemirror-example-setup"
-import {DOMParser} from "prosemirror-model"
 
-export function EditorInit(element_id, content_id) {
+const report = new Reporter()
 
-    class Span {
-        constructor(from, to, commit) {
-            this.from = from;
-            this.to = to;
-            this.commit = commit
-        }
-    }
-
-    class Commit {
-        constructor(message, time, steps, maps, hidden) {
-            this.message = message
-            this.time = time
-            this.steps = steps
-            this.maps = maps
-            this.hidden = hidden
-        }
-    }
-
-// TrackState{
-    class TrackState {
-        constructor(blameMap, commits, uncommittedSteps, uncommittedMaps) {
-            // The blame map is a data structure that lists a sequence of
-            // document ranges, along with the commit that inserted them. This
-            // can be used to, for example, highlight the part of the document
-            // that was inserted by a commit.
-            this.blameMap = blameMap
-            // The commit history, as an array of objects.
-            this.commits = commits
-            // Inverted steps and their maps corresponding to the changes that
-            // have been made since the last commit.
-            this.uncommittedSteps = uncommittedSteps
-            this.uncommittedMaps = uncommittedMaps
-        }
-
-        // Apply a transform to this state
-        applyTransform(transform) {
-            // Invert the steps in the transaction, to be able to save them in
-            // the next commit
-            let inverted =
-                transform.steps.map((step, i) => step.invert(transform.docs[i]))
-            let newBlame = updateBlameMap(this.blameMap, transform, this.commits.length)
-            // Create a new state—since these are part of the editor state, a
-            // persistent data structure, they must not be mutated.
-            return new TrackState(newBlame, this.commits,
-                this.uncommittedSteps.concat(inverted),
-                this.uncommittedMaps.concat(transform.mapping.maps))
-        }
-
-        // When a transaction is marked as a commit, this is used to put any
-        // uncommitted steps into a new commit.
-        applyCommit(message, time) {
-            if (this.uncommittedSteps.length == 0) return this
-            let commit = new Commit(message, time, this.uncommittedSteps,
-                this.uncommittedMaps)
-            return new TrackState(this.blameMap, this.commits.concat(commit), [], [])
-        }
-    }
-
-// }
-
-    function updateBlameMap(map, transform, id) {
-        let result = [], mapping = transform.mapping
-        for (let i = 0; i < map.length; i++) {
-            let span = map[i]
-            let from = mapping.map(span.from, 1), to = mapping.map(span.to, -1)
-            if (from < to) result.push(new Span(from, to, span.commit))
-        }
-
-        for (let i = 0; i < mapping.maps.length; i++) {
-            let map = mapping.maps[i], after = mapping.slice(i + 1)
-            map.forEach((_s, _e, start, end) => {
-                insertIntoBlameMap(result, after.map(start, 1), after.map(end, -1), id)
-            })
-        }
-
-        return result
-    }
-
-    function insertIntoBlameMap(map, from, to, commit) {
-        if (from >= to) return
-        let pos = 0, next
-        for (; pos < map.length; pos++) {
-            next = map[pos]
-            if (next.commit == commit) {
-                if (next.to >= from) break
-            } else if (next.to > from) { // Different commit, not before
-                if (next.from < from) { // Sticks out to the left (loop below will handle right side)
-                    let left = new Span(next.from, from, next.commit)
-                    if (next.to > to) map.splice(pos++, 0, left)
-                    else map[pos++] = left
-                }
-                break
-            }
-        }
-
-        while (next = map[pos]) {
-            if (next.commit == commit) {
-                if (next.from > to) break
-                from = Math.min(from, next.from)
-                to = Math.max(to, next.to)
-                map.splice(pos, 1)
-            } else {
-                if (next.from >= to) break
-                if (next.to > to) {
-                    map[pos] = new Span(to, next.to, next.commit)
-                    break
-                } else {
-                    map.splice(pos, 1)
-                }
-            }
-        }
-
-        map.splice(pos, 0, new Span(from, to, commit))
-    }
-
-// trackPlugin{
-
-
-    const trackPlugin = new Plugin({
-        state: {
-            init(_, instance) {
-                return new TrackState([new Span(0, instance.doc.content.size, null)], [], [], [])
-            },
-            apply(tr, tracked) {
-                if (tr.docChanged) tracked = tracked.applyTransform(tr)
-                let commitMessage = tr.getMeta(this)
-                if (commitMessage) tracked = tracked.applyCommit(commitMessage, new Date(tr.time))
-                return tracked
-            }
-        }
-    })
-
-// }
-
-
-    function elt(name, attrs, ...children) {
-        let dom = document.createElement(name)
-        if (attrs) for (let attr in attrs) dom.setAttribute(attr, attrs[attr])
-        for (let i = 0; i < children.length; i++) {
-            let child = children[i]
-            dom.appendChild(typeof child == "string" ? document.createTextNode(child) : child)
-        }
-        return dom
-    }
-
-    const highlightPlugin = new Plugin({
-        state: {
-            init() {
-                return {deco: DecorationSet.empty, commit: null}
-            },
-            apply(tr, prev, oldState, state) {
-                let highlight = tr.getMeta(this)
-                if (highlight && highlight.add != null && prev.commit != highlight.add) {
-                    let tState = trackPlugin.getState(oldState)
-                    let decos = tState.blameMap
-                        .filter(span => tState.commits[span.commit] == highlight.add)
-                        .map(span => Decoration.inline(span.from, span.to, {class: "blame-marker"}))
-                    return {deco: DecorationSet.create(state.doc, decos), commit: highlight.add}
-                } else if (highlight && highlight.clear != null && prev.commit == highlight.clear) {
-                    return {deco: DecorationSet.empty, commit: null}
-                } else if (tr.docChanged && prev.commit) {
-                    return {deco: prev.deco.map(tr.mapping, tr.doc), commit: prev.commit}
-                } else {
-                    return prev
-                }
-            }
-        },
-        props: {
-            decorations(state) {
-                return this.getState(state).deco
-            }
-        }
-    })
-
-    let state = EditorState.create({
-        schema,
-        doc: DOMParser.fromSchema(schema).parse(document.querySelector("#"+content_id)) ,
-        plugins: exampleSetup({schema}).concat(trackPlugin, highlightPlugin)
-    }), view
-
-    let lastRendered = null
-
-    function dispatch(tr) {
-        state = state.apply(tr)
-        view.updateState(state)
-        setDisabled(state)
-        renderCommits(state, dispatch)
-    }
-
-    view = window.view = new EditorView(document.querySelector("#editor"), {state, dispatchTransaction: dispatch})
-    // dispatch(state.tr.insertText("Type something, and then commit it."))
-    dispatch(state.tr.setMeta(trackPlugin, "Initial commit"))
-    alert('커밋 멘트 적용');
-
-    function setDisabled(state) {
-        let input = document.querySelector("#message")
-        let button = document.querySelector("#commitbutton")
-        input.disabled = button.disabled = trackPlugin.getState(state).uncommittedSteps.length == 0
-    }
-
-    function doCommit(message) {
-        dispatch(state.tr.setMeta(trackPlugin, message))
-    }
-
-    function renderCommits(state, dispatch) {
-        let curState = trackPlugin.getState(state)
-        if (lastRendered == curState) return
-        lastRendered = curState
-
-        let out = document.querySelector("#commits")
-        out.textContent = ""
-        let commits = curState.commits
-        commits.forEach(commit => {
-            let node = elt(
-                "div",
-                {class: "commit"},
-                elt("span",
-                    {class: "commit-time"},
-                    commit.time.getHours() + ":" + (commit.time.getMinutes() < 10 ? "0" : "")+ commit.time.getMinutes()  + ":" + (commit.time.getSeconds() < 10 ? "0" : "") + commit.time.getSeconds()
-                ),
-                "\u00a0 " + commit.message + "\u00a0 ",
-                // elt("button", {class: "commit-revert"}, "revert")
-            )
-            node.lastChild.addEventListener("click", () => revertCommit(commit))
-            node.addEventListener("mouseover", e => {
-                if (!node.contains(e.relatedTarget))
-                    dispatch(state.tr.setMeta(highlightPlugin, {add: commit}))
-            })
-            node.addEventListener("mouseout", e => {
-                if (!node.contains(e.relatedTarget))
-                    dispatch(state.tr.setMeta(highlightPlugin, {clear: commit}))
-            })
-            out.appendChild(node)
-        })
-    }
-
-// revertCommit{
-
-
-    function revertCommit(commit) {
-        let trackState = trackPlugin.getState(state)
-        let index = trackState.commits.indexOf(commit)
-        // If this commit is not in the history, we can't revert it
-        if (index == -1) return
-
-        // Reverting is only possible if there are no uncommitted changes
-        if (trackState.uncommittedSteps.length)
-            return alert("Commit your changes first!")
-
-        // This is the mapping from the document as it was at the start of
-        // the commit to the current document.
-        let remap = new Mapping(trackState.commits.slice(index)
-            .reduce((maps, c) => maps.concat(c.maps), []))
-        let tr = state.tr
-        // Build up a transaction that includes all (inverted) steps in this
-        // commit, rebased to the current document. They have to be applied
-        // in reverse order.
-        for (let i = commit.steps.length - 1; i >= 0; i--) {
-            // The mapping is sliced to not include maps for this step and the
-            // ones before it.
-            let remapped = commit.steps[i].map(remap.slice(i + 1))
-            if (!remapped) continue
-            let result = tr.maybeStep(remapped)
-            // If the step can be applied, add its map to our mapping
-            // pipeline, so that subsequent steps are mapped over it.
-            if (result.doc) remap.appendMap(remapped.getMap(), i)
-        }
-        // Add a commit message and dispatch.
-        if (tr.docChanged)
-            dispatch(tr.setMeta(trackPlugin, `Revert '${commit.message}'`))
-    }
-
-// }
-
-    document.querySelector("#commit").addEventListener("submit", e => {
-        e.preventDefault()
-        doCommit(e.target.elements.message.value || "Unnamed")
-        e.target.elements.message.value = ""
-        view.focus()
-    })
-
-    function findInBlameMap(pos, state) {
-        let map = trackPlugin.getState(state).blameMap
-        for (let i = 0; i < map.length; i++)
-            if (map[i].to >= pos && map[i].commit != null)
-                return map[i].commit
-    }
-
-    document.querySelector("#blame").addEventListener("mousedown", e => {
-        e.preventDefault()
-        let pos = e.target.getBoundingClientRect()
-        let commitID = findInBlameMap(state.selection.head, state)
-        let commit = commitID != null && trackPlugin.getState(state).commits[commitID]
-        let node = elt("div", {class: "blame-info"},
-            commitID != null ? elt("span", null, "It was: ", elt("strong", null, commit ? commit.message : "Uncommitted"))
-                : "No commit found")
-        node.style.right = (document.body.clientWidth - pos.right) + "px"
-        node.style.top = (pos.bottom + 2) + "px"
-        document.body.appendChild(node)
-        setTimeout(() => document.body.removeChild(node), 2000)
-    })
+function badVersion(err) {
+  return err.status == 400 && /invalid version/i.test(err)
 }
 
+class State {
+  constructor(edit, comm) {
+    this.edit = edit
+    this.comm = comm
+  }
+}
+
+class EditorConnection {
+  constructor(report, url) {
+    this.report = report
+      alert(url + " << url");
+    this.url = url
+    this.state = new State(null, "start")
+    this.request = null
+    this.backOff = 0
+    this.view = null
+    this.dispatch = this.dispatch.bind(this)
+    this.start()
+  }
+
+  // All state changes go through this
+  dispatch(action) {
+console.log('dispatch(action) ' + action);
+console.log('dispatch(action.type) ' + action.type);
+    let newEditState = null
+    if (action.type == "loaded") {
+        alert('loaded');
+      info.users.textContent = userString(action.users) // FIXME ewww
+      let editState = EditorState.create({
+        doc: action.doc,
+        plugins: exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([
+          history({preserveItems: true}),
+          collab({version: action.version}),
+          commentPlugin,
+          commentUI(transaction => this.dispatch({type: "transaction", transaction}))
+        ]),
+        comments: action.comments
+      })
+      this.state = new State(editState, "poll")
+      this.poll()
+    } else if (action.type == "restart") {
+      this.state = new State(null, "start")
+      this.start()
+    } else if (action.type == "poll") {
+      this.state = new State(this.state.edit, "poll")
+      this.poll()
+    } else if (action.type == "recover") {
+      if (action.error.status && action.error.status < 500) {
+        this.report.failure(action.error)
+        this.state = new State(null, null)
+      } else {
+        this.state = new State(this.state.edit, "recover")
+        this.recover(action.error)
+      }
+    } else if (action.type == "transaction") {
+      newEditState = this.state.edit.apply(action.transaction)
+    }
+
+    if (newEditState) {
+      let sendable
+      if (newEditState.doc.content.size > 40000) {
+        if (this.state.comm != "detached") this.report.failure("Document too big. Detached.")
+        this.state = new State(newEditState, "detached")
+      } else if ((this.state.comm == "poll" || action.requestDone) && (sendable = this.sendable(newEditState))) {
+        this.closeRequest()
+        this.state = new State(newEditState, "send")
+        this.send(newEditState, sendable)
+      } else if (action.requestDone) {
+        this.state = new State(newEditState, "poll")
+        this.poll()
+      } else {
+        this.state = new State(newEditState, this.state.comm)
+      }
+    }
+
+    // Sync the editor with this.state.edit
+    if (this.state.edit) {
+      if (this.view)
+        this.view.updateState(this.state.edit)
+      else
+        this.setView(new EditorView(document.querySelector("#editor"), {
+          state: this.state.edit,
+          dispatchTransaction: transaction => this.dispatch({type: "transaction", transaction})
+        }))
+    } else this.setView(null)
+  }
+
+  // Load the document from the server and start up
+  start() {
+      alert('start()');
+    this.run(GET(this.url)).then(data => {
+
+console.log('json parsing 전');
+console.log(data);
+      data = JSON.parse(data)
+console.log('json parsing 후');
+console.log(data);
 
 
 
+      this.report.success()
+      this.backOff = 0
+      this.dispatch({type: "loaded",
+                     doc: schema.nodeFromJSON(data.doc),
+                     version: data.version,
+                     users: data.users,
+                     comments: {version: data.commentVersion, comments: data.comments}})
+    }, err => {
+        alert('start() err ' + err);
+      // this.report.failure(err)
+    })
+  }
 
+  // Send a request for events that have happened since the version
+  // of the document that the client knows about. This request waits
+  // for a new version of the document to be created if the client
+  // is already up-to-date.
+  poll() {
+    let query = "version=" + getVersion(this.state.edit) + "&commentVersion=" + commentPlugin.getState(this.state.edit).version
+    this.run(GET(this.url + "/events?" + query)).then(data => {
+      this.report.success()
+      data = JSON.parse(data)
+      this.backOff = 0
+      if (data.steps && (data.steps.length || data.comment.length)) {
+        let tr = receiveTransaction(this.state.edit, data.steps.map(j => Step.fromJSON(schema, j)), data.clientIDs)
+        tr.setMeta(commentPlugin, {type: "receive", version: data.commentVersion, events: data.comment, sent: 0})
+        this.dispatch({type: "transaction", transaction: tr, requestDone: true})
+      } else {
+        this.poll()
+      }
+      info.users.textContent = userString(data.users)
+    }, err => {
+      if (err.status == 410 || badVersion(err)) {
+        // Too far behind. Revert to server state
+        this.report.failure(err)
+        this.dispatch({type: "restart"})
+      } else if (err) {
+        this.dispatch({type: "recover", error: err})
+      }
+    })
+  }
 
+  sendable(editState) {
+    let steps = sendableSteps(editState)
+    let comments = commentPlugin.getState(editState).unsentEvents()
+    if (steps || comments.length) return {steps, comments}
+  }
 
+  // Send the given steps to the server
+  send(editState, {steps, comments}) {
+    let json = JSON.stringify({version: getVersion(editState),
+                               steps: steps ? steps.steps.map(s => s.toJSON()) : [],
+                               clientID: steps ? steps.clientID : 0,
+                               comment: comments || []})
+    this.run(POST(this.url + "/events", json, "application/json")).then(data => {
+      this.report.success()
+      this.backOff = 0
+      let tr = steps
+          ? receiveTransaction(this.state.edit, steps.steps, repeat(steps.clientID, steps.steps.length))
+          : this.state.edit.tr
+      tr.setMeta(commentPlugin, {type: "receive", version: JSON.parse(data).commentVersion, events: [], sent: comments.length})
+      this.dispatch({type: "transaction", transaction: tr, requestDone: true})
+    }, err => {
+      if (err.status == 409) {
+        // The client's document conflicts with the server's version.
+        // Poll for changes and then try again.
+        this.backOff = 0
+        this.dispatch({type: "poll"})
+      } else if (badVersion(err)) {
+        this.report.failure(err)
+        this.dispatch({type: "restart"})
+      } else {
+        this.dispatch({type: "recover", error: err})
+      }
+    })
+  }
 
+  // Try to recover from an error
+  recover(err) {
+    let newBackOff = this.backOff ? Math.min(this.backOff * 2, 6e4) : 200
+    if (newBackOff > 1000 && this.backOff < 1000) this.report.delay(err)
+    this.backOff = newBackOff
+    setTimeout(() => {
+      if (this.state.comm == "recover") this.dispatch({type: "poll"})
+    }, this.backOff)
+  }
 
+  closeRequest() {
+    if (this.request) {
+      this.request.abort()
+      this.request = null
+    }
+  }
 
+  run(request) {
+    return this.request = request
+  }
 
-// // export { EditorState } from "prosemirror-state";
-// // export { EditorView } from "prosemirror-view";
-// // export { Schema, DOMParser, Node } from "prosemirror-model";
-// // export { schema as basicSchema } from "prosemirror-schema-basic";
-// // export { exampleSetup } from "prosemirror-example-setup";
-//
-// // export {EditorState} from "prosemirror-state";
-// // export {EditorView} from "prosemirror-view";
-// // export {Schema, DOMParser} from "prosemirror-model";
-// // export {schema} from "prosemirror-schema-basic";
-// // export {addListNodes} from "prosemirror-schema-list";
-// // export {exampleSetup} from "prosemirror-example-setup";
-// // export {collab} from "prosemirror-collab";
-// // export {app_index} from "app_index";
-//
-//
-//
-//
-//
-// // import {EditorState} from "prosemirror-state"
-// // import {EditorView} from "prosemirror-view"
-// // import {Schema, DOMParser} from "prosemirror-model"
-// // import {schema} from "prosemirror-schema-basic"
-// // import {addListNodes} from "prosemirror-schema-list"
-// // import {exampleSetup} from "prosemirror-example-setup"
-//
-// import {schema} from "prosemirror-schema-basic"
-// import {EditorState} from "prosemirror-state"
-// import {EditorView} from "prosemirror-view"
-// import {undo, redo, history} from "prosemirror-history"
-// import {keymap} from "prosemirror-keymap"
-// import {baseKeymap} from "prosemirror-commands"
-// import {DOMParser} from "prosemirror-model"
-//
-//
-//
-//
-// export function EditorInit(element_id, content_id){
-//
-//     let state = EditorState.create({
-//         schema,
-//         doc: DOMParser.fromSchema(schema).parse(document.getElementById(content_id)),
-//         plugins:[
-//             history(),
-//             keymap({"Mod-z": undo, "Mod-y": redo}),
-//             keymap(baseKeymap)
-//         ]
-//     });
-//
-//     let view = new EditorView(document.querySelector("#"+element_id), {
-//         state,
-//         dispatchTransaction(transaction) {
-//             console.log("Document size went from", transaction.before.content.size, "to", transaction.doc.content.size)
-//             let newState = view.state.apply(transaction)
-//             view.updateState(newState)
-//         },
-//
-//     });
-//
-//     alert(" 초기화 완료 >> " + state + " : " + view);
-//
-//     // //
-//     // const mySchema = new Schema({
-//     //     nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
-//     //     marks: schema.spec.marks
-//     // });
-//     //
-//     // window.view = new EditorView(document.querySelector("#"+element_id), {
-//     //     state: EditorState.create({
-//     //         doc: DOMParser.fromSchema(mySchema).parse(document.querySelector("#"+content_id)) ,
-//     //         plugins : exampleSetup({schema: mySchema})
-//     //     })
-//     // });
-// }
-//
-//
-//
+  close() {
+    this.closeRequest()
+    this.setView(null)
+  }
+
+  setView(view) {
+    if (this.view) this.view.destroy()
+    this.view = window.view = view
+  }
+}
+
+function repeat(val, n) {
+  let result = []
+  for (let i = 0; i < n; i++) result.push(val)
+  return result
+}
+
+const annotationMenuItem = new MenuItem({
+  title: "Add an annotation",
+  run: addAnnotation,
+  select: state => addAnnotation(state),
+  icon: annotationIcon
+})
+let menu = buildMenuItems(schema)
+menu.fullMenu[0].push(annotationMenuItem)
+
+let info = {
+  name: document.querySelector("#docname"),
+  users: document.querySelector("#users")
+}
+document.querySelector("#changedoc").addEventListener("click", e => {
+  GET("/collab-backend/docs/").then(data => showDocList(e.target, JSON.parse(data)),
+                                    err => report.failure(err))
+})
+
+function userString(n) {
+  return "(" + n + " user" + (n == 1 ? "" : "s") + ")"
+}
+
+let docList
+function showDocList(node, list) {
+  if (docList) docList.parentNode.removeChild(docList)
+
+  let ul = docList = document.body.appendChild(crel("ul", {class: "doclist"}))
+  list.forEach(doc => {
+    ul.appendChild(crel("li", {"data-name": doc.id},
+                        doc.id + " " + userString(doc.users)))
+  })
+  ul.appendChild(crel("li", {"data-new": "true", style: "border-top: 1px solid silver; margin-top: 2px"},
+                      "Create a new document"))
+
+  let rect = node.getBoundingClientRect()
+  ul.style.top = (rect.bottom + 10 + pageYOffset - ul.offsetHeight) + "px"
+  ul.style.left = (rect.left - 5 + pageXOffset) + "px"
+
+  ul.addEventListener("click", e => {
+    if (e.target.nodeName == "LI") {
+      ul.parentNode.removeChild(ul)
+      docList = null
+      if (e.target.hasAttribute("data-name"))
+        location.hash = "#edit-" + encodeURIComponent(e.target.getAttribute("data-name"))
+      else
+        newDocument()
+    }
+  })
+}
+document.addEventListener("click", () => {
+  if (docList) {
+    docList.parentNode.removeChild(docList)
+    docList = null
+  }
+})
+
+function newDocument() {
+  let name = prompt("Name the new document", "")
+  if (name)
+    location.hash = "#edit-" + encodeURIComponent(name)
+}
+
+let connection = null
+
+function connectFromHash() {
+    alert('connectFromHash');
+  let isID = /^#edit-(.+)/.exec(location.hash)
+  if (isID) {
+    if (connection) connection.close()
+    info.name.textContent = decodeURIComponent(isID[1])
+    connection = window.connection = new EditorConnection(report, "/docs/Example") // + isID[1]  <-- 이거 지네 데모에만 필요한거
+    // connection = window.connection = new EditorConnection(report, "/collab-backend/docs") // + isID[1]  <-- 이거 지네 데모에만 필요한거
+alert('connection.view => ' + connection.view);
+    if(connection.view) {
+        connection.request.then(() => connection.view.focus())
+    }
+    return true
+  }
+}
+
+addEventListener("hashchange", connectFromHash)
+connectFromHash() || (location.hash = "#edit-Example")
