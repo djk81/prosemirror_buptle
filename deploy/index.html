@@ -1,27 +1,25 @@
-<!DOCTYPE html> <meta charset="utf8" />
-<html>
-<head>
+<!DOCTYPE html>
+<meta charset="utf8" />
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<header>
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
 	<style>
 		.blame-marker {
 		    background: #ff8;
 		  }
 		.commit:hover {
-    background: #ff8;
-  }
-  .commit-revert {
-    color: #a22;
-  }
+		    background: #ff8;
+		  }
+		  .commit-revert {
+		    color: #a22;
+		  }
 
-.comment {
-    background-color: lightpink;
-}
-
-
-
-
+		.comment {
+		    background-color: lightpink;
+		}
 	</style>
-</head>
+</header>
+
 <body>
 	<br/>
 	<div>
@@ -57,8 +55,8 @@
 
 		window.addEventListener('DOMContentLoaded', function(){
 		    //실행될 코드
-			alert('ProseMirror init start! ' + ProseMirror);
-		    ProseMirror.EditorInit('editor', 'content');
+		    // alert('ProseMirror init start! ' + ProseMirror);
+		    // ProseMirror.EditorInit('editor', 'content');
 		})
 
 

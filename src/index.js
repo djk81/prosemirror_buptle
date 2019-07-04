@@ -79,18 +79,27 @@ console.log('dispatch(action.type) ' + action.type);
     }
 
     if (newEditState) {
-      let sendable
+        console.log(newEditState + " << 디스패치!! this.state.comm : " + this.state.comm +", action.requestDone : " + action.requestDone
+            + ', this.state.comm : ' + this.state.comm);
+      let sendable;
+
+      //1. 4000 사이즈 보기
       if (newEditState.doc.content.size > 40000) {
         if (this.state.comm != "detached") this.report.failure("Document too big. Detached.")
         this.state = new State(newEditState, "detached")
+          console.log('detached !!!');
       } else if ((this.state.comm == "poll" || action.requestDone) && (sendable = this.sendable(newEditState))) {
+      //2. poll  상태
         this.closeRequest()
         this.state = new State(newEditState, "send")
         this.send(newEditState, sendable)
+          console.log('poll !!!');
       } else if (action.requestDone) {
+          //3. 리퀘스트 done
         this.state = new State(newEditState, "poll")
         this.poll()
       } else {
+          //알수없음
         this.state = new State(newEditState, this.state.comm)
       }
     }
