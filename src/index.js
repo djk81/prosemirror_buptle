@@ -428,4 +428,5 @@ document.onmousedown = function(e) {
     //alert();
     //e.preventDefault()
     // /alert(11);
+    // addAnnotation(connection.view.state, connection.dispatch)
 }
