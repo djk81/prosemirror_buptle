@@ -10,7 +10,8 @@ class Comment {
 }
 
 function deco(from, to, comment) {
-  return Decoration.inline(from, to, {class: "comment"}, {comment})
+    console.log('데코데코 ->>>>> ' + comment.id);
+  return Decoration.inline(from, to, {class: "comment _comment_btpm_"+comment.id}, {comment})
 }
 
 class CommentState {
@@ -105,8 +106,12 @@ export const addAnnotation = function(state, dispatch) {
     console.log(state);
     console.log('addAnnotation >> dispatch');
     console.log(dispatch);
+
   let sel = state.selection
-  if (sel.empty) return false
+
+  if (sel.empty) {
+      return false
+  }
   if (dispatch) {
     let text = prompt("입력하시오", "")
     if (text)
@@ -134,25 +139,76 @@ export const commentUI = function(dispatch) {
 
 function commentTooltip(state, dispatch) {
 console.log('commentTooltip ! ');
+  releaseFoucusToAllSelectedComment();
   let sel = state.selection
-  if (!sel.empty) return null
+  if (!sel.empty) {
+      console.log('commentTooltip 1111 ');
+      return null
+  }
   let comments = commentPlugin.getState(state).commentsAt(sel.from)
-  if (!comments.length) return null
+  if (!comments.length) {
+      console.log('commentTooltip 2222 ');
+      return null
+  }
+  console.log('commentTooltip 3333 ');
   return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderComments(comments, dispatch, state))])
 }
 
 function renderComments(comments, dispatch, state) {
-console.log('render ss!!');
+console.log('render ss!! :' + comments.length);
   return crel("div", {class: "tooltip-wrapper"},
               crel("ul", {class: "commentList"},
                    comments.map(c => renderComment(c.spec.comment, dispatch, state))))
 }
 
 function renderComment(comment, dispatch, state) {
-console.log('render comment!!');
+console.log('render comment!! -> ' + comment.id);
   let btn = crel("button", {class: "commentDelete", title: "Delete annotation"}, "×")
   btn.addEventListener("click", () =>
     dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
   )
+
+  // 선택된 코멘트 강조
+  makeFocusToSelectedComment(comment.id);
   return crel("li", {class: "commentText"}, comment.text, btn)
 }
+
+
+ /**커스텀START*/
+ // 코멘트 강조
+ function makeFocusToSelectedComment(_comment_id){
+     var _element = document.getElementById('_comments_bt_id_' + _comment_id);
+     if(_element){
+        _element.style.backgroundColor = 'lightgreen';
+        console.log('코멘트 강조 킴!!');
+
+        //에디터 안에서 바꿔봄
+        let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
+        let _selected_btpm_text = '';
+        for(var i=0; i<_classesEle.length; _classesEle++){
+            if(i==0){
+                _classesEle[i].style.borderLeft = '20px solid green';
+            }else{
+            }
+            _selected_btpm_text += _classesEle[i].outerText;
+        }
+     }else{
+         console.log('코멘트 div 없음 : ' + _comment_id)
+     }
+ }
+
+ // 모든 코멘트 강조 해제
+function releaseFoucusToAllSelectedComment(){
+
+    var _elements = document.getElementsByClassName('_comments_bt');
+    for (var i = 0; i < _elements.length; i++) {
+      _elements[i].style.backgroundColor = 'white';
+      console.log('코멘트 하얗게 끔');
+    }
+
+    _elements = document.getElementsByClassName('comment');
+    for (var i = 0; i < _elements.length; i++) {
+      _elements[i].style.border = 'None';
+    }
+}
+ /**커스텀END*/

@@ -2,6 +2,7 @@
 <meta charset="utf8" />
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <header>
+	<script src="https://unpkg.com/konva@3.3.3/konva.min.js"></script>
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
 	<style>
 		.blame-marker {
@@ -17,6 +18,133 @@
 		.comment {
 		    background-color: lightpink;
 		}
+		.subtle { color: #777 }
+
+		/*.comment { background-color: #ff8 }*/
+		.currentComment { background-color: #fe0 }
+
+		.commentList, .commentText {
+		  display: block;
+		  padding: 0;
+		  margin: 0;
+		}
+
+		.tooltip-wrapper {
+		  display: inline-block;
+		  position: relative;
+		  width: 0;
+		  overflow: visible;
+		  vertical-align: bottom;
+		}
+
+		.ProseMirror ul.commentList {
+		  font-family: "Source Sans Pro";
+		  font-size: 16px;
+		  width: 15em;
+		  position: absolute;
+		  top: calc(100% + 8px);
+		  left: -2em;
+		  font-size: 1rem;
+		  color: black;
+		  background: white;
+		  font-weight: normal;
+		  border: 1px solid #888;
+		  border-radius: 5px;
+		  z-index: 10;
+		  padding: 0;
+		}
+
+		ul.commentList::before {
+		  border: 5px solid #888;
+		  border-top-width: 0px;
+		  border-left-color: transparent;
+		  border-right-color: transparent;
+		  position: absolute;
+		  top: -5px;
+		  left: calc(2em - 6px);
+		  content: " ";
+		  height: 0;
+		  width: 0;
+		}
+
+		li.commentText {
+		  padding: 2px 20px 2px 5px;
+		  /* position: relative; */
+		  pointer-events: auto;
+		  margin: 0;
+		}
+
+		li.commentText + li.commentText {
+		  border-top: 1px solid silver;
+		}
+
+		.commentDelete {
+		  position: absolute;
+		  right: 0;
+		  border: 0;
+		  font: inherit;
+		  display: inline;
+		  color: inherit;
+		  background: transparent;
+		  cursor: pointer;
+		}
+
+		.commentDelete:hover {
+		  color: #f88;
+		}
+
+		.doclist {
+		  z-index: 20;
+		  display: block;
+		  padding: 2px 2px;
+		  margin: 0;
+		  border: 1px solid silver;
+		  position: absolute;
+		  background: white;
+		  font-size: 90%;
+		  box-sizing: border-box;
+		  -moz-box-sizing: border-box;
+		  max-height: 15em;
+		  overflow-y: auto;
+		}
+
+		.doclist li {
+		  display: block;
+		  padding: 1px 3px;
+		  margin: 0;
+		  cursor: pointer;
+		}
+
+		.doclist li:hover {
+		  background: #5ae;
+		  color: white;
+		}
+
+		.docinfo {
+		  position: relative;
+		  color: #555;
+		}
+
+		.ProseMirror-report {
+		  position: fixed;
+		  top: 0; right: 0; left: 0;
+		  border-width: 0;
+		  border-style: solid;
+		  border-bottom-width: 1px;
+		  padding: 3px 27px 5px;
+		  white-space: pre;
+		  z-index: 1000;
+		}
+
+		.ProseMirror-report-fail {
+		  background: rgb(255, 230, 230);
+		  border-color: rgb(200, 150, 150);
+		}
+
+		.ProseMirror-report-delay {
+		  background: rgb(255, 255, 200);
+		  border-color: rgb(200, 200, 120);
+		}
 	</style>
 </header>
 
@@ -26,19 +154,9 @@
 		<h2>BUPTLE - Prosemirror</h2>
 	</div>
 	<br/>
-	<br/>
-	<div id="editor" style="margin-bottom: 23px;"></div>
-	<div id="content" style="display: none;">
-		<h4 style="text-align: center;"><strong>Mutual Non-Disclosure Agreement</strong></h4>
-		<p style="text-align: justify;"><strong>RECITALS</strong></p>
-		<p style="text-align: justify;">
-		    <br />본 상호비밀유지계약서(이하 &ldquo;본 계약&rdquo;이라고 함)는 만도헬라일렉트로닉스(이하 &ldquo;MHE&rdquo;라고 함)와 이하에 명기된 자연인, 법인, 회사 또는 기타 단체 사이에서 <span data-param-id="796" data-param-name="계약의 발효일 기재 (YYYY/MM/DD)" data-param-content="" data-param-desc="계약 효력 기산일을 기재하여 주시면 됩니다. e.g. 2019-06-11" data-param-required="1" class="buptleparam_content_required_none" contenteditable="false" draggable="false" onclick="parent.viewModal(this)" data-param-kind="text" data-param-display-name=" [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] "><label> [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] </label></span>&nbsp; ("효력발생일")에 작성되고 효력을 발한다. 이하에서는 때때로 본 계약의 당사자들을 합쳐서는 &ldquo;당사자들&rdquo;로, 개별적으로는 &ldquo;당사자&rdquo;로 칭한다. 양 당사자들은 본 계약에 따라 비밀정보(이하 정의 됨)를 공개하거나 수령 한다. 비밀정보를 공개하는 당사자는 "공개 당사자"로, 비밀정보를 수령하는 당사자는 "수령 당사자"로 칭한다. 이에, 당사자들은 다음과 같이 합의한다.</p>
-
-	</div>
-
 
 	<form id="commit">
-        코멘트: <input type=text id=message name=message> <button id=commitbutton type="submit">저장</button>
+        코멘트: <input type=text id=message name=message> <button id=commitbutton type="button" onclick="javaScript:{alert('작업중');}">저장</button>
         <div class=blame-wrap>
 	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
         </div>
@@ -47,18 +165,68 @@
     <div id="commits" style="margin-bottom: 23px">
 	    <!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
     </div>
-	<div id="changedoc">문서종류</div>
-	<div id="docname">문서명</div>
+	<div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
+	<div id="docname" style="position: relative; float:left; display: none; ">문서명</div>
 	<div id="users">유저수</div>
+
+	<br/>
+	<div style="width:800px; margin-bottom: 23px; position: absolute; max-height:900px; float:left; ">
+		<div id="editor" style="overflow-y:scroll; max-height:700px;" >
+
+		</div>
+	</div>
+
+	<div id="_comment_list_wrapper" style="left: 800px; width:300px; position: absolute; float:left; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
+		코멘트
+	</div>
+
+	<div id="content" style="display: none;">
+		<h4 style="text-align: center;"><strong>Mutual Non-Disclosure Agreement</strong></h4>
+		<p style="text-align: justify;"><strong>RECITALS</strong></p>
+		<p style="text-align: justify;">
+		    <br />본 상호비밀유지계약서(이하 &ldquo;본 계약&rdquo;이라고 함)는 만도헬라일렉트로닉스(이하 &ldquo;MHE&rdquo;라고 함)와 이하에 명기된 자연인, 법인, 회사 또는 기타 단체 사이에서 <span data-param-id="796" data-param-name="계약의 발효일 기재 (YYYY/MM/DD)" data-param-content="" data-param-desc="계약 효력 기산일을 기재하여 주시면 됩니다. e.g. 2019-06-11" data-param-required="1" class="buptleparam_content_required_none" contenteditable="false" draggable="false" onclick="parent.viewModal(this)" data-param-kind="text" data-param-display-name=" [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] "><label> [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] </label></span>&nbsp; ("효력발생일")에 작성되고 효력을 발한다. 이하에서는 때때로 본 계약의 당사자들을 합쳐서는 &ldquo;당사자들&rdquo;로, 개별적으로는 &ldquo;당사자&rdquo;로 칭한다. 양 당사자들은 본 계약에 따라 비밀정보(이하 정의 됨)를 공개하거나 수령 한다. 비밀정보를 공개하는 당사자는 "공개 당사자"로, 비밀정보를 수령하는 당사자는 "수령 당사자"로 칭한다. 이에, 당사자들은 다음과 같이 합의한다.</p>
+	</div>
+
+
+
 	<script src="../dist/buptle_ProseMirror.js"></script>
 	<script>
 
 		window.addEventListener('DOMContentLoaded', function(){
 		    //실행될 코드
-		    // alert('ProseMirror init start! ' + ProseMirror);
-		    // ProseMirror.EditorInit('editor', 'content');
+		    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper');
 		})
 
+		//콘바다음에
+      // var width = window.innerWidth;
+      // var height = window.innerHeight;
+      //
+      // var stage = new Konva.Stage({
+      //   container: '_comments_bt_id_1783625414',
+      //   width: width,
+      //   height: height
+      // });
+      //
+      // var layer = new Konva.Layer();
+      //
+      // var arrow = new Konva.Arrow({
+      //   x: stage.width() / 4,
+      //   y: stage.height() / 4,
+      //   points: [0, 0, width / 2, height / 2],
+      //   pointerLength: 20,
+      //   pointerWidth: 20,
+      //   fill: 'black',
+      //   stroke: 'black',
+      //   strokeWidth: 0.5
+      // });
+      //
+      // arrow.setAttr('points', [0, 0, 100, 100]);
+      //
+      // // add the shape to the layer
+      // layer.add(arrow);
+      //
+      // // add the layer to the stage
+      // stage.add(layer);
 
 	</script>
 </body>

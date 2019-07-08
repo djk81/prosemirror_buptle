@@ -1,6 +1,6 @@
 import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
 import {Step} from "prosemirror-transform"
-import {EditorState} from "prosemirror-state"
+import {TextSelection, Plugin, EditorState} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
 import {collab, receiveTransaction, sendableSteps, getVersion} from "prosemirror-collab"
@@ -16,6 +16,25 @@ import {schema} from "prosemirror-schema-basic"
 
 const report = new Reporter()
 
+
+/** 커스텀 플러그인 **/
+let eventPlugin = function(dispatch){
+    return new Plugin({
+      props: {
+        handleKeyDown(view, event) {
+          return false // We did not handle this
+        },
+        handleClick(view, post, event){
+            return false
+        },
+        decorations(state) {
+            return false
+        }
+      }
+    })
+}
+
+
 function badVersion(err) {
   return err.status == 400 && /invalid version/i.test(err)
 }
@@ -28,25 +47,24 @@ class State {
 }
 
 class EditorConnection {
-  constructor(report, url) {
+  constructor(report, url, target_id, _comment_target_id) {
     this.report = report
-      alert(url + " << url");
     this.url = url
     this.state = new State(null, "start")
     this.request = null
     this.backOff = 0
     this.view = null
     this.dispatch = this.dispatch.bind(this)
-    this.start()
+    this.start(target_id, _comment_target_id)
   }
 
   // All state changes go through this
   dispatch(action) {
-console.log('dispatch(action) ' + action);
+console.log('[action.target_id] >> ' + action.target_id);
 console.log('dispatch(action.type) ' + action.type);
     let newEditState = null
     if (action.type == "loaded") {
-        alert('loaded');
+        alert('loaded ' + action.comments.comments.length);
       info.users.textContent = userString(action.users) // FIXME ewww
       let editState = EditorState.create({
         doc: action.doc,
@@ -54,7 +72,8 @@ console.log('dispatch(action.type) ' + action.type);
           history({preserveItems: true}),
           collab({version: action.version}),
           commentPlugin,
-          commentUI(transaction => this.dispatch({type: "transaction", transaction}))
+          commentUI( transaction => this.dispatch({type: "transaction", transaction}) ),
+          eventPlugin( transaction => this.dispatch({type: "transaction", transaction}) )
         ]),
         comments: action.comments
       })
@@ -79,8 +98,8 @@ console.log('dispatch(action.type) ' + action.type);
     }
 
     if (newEditState) {
-        console.log(newEditState + " << 디스패치!! this.state.comm : " + this.state.comm +", action.requestDone : " + action.requestDone
-            + ', this.state.comm : ' + this.state.comm);
+        console.log(newEditState + " << 디스패치!! this.state.comm : " + this.state.comm
+            +", action.requestDone : " + action.requestDone + ', this.state.comm : ' + this.state.comm);
       let sendable;
 
       //1. 4000 사이즈 보기
@@ -106,32 +125,40 @@ console.log('dispatch(action.type) ' + action.type);
 
     // Sync the editor with this.state.edit
     if (this.state.edit) {
-      if (this.view)
+      if (this.view) {
         this.view.updateState(this.state.edit)
-      else
-        this.setView(new EditorView(document.querySelector("#editor"), {
+      }else{
+        if(action.target_id){
+            //do nothing
+        }else{
+            alert('타겟ID 없음 : ' + action.type);
+        }
+        this.setView(new EditorView(document.querySelector("#" + action.target_id), {
           state: this.state.edit,
           dispatchTransaction: transaction => this.dispatch({type: "transaction", transaction})
         }))
+      }
     } else this.setView(null)
+
+
+    /** 코멘트 커스터마이징 우측 창에 따로 보이게 하기 START */
+    // from, to ,text, id
+    if(action.comments && action.comments.comments.length>0){
+       handle_comment_draw(action.comments.comments, action.comment_target_id)
+    }
+    /** 코멘트 커스터마이징 우측 창에 따로 보이게 하기 END */
   }
 
   // Load the document from the server and start up
-  start() {
-      alert('start()');
+  start(target_id, _comment_target_id) {
     this.run(GET(this.url)).then(data => {
-
-console.log('json parsing 전');
-console.log(data);
       data = JSON.parse(data)
-console.log('json parsing 후');
-console.log(data);
-
-
-
       this.report.success()
       this.backOff = 0
-      this.dispatch({type: "loaded",
+      this.dispatch({
+          target_id:target_id,
+          comment_target_id:_comment_target_id,
+          type: "loaded",
                      doc: schema.nodeFromJSON(data.doc),
                      version: data.version,
                      users: data.users,
@@ -245,7 +272,7 @@ function repeat(val, n) {
 }
 
 const annotationMenuItem = new MenuItem({
-  title: "Add an annotation",
+  title: "코멘트입력",
   run: addAnnotation,
   select: state => addAnnotation(state),
   icon: annotationIcon
@@ -324,5 +351,81 @@ alert('connection.view => ' + connection.view);
   }
 }
 
-addEventListener("hashchange", connectFromHash)
-connectFromHash() || (location.hash = "#edit-Example")
+// addEventListener("hashchange", connectFromHash)
+// connectFromHash() || (location.hash = "#edit-Example")
+
+/** index.js 외부에서 호출할때 */
+export function editorInit(target_id, content_id, _comment_target_id){
+    connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
+}
+
+// 코멘트판넬에서 div 클릭 시
+function onCommentBtClicked(id_suffix, _offset_from){
+    //에디터 안에서 바꿔봄
+    let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
+    let _top_pos = 0;
+    for(var i=0; i<_classesEle.length; _classesEle++){
+        _top_pos = _classesEle[i].offsetTop;
+        _classesEle[i].scrollIntoView({ block: 'center',  behavior: 'smooth' });
+        _classesEle[i].blur();
+        _classesEle[i].focus();
+        _classesEle[i].click();
+    }
+
+    setSelectByOffsetFrom(_offset_from, _top_pos);
+}
+
+/** 코멘트관련 */
+var g_tmp_all_comments = null;
+
+export function handle_comment_draw(_comments, _comment_target_id){
+    _comment_target_id = _comment_target_id || '_comment_list_wrapper';
+    alert('핸들 코멘트 draw : ' + _comments.length);
+    g_tmp_all_comments = _comments.length;
+    var indx = 0;
+      var _htmlText = '';
+      for(indx in _comments){
+          var id = _comments[indx].id;
+          var from = _comments[indx].from;
+          var to = _comments[indx].to;
+          var text = _comments[indx].text;
+          console.log(from + " -> " + to + " : " + text);
+
+          _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="border-radius: 5px; margin: 15px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+          _htmlText += 'comment id : ' + id + "<br>";
+          _htmlText += 'offset from : ' + from + " ~ ";
+          _htmlText += 'offset to : ' + to;
+          _htmlText += '<br> comment : <span style="font-weight: bold;">' + text + '</span>';
+          _htmlText += '</div>';
+      }
+      document.querySelector("#"+_comment_target_id).innerHTML = _htmlText;
+
+      let _comments_bts = document.querySelectorAll("._comments_bt");
+      for(var i=0; i<_comments_bts.length; i++){
+
+          let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
+          let _offset_from = _comments_bts[i].getAttribute('data-pmbt-offset-from');
+          _comments_bts[i].addEventListener("click", function(){
+            onCommentBtClicked(_tmp_id, _offset_from);
+          }, false)
+      }
+
+}
+
+
+/** 커서를 원하는 위치로 옮김 */
+function setSelectByOffsetFrom(offset_from, top_pos){
+  connection.view.dispatch(
+      connection.view.state.tr.setSelection(
+          TextSelection.near( connection.view.state.doc.resolve(offset_from) )
+      )
+  )
+  connection.view.focus()
+  // window.scrollTo(0, top_pos);
+}
+
+document.onmousedown = function(e) {
+    //alert();
+    //e.preventDefault()
+    // /alert(11);
+}
