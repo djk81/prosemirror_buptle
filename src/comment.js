@@ -187,7 +187,8 @@ console.log('render comment!! -> ' + comment.id);
         let _selected_btpm_text = '';
         for(var i=0; i<_classesEle.length; _classesEle++){
             if(i==0){
-                _classesEle[i].style.borderLeft = '20px solid green';
+                _classesEle[i].style.borderLeft = '10px solid green';
+                // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
             }else{
             }
             _selected_btpm_text += _classesEle[i].outerText;

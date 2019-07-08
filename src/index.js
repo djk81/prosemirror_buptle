@@ -64,7 +64,7 @@ console.log('[action.target_id] >> ' + action.target_id);
 console.log('dispatch(action.type) ' + action.type);
     let newEditState = null
     if (action.type == "loaded") {
-        alert('loaded ' + action.comments.comments.length);
+        // alert('loaded ' + action.comments.comments.length);
       info.users.textContent = userString(action.users) // FIXME ewww
       let editState = EditorState.create({
         doc: action.doc,
@@ -380,7 +380,7 @@ var g_tmp_all_comments = null;
 
 export function handle_comment_draw(_comments, _comment_target_id){
     _comment_target_id = _comment_target_id || '_comment_list_wrapper';
-    alert('핸들 코멘트 draw : ' + _comments.length);
+    // alert('핸들 코멘트 draw : ' + _comments.length);
     g_tmp_all_comments = _comments.length;
     var indx = 0;
       var _htmlText = '';
