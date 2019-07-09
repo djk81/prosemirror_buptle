@@ -2,7 +2,13 @@ const {createServer} = require("http")
 const {handleCollabRequest} = require("./server")
 const fs = require('fs');
 
+
+const IS_LOCAL = true
+let host = "172.26.13.166"
 const port = 8000
+
+if(IS_LOCAL)
+    host = '127.0.0.1'
 
 // The collaborative editing document server.
 createServer((req, resp) => {
@@ -40,6 +46,7 @@ createServer((req, resp) => {
             resp.end("Not found!!!")
         }
     }
-}).listen(port, "localhost")
+// }).listen(port, "127.0.0.1")
+}).listen(port, host)
 
 console.log("Collab demo server listening on " + port)

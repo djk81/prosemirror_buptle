@@ -3,7 +3,8 @@ export function req(conf) {
   let req = new XMLHttpRequest(), aborted = false
   let result = new Promise((success, failure) => {
 console.log(conf.url + " < conf.url");
-    req.open(conf.method, 'http://localhost:8000'+conf.url, true)
+    // req.open(conf.method, 'http://localhost:8000'+conf.url, true)
+    req.open(conf.method, conf.url, true)
     req.addEventListener("load", () => {
       if (aborted) return
       if (req.status < 400) {
@@ -11,7 +12,7 @@ console.log(conf.url + " < conf.url");
       } else {
         let text = req.responseText
         if (text && /html/.test(req.getResponseHeader("content-type"))) text = makePlain(text)
-          alert('req 에러 ' + req.status);
+          console.log('req 에러 ' + req.status);
         let err = new Error("Request failed: " + req.statusText + (text ? "\n\n" + text : ""))
         err.status = req.status
         failure(err)
