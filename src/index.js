@@ -98,8 +98,8 @@ console.log('dispatch(action.type) ' + action.type);
     }
 
     if (newEditState) {
-        console.log(newEditState + " << 디스패치!! this.state.comm : " + this.state.comm
-            +", action.requestDone : " + action.requestDone + ', this.state.comm : ' + this.state.comm);
+        // console.log(newEditState + " << 디스패치!! this.state.comm : " + this.state.comm
+        //     +", action.requestDone : " + action.requestDone + ', this.state.comm : ' + this.state.comm);
       let sendable;
 
       //1. 4000 사이즈 보기
@@ -280,8 +280,10 @@ function repeat(val, n) {
 const annotationMenuItem = new MenuItem({
   title: "코멘트입력",
   run: addAnnotation,
-  select: state => addAnnotation(state),
-  icon: annotationIcon
+  enable: state => addAnnotation(state),
+  icon: annotationIcon,
+  class : "btpm_add_comment_menu"
+
 })
 let menu = buildMenuItems(schema)
 menu.fullMenu[0].push(annotationMenuItem)
@@ -397,7 +399,7 @@ export function handle_comment_draw(_comments, _comment_target_id){
       var from = _comments[indx].from;
       var to = _comments[indx].to;
       var text = _comments[indx].text;
-      console.log(from + " -> " + to + " : " + text);
+      // console.log(from + " -> " + to + " : " + text);
 
       _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="border-radius: 5px; margin: 15px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
       _htmlText += 'comment id : ' + id + "<br>";
@@ -438,4 +440,16 @@ document.onmousedown = function(e) {
     //e.preventDefault()
     // /alert(11);
     // addAnnotation(connection.view.state, connection.dispatch)
+}
+
+
+export function onCommentAddClicked(){
+    let _cur_selection = connection.view.state.selection
+    if (_cur_selection.empty) {
+        alert('문서의 특정 부분을 선택(드래그/블럭지정) 하십시오.');
+        return;
+    }
+
+    // document.getElementsByClassName('btpm_add_comment_menu')[0].click();
+    addAnnotation(connection.view.state, connection.view.dispatch)
 }

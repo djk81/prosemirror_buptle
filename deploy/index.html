@@ -68,10 +68,15 @@
 		}
 
 		li.commentText {
-		  padding: 2px 20px 2px 5px;
+		  padding: 20px 20px 20px 20px;
 		  /* position: relative; */
 		  pointer-events: auto;
 		  margin: 0;
+			background-color: red;
+			opacity: 0.8;
+			color:white;
+			border: 1px solid black;
+			border-radius: 5px;
 		}
 
 		li.commentText + li.commentText {
@@ -176,7 +181,10 @@
 		</div>
 	</div>
 
-	<div id="_comment_list_wrapper" style="left: 800px; width:300px; position: absolute; float:left; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
+	<div style="position:relative; float: left; left:820px;">
+		<button type="button" id="add_comment_to_doc" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
+	</div>
+	<div id="_comment_list_wrapper" style="left: 800px; width:300px; position: absolute; float:left; top:250px; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
 		코멘트
 	</div>
 

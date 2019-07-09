@@ -171,19 +171,19 @@ export const commentUI = function(dispatch) {
 }
 
 function commentTooltip(state, dispatch) {
-console.log('commentTooltip ! ');
+// console.log('commentTooltip ! ');
   releaseFoucusToAllSelectedComment();
   let sel = state.selection
   if (!sel.empty) {
-      console.log('commentTooltip 1111 ');
+      // console.log('commentTooltip 1111 ');
       return null
   }
   let comments = commentPlugin.getState(state).commentsAt(sel.from)
   if (!comments.length) {
-      console.log('commentTooltip 2222 ');
+      // console.log('commentTooltip 2222 ');
       return null
   }
-  console.log('commentTooltip 3333 ');
+  // console.log('commentTooltip 3333 ');
   return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderComments(comments, dispatch, state))])
 }
 
@@ -196,7 +196,7 @@ console.log('render ss!! :' + comments.length);
 
 function renderComment(comment, dispatch, state) {
 console.log('render comment!! -> ' + comment.id);
-  let btn = crel("button", {class: "commentDelete", title: "Delete annotation"}, "×")
+  let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "×")
   btn.addEventListener("click", () =>
     dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
   )
@@ -219,7 +219,7 @@ console.log('render comment!! -> ' + comment.id);
          let _selected_btpm_text = '';
          for(var i=0; i<_classesEle.length; _classesEle++){
              if(i==0){
-                 _classesEle[i].style.borderLeft = '10px solid green';
+                 _classesEle[i].style.borderLeft = '10px solid red';
                  // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
              }else{
              }
@@ -236,7 +236,7 @@ function releaseFoucusToAllSelectedComment(){
     var _elements = document.getElementsByClassName('_comments_bt');
     for (var i = 0; i < _elements.length; i++) {
       _elements[i].style.backgroundColor = 'white';
-      console.log('코멘트 하얗게 끔');
+      // console.log('코멘트 하얗게 끔');
     }
 
     _elements = document.getElementsByClassName('comment');
