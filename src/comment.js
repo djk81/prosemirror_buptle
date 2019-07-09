@@ -212,21 +212,25 @@ console.log('render comment!! -> ' + comment.id);
  function makeFocusToSelectedComment(_comment_id){
      var _element = document.getElementById('_comments_bt_id_' + _comment_id);
      if(_element){
-         _element.style.backgroundColor = 'lightgreen';
+         _element.style.backgroundColor = 'lightblue';
+         _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
+         // _element.style.color = 'white';
          console.log('코멘트 강조 킴!!');
          //에디터 안에서 바꿔봄
          let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
          let _selected_btpm_text = '';
          for(var i=0; i<_classesEle.length; _classesEle++){
              if(i==0){
-                 _classesEle[i].style.borderLeft = '10px solid red';
+                 // _classesEle[i].style.borderLeft = '10px solid red';
+                 _classesEle[i].style.border = '5px dotted red';
+                 _classesEle[i].style.padding = '3px 5px 3px 5px';
                  // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
              }else{
              }
              _selected_btpm_text += _classesEle[i].outerText;
          }
      }else{
-         alert('코멘트 div 없음 : ' + _comment_id)
+         console.log('코멘트 div 없음 : ' + _comment_id)
      }
  }
 

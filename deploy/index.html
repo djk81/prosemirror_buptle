@@ -167,7 +167,7 @@
 	<br/>
 
 	<form id="commit">
-        코멘트: <input type=text id=message name=message> <button id=commitbutton type="button" onclick="javaScript:{alert('작업중');}">저장</button>
+        저장 커밋메시지 <input type=text id=message name=message> <button id=commitbutton type="button" onclick="javaScript:{alert('작업중');}">저장</button>
         <div class=blame-wrap>
 	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
         </div>
@@ -182,16 +182,19 @@
 
 	<br/>
 	<div style="width:800px; margin-bottom: 23px; position: absolute; max-height:900px; float:left; ">
-		<div id="editor" style="overflow-y:scroll; max-height:700px;" >
+		<!--style="overflow-y:scroll; max-height:700px;"-->
+		<div id="editor" >
 
 		</div>
 	</div>
 
-	<div style="position:relative; float: left; left:820px;">
-		<button type="button" id="add_comment_to_doc" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
-	</div>
-	<div id="_comment_list_wrapper" style="left: 800px; width:300px; position: absolute; float:left; top:250px; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
-		코멘트
+	<div style="background-color: mintcream; left: 800px; width:300px; position: fixed; float:left; top:60px; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
+		<!---->
+		<div>
+			<button type="button" id="add_comment_to_doc" style="margin: 2px 0px 6px 6px;" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
+		</div>
+		<div id="_comment_list_wrapper" style="overflow-y:scroll; max-height: 600px; ">
+		</div>
 	</div>
 
 	<div id="content" style="display: none;">

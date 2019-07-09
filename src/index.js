@@ -375,9 +375,10 @@ function onCommentBtClicked(id_suffix, _offset_from){
     for(var i=0; i<_classesEle.length; _classesEle++){
         _top_pos = _classesEle[i].offsetTop;
         _classesEle[i].scrollIntoView({ block: 'center',  behavior: 'smooth' });
-        _classesEle[i].blur();
-        _classesEle[i].focus();
-        _classesEle[i].click();
+        break;
+        // _classesEle[i].blur();
+        // _classesEle[i].focus();
+        // _classesEle[i].click();
     }
 
     setSelectByOffsetFrom(_offset_from, _top_pos);
@@ -401,7 +402,7 @@ export function handle_comment_draw(_comments, _comment_target_id){
       var text = _comments[indx].text;
       // console.log(from + " -> " + to + " : " + text);
 
-      _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="border-radius: 5px; margin: 15px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+      _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
       _htmlText += 'comment id : ' + id + "<br>";
       _htmlText += 'index from : ' + from + " ~ ";
       _htmlText += 'index to : ' + to;
