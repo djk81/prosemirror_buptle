@@ -27,6 +27,7 @@
 		  display: block;
 		  padding: 0;
 		  margin: 0;
+			box-shadow: 2px 2px 1px 1px grey;
 		}
 
 		.tooltip-wrapper {
@@ -55,7 +56,7 @@
 		}
 
 		ul.commentList::before {
-		  border: 5px solid #888;
+		  border: 5px solid black;
 		  border-top-width: 0px;
 		  border-left-color: transparent;
 		  border-right-color: transparent;
@@ -68,8 +69,8 @@
 		}
 
 		li.commentText {
-		  padding: 20px 20px 20px 20px;
-		  /* position: relative; */
+		  padding: 20px 10px 20px 10px;
+		   position:  relative;
 		  pointer-events: auto;
 		  margin: 0;
 			background-color: red;
@@ -80,18 +81,23 @@
 		}
 
 		li.commentText + li.commentText {
-		  border-top: 1px solid silver;
+		  border-top: 1px solid black;
 		}
 
 		.commentDelete {
-		  position: absolute;
-		  right: 0;
+		  position: relative;
+			top:10px;
+		  left: 0;
+		  left-margin: 0;
+		  left-padding: 0;
 		  border: 0;
 		  font: inherit;
-		  display: inline;
+		  display: block;
 		  color: inherit;
 		  background: transparent;
 		  cursor: pointer;
+			font-size: small;
+			text-decoration: underline;
 		}
 
 		.commentDelete:hover {
@@ -156,7 +162,7 @@
 <body>
 	<br/>
 	<div>
-		<h2>BUPTLE - Prosemirror</h2>
+		<h2>BUPTLE - Prosemirror (IE 버전은 빌드 수정 작업중. 크롬에서만 사용가능)</h2>
 	</div>
 	<br/>
 

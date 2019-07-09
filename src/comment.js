@@ -196,7 +196,7 @@ console.log('render ss!! :' + comments.length);
 
 function renderComment(comment, dispatch, state) {
 console.log('render comment!! -> ' + comment.id);
-  let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "×")
+  let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
   btn.addEventListener("click", () =>
     dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
   )
