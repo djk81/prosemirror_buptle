@@ -2,7 +2,7 @@ import crel from "crel"
 import {Plugin} from "prosemirror-state"
 import {Decoration, DecorationSet} from "prosemirror-view"
 
-class Comment {
+class Comment_unused_bak {
   constructor(text, id) {
     this.id = id
     this.text = text
@@ -56,7 +56,7 @@ class CommentState {
         if (found) set = set.remove([found])
       } else { // "create"
         if (!this.findComment(event.id))
-          set = set.add(doc, [deco(event.from, event.to, new Comment(event.text, event.id))])
+          set = set.add(doc, [deco(event.from, event.to, new Comment_unused_bak(event.text, event.id))])
       }
     }
     return new CommentState(version, set, this.unsent.slice(sent))
@@ -79,7 +79,7 @@ class CommentState {
   }
 
   static init(config) {
-    let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id)))
+    let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment_unused_bak(c.text, c.id)))
     return new CommentState(config.comments.version, DecorationSet.create(config.doc, decos), [])
   }
 }
@@ -106,7 +106,7 @@ export const addAnnotation = function(state, dispatch) {
   if (dispatch) {
     let text = prompt("Annotation text", "")
     if (text)
-      dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment(text, randomID())}))
+      dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment_unused_bak(text, randomID())}))
   }
   return true
 }

@@ -2,11 +2,23 @@ import crel from "crel"
 import {Plugin} from "prosemirror-state"
 import {Decoration, DecorationSet} from "prosemirror-view"
 
+export let PM_BT_G_COMMENTS_ARRAY = Array()
+
 class Comment {
   constructor(text, id) {
     this.id = id
     this.text = text
   }
+}
+
+/** UI에서 활용하기 위한 다른 spec의 객체 */
+class CommentToUI{
+    constructor(id, from, to, text){
+        this.id = id
+        this.from = from
+        this.to = to
+        this.text = text
+    }
 }
 
 function deco(from, to, comment) {
@@ -55,9 +67,17 @@ class CommentState {
       if (event.type == "delete") {
         let found = this.findComment(event.id)
         if (found) set = set.remove([found])
+          let i=0;
+          for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
+              if(PM_BT_G_COMMENTS_ARRAY[i].id==event.id){
+                  break;
+              }
+          }
+          PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
       } else { // "create"
         if (!this.findComment(event.id))
           set = set.add(doc, [deco(event.from, event.to, new Comment(event.text, event.id))])
+          PM_BT_G_COMMENTS_ARRAY.push(event);
       }
     }
     return new CommentState(version, set, this.unsent.slice(sent))
@@ -72,8 +92,19 @@ class CommentState {
         if (found) result.push({type: "create", id: action.comment.id,
                                 from: found.from, to: found.to,
                                 text: action.comment.text})
+          PM_BT_G_COMMENTS_ARRAY.push(result[result.length-1]);
       } else {
         result.push({type: "delete", id: action.comment.id})
+        let i=0;
+        for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
+            console.log("=================== 비교")
+            console.log(PM_BT_G_COMMENTS_ARRAY[i])
+            console.log(action.comment)
+          if(PM_BT_G_COMMENTS_ARRAY[i].id==action.comment.id){
+              break;
+          }
+        }
+        PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
       }
     }
     return result
@@ -81,6 +112,8 @@ class CommentState {
 
   static init(config) {
     let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id)))
+    PM_BT_G_COMMENTS_ARRAY = PM_BT_G_COMMENTS_ARRAY.concat(config.comments.comments)
+      // alert('푸쉬완료 : ' + PM_BT_G_COMMENTS_ARRAY.length);
     return new CommentState(config.comments.version, DecorationSet.create(config.doc, decos), [])
   }
 }
@@ -179,22 +212,21 @@ console.log('render comment!! -> ' + comment.id);
  function makeFocusToSelectedComment(_comment_id){
      var _element = document.getElementById('_comments_bt_id_' + _comment_id);
      if(_element){
-        _element.style.backgroundColor = 'lightgreen';
-        console.log('코멘트 강조 킴!!');
-
-        //에디터 안에서 바꿔봄
-        let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
-        let _selected_btpm_text = '';
-        for(var i=0; i<_classesEle.length; _classesEle++){
-            if(i==0){
-                _classesEle[i].style.borderLeft = '10px solid green';
-                // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
-            }else{
-            }
-            _selected_btpm_text += _classesEle[i].outerText;
-        }
+         _element.style.backgroundColor = 'lightgreen';
+         console.log('코멘트 강조 킴!!');
+         //에디터 안에서 바꿔봄
+         let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
+         let _selected_btpm_text = '';
+         for(var i=0; i<_classesEle.length; _classesEle++){
+             if(i==0){
+                 _classesEle[i].style.borderLeft = '10px solid green';
+                 // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
+             }else{
+             }
+             _selected_btpm_text += _classesEle[i].outerText;
+         }
      }else{
-         console.log('코멘트 div 없음 : ' + _comment_id)
+         alert('코멘트 div 없음 : ' + _comment_id)
      }
  }
 

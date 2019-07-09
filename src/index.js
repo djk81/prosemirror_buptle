@@ -10,7 +10,7 @@ import crel from "crel"
 // import {schema} from "./collab/schema"
 import {GET, POST} from "./collab/client/http"
 import {Reporter} from "./collab/client/reporter"
-import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment"
+import {PM_BT_G_COMMENTS_ARRAY, commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment"
 
 import {schema} from "prosemirror-schema-basic"
 
@@ -144,8 +144,12 @@ console.log('dispatch(action.type) ' + action.type);
     /** 코멘트 커스터마이징 우측 창에 따로 보이게 하기 START */
     // from, to ,text, id
     if(action.comments && action.comments.comments.length>0){
-       handle_comment_draw(action.comments.comments, action.comment_target_id)
+        // handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, action.comment_target_id);
+        // handle_comment_draw(action.comments.comments, action.comment_target_id)
+        handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, action.comment_target_id);
     }
+
+
     /** 코멘트 커스터마이징 우측 창에 따로 보이게 하기 END */
   }
 
@@ -201,6 +205,8 @@ console.log('dispatch(action.type) ' + action.type);
   sendable(editState) {
     let steps = sendableSteps(editState)
     let comments = commentPlugin.getState(editState).unsentEvents()
+
+     handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY) //갱신
     if (steps || comments.length) return {steps, comments}
   }
 
@@ -376,39 +382,41 @@ function onCommentBtClicked(id_suffix, _offset_from){
 }
 
 /** 코멘트관련 */
-var g_tmp_all_comments = null;
+
+
+export function handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, _comment_target_id){
+    handle_comment_draw(PM_BT_G_COMMENTS_ARRAY, _comment_target_id)
+}
 
 export function handle_comment_draw(_comments, _comment_target_id){
     _comment_target_id = _comment_target_id || '_comment_list_wrapper';
-    // alert('핸들 코멘트 draw : ' + _comments.length);
-    g_tmp_all_comments = _comments.length;
     var indx = 0;
-      var _htmlText = '';
-      for(indx in _comments){
-          var id = _comments[indx].id;
-          var from = _comments[indx].from;
-          var to = _comments[indx].to;
-          var text = _comments[indx].text;
-          console.log(from + " -> " + to + " : " + text);
+    var _htmlText = '';
+    for(indx in _comments){
+      var id = _comments[indx].id;
+      var from = _comments[indx].from;
+      var to = _comments[indx].to;
+      var text = _comments[indx].text;
+      console.log(from + " -> " + to + " : " + text);
 
-          _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="border-radius: 5px; margin: 15px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
-          _htmlText += 'comment id : ' + id + "<br>";
-          _htmlText += 'index from : ' + from + " ~ ";
-          _htmlText += 'index to : ' + to;
-          _htmlText += '<br> comment : <span style="font-weight: bold;">' + text + '</span>';
-          _htmlText += '</div>';
-      }
-      document.querySelector("#"+_comment_target_id).innerHTML = _htmlText;
+      _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="border-radius: 5px; margin: 15px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+      _htmlText += 'comment id : ' + id + "<br>";
+      _htmlText += 'index from : ' + from + " ~ ";
+      _htmlText += 'index to : ' + to;
+      _htmlText += '<br> comment : <span style="font-weight: bold;">' + text + '</span>';
+      _htmlText += '</div>';
+    }
+    document.querySelector("#"+_comment_target_id).innerHTML = _htmlText;
 
-      let _comments_bts = document.querySelectorAll("._comments_bt");
-      for(var i=0; i<_comments_bts.length; i++){
+    let _comments_bts = document.querySelectorAll("._comments_bt");
+    for(var i=0; i<_comments_bts.length; i++){
 
-          let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
-          let _offset_from = _comments_bts[i].getAttribute('data-pmbt-offset-from');
-          _comments_bts[i].addEventListener("click", function(){
-            onCommentBtClicked(_tmp_id, _offset_from);
-          }, false)
-      }
+      let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
+      let _offset_from = _comments_bts[i].getAttribute('data-pmbt-offset-from');
+      _comments_bts[i].addEventListener("click", function(){
+        onCommentBtClicked(_tmp_id, _offset_from);
+      }, false)
+    }
 
 }
 
