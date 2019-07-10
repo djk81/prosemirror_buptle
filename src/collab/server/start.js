@@ -3,7 +3,7 @@ const {handleCollabRequest} = require("./server")
 const fs = require('fs');
 
 
-const IS_LOCAL = true
+const IS_LOCAL = false
 let host = "172.26.13.166"
 const port = 8000
 
