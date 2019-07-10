@@ -214,15 +214,16 @@ let eventPlugin = function(dispatch){
 
     let lastRendered = null
 
-    function dispatch(tr) {
-        connection.view.state = connection.view.state.apply(tr)
-        view.updateState(connection.view.state)
-        setDisabled(connection.view.state)
-        renderCommits(connection.view.state, connection.dispatch)
+    function th_dispatch(tr) {
+        let th_state = connection.view.state.apply(tr)
+        connection.view.updateState(th_state)
+        setDisabled(th_state)
+        // alert(tr);
+        renderCommits(th_state, th_dispatch)
     }
 
     // view = window.view = new EditorView(document.querySelector("#editor"), {state, dispatchTransaction: dispatch})
-    // // dispatch(state.tr.insertText("Type something, and then commit it."))
+    // dispatch(state.tr.insertText("Type something, and then commit it."))
     // dispatch(state.tr.setMeta(trackPlugin, "Initial commit"))
 
 
@@ -233,15 +234,15 @@ let eventPlugin = function(dispatch){
     }
 
     function doCommit(message) {
-        dispatch(connection.view.state.tr.setMeta(trackPlugin, message))
+        th_dispatch(connection.view.state.tr.setMeta(trackPlugin, message))
     }
 
-    function renderCommits(state, dispatch) {
+    function renderCommits(state, _local_dispatch) {
         let curState = trackPlugin.getState(state)
         if (lastRendered == curState) return
         lastRendered = curState
 
-        let out = document.querySelector("#commits")
+        let out = document.querySelector("#_version_list_wrapper")
         out.textContent = ""
         let commits = curState.commits
         commits.forEach(commit => {
@@ -258,14 +259,17 @@ let eventPlugin = function(dispatch){
             node.lastChild.addEventListener("click", () => revertCommit(commit))
             node.addEventListener("mouseover", e => {
                 if (!node.contains(e.relatedTarget))
-                    dispatch(state.tr.setMeta(highlightPlugin, {add: commit}))
+                    _local_dispatch(state.tr.setMeta(highlightPlugin, {add: commit}))
             })
             node.addEventListener("mouseout", e => {
                 if (!node.contains(e.relatedTarget))
-                    dispatch(state.tr.setMeta(highlightPlugin, {clear: commit}))
+                    _local_dispatch(state.tr.setMeta(highlightPlugin, {clear: commit}))
             })
             out.appendChild(node)
         })
+
+
+        // 원래 본문 dispatch 를 해야할듯한데
     }
 
     function revertCommit(commit) {
@@ -298,7 +302,7 @@ let eventPlugin = function(dispatch){
         }
         // Add a commit message and dispatch.
         if (tr.docChanged)
-            dispatch(tr.setMeta(trackPlugin, `Revert '${commit.message}'`))
+            th_dispatch(tr.setMeta(trackPlugin, `Revert '${commit.message}'`))
     }
 
 // }
@@ -432,6 +436,7 @@ console.log('dispatch(action.type) ' + action.type);
     if (this.state.edit) {
       if (this.view) {
         this.view.updateState(this.state.edit)
+        //th_dispatch(connection.view.state.tr.setMeta(trackPlugin, '2222'))
       }else{
         if(action.target_id){
             //do nothing
@@ -442,6 +447,7 @@ console.log('dispatch(action.type) ' + action.type);
           state: this.state.edit,
           dispatchTransaction: transaction => this.dispatch({type: "transaction", transaction})
         }))
+          // th_dispatch(connection.view.state.tr.setMeta(trackPlugin, "Initial commit"))
       }
     } else this.setView(null)
 
