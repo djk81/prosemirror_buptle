@@ -374,11 +374,15 @@ function onCommentBtClicked(id_suffix, _offset_from){
     let _top_pos = 0;
     for(var i=0; i<_classesEle.length; _classesEle++){
         _top_pos = _classesEle[i].offsetTop;
-        _classesEle[i].scrollIntoView({ block: 'center',  behavior: 'smooth' });
-        break;
+        //break;
         // _classesEle[i].blur();
         // _classesEle[i].focus();
         // _classesEle[i].click();
+        var _target = _classesEle[i]
+        setTimeout( function() {
+            _target.scrollIntoView({ block: 'center',  behavior: 'smooth' });
+        }, 0.3 * 1000);
+        //_classesEle[i].scrollIntoView({ block: 'center',  behavior: 'smooth' });
     }
 
     setSelectByOffsetFrom(_offset_from, _top_pos);
