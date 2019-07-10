@@ -221,9 +221,9 @@ console.log('render comment!! -> ' + comment.id);
          let _selected_btpm_text = '';
          for(var i=0; i<_classesEle.length; _classesEle++){
              if(i==0){
-                 // _classesEle[i].style.borderLeft = '10px solid red';
-                 _classesEle[i].style.border = '5px dotted red';
-                 _classesEle[i].style.padding = '3px 5px 3px 5px';
+                 _classesEle[i].style.borderLeft = '10px solid red';
+                 // _classesEle[i].style.border = '5px dotted red';
+                 // _classesEle[i].style.padding = '3px 5px 3px 5px';
                  // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
              }else{
              }
