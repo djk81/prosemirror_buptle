@@ -14,6 +14,8 @@ import {PM_BT_G_COMMENTS_ARRAY, commentPlugin, commentUI, addAnnotation, annotat
 
 import {schema} from "prosemirror-schema-basic"
 
+export let btpm_comment_count = 0;
+
 const report = new Reporter()
 
 
@@ -280,7 +282,7 @@ function repeat(val, n) {
 const annotationMenuItem = new MenuItem({
   title: "코멘트입력",
   run: addAnnotation,
-  enable: state => addAnnotation(state),
+  select: state => addAnnotation(state),
   icon: annotationIcon,
   class : "btpm_add_comment_menu"
 
