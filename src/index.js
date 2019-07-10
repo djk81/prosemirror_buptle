@@ -384,8 +384,24 @@ function onCommentBtClicked(id_suffix, _offset_from){
         }, 0.3 * 1000);
         //_classesEle[i].scrollIntoView({ block: 'center',  behavior: 'smooth' });
     }
-
-    setSelectByOffsetFrom(_offset_from, _top_pos);
+    console.log(connection.view.state.plugin$.decos.find())
+    // let current = this.decos.find()
+    let current = connection.view.state.plugin$.decos.find()
+    console.log('모든 comment?? ' + current.length)
+    for (let i = 0; i < current.length; i++){
+        let id = current[i].spec.comment.id
+        let from = current[i].from
+        let to = current[i].to
+        if(Number(id_suffix)===id){
+            setSelectByOffsetFrom(to, _top_pos);
+            break;
+        }
+        // console.log(">>>>>>>>>>>>>>>>>>>>>" + current[i].spec.comment.id)
+        // console.log(current[i].spec.comment)
+        // console.log(current[i].spec)
+        // console.log(current[i])
+    }
+    // setSelectByOffsetFrom(_offset_from, _top_pos);
 }
 
 /** 코멘트관련 */
