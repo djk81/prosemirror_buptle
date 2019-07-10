@@ -5,6 +5,12 @@
 	<script src="https://unpkg.com/konva@3.3.3/konva.min.js"></script>
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
 	<style>
+		.btpm_add_comment_menu{
+			background-color: lightcyan;
+			color: black;
+			border-radius: 3px;
+		}
+
 		.blame-marker {
 		    background: #ff8;
 		  }
@@ -167,13 +173,13 @@
 	<br/>
 
 	<form id="commit">
-        저장 커밋메시지 <input type=text id=message name=message> <button id=commitbutton type="button" onclick="javaScript:{alert('작업중');}">버전저장</button>
+        저장 커밋메시지 <input type=text id=message name=message> <button id=commitbutton type="submit" onclick="">버전저장</button>
         <div class=blame-wrap>
 	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
         </div>
 	</form>
 
-    <div id="commits" style="margin-bottom: 23px">
+    <div id="commits" style="margin-bottom: 23px;">
 	    <!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
     </div>
 	<div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
@@ -197,7 +203,7 @@
 		</div>
 	</div>
 
-	<div style="background-color: black; color:white; left: 800px; width:300px; position: fixed; float:left; top:715px;
+	<div style="background-color: white; color:black; left: 800px; min-width:300px; position: fixed; float:left; top:715px;
 	border: 2px solid black; margin-left:20px; border-radius: 5px; opacity: 0.7;">
 		<!---->
 		<div>
@@ -205,6 +211,7 @@
 		</div>
 		<div id="_version_list_wrapper" style="overflow-y:scroll; min-height: 200px; max-height: 200px; ">
 			버전 History 가 표시됩니다.
+			<!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
 		</div>
 	</div>
 
