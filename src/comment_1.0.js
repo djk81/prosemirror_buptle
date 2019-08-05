@@ -145,13 +145,7 @@ function randomID() {
 }
 
 // Command for adding an annotation
-export var userCustomFunction = function(state, dispatch){
-    alert('구현하시오');
-}
-
-
 export const addAnnotation = function(state, dispatch) {
-    userCustomFunction(state, dispatch);
     console.log('addAnnotation >> state');
     console.log(state);
     console.log('addAnnotation >> dispatch');
