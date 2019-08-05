@@ -7,7 +7,7 @@ import {MenuItem} from "prosemirror-menu"
 import crel from "crel"
 import {DOMParser} from "prosemirror-model";
 
-import {PM_BT_G_COMMENTS_ARRAY, commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
+import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 
 //ie - 빌드 테스트
 class TestClass{
@@ -102,8 +102,8 @@ export function editorInit(target_id, content_id, _comment_target_id){
     menu.fullMenu[0].push(_annotationMenuItem)
 
 
-    export function btpm_handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, _comment_target_id) {
-	  btpm_handle_comment_draw(PM_BT_G_COMMENTS_ARRAY, _comment_target_id);
+    export function btpm_handle_comment_draw_by_btpm_array(_comments, _comment_target_id) {
+	  btpm_handle_comment_draw(_comments, _comment_target_id);
 	}
 
     export function btpm_handle_comment_draw(_comments, _comment_target_id){
@@ -112,10 +112,10 @@ export function editorInit(target_id, content_id, _comment_target_id){
         var _htmlText = '';
         console.log('코멘트갯수 : ' + _comments.length);
         for(indx in _comments){
-            var id = _comments[indx].id;
+            var id = _comments[indx].spec.comment.id;
             var from = _comments[indx].from;
             var to = _comments[indx].to;
-            var text = _comments[indx].text;
+            var text = _comments[indx].spec.comment.text;
             console.log(from + " -> " + to + " : " + text);
 
             _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
@@ -132,12 +132,12 @@ export function editorInit(target_id, content_id, _comment_target_id){
             let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
             let _offset_from = _comments_bts[i].getAttribute('data-pmbt-offset-from');
             _comments_bts[i].addEventListener("click", function(){
-              //onCommentBtClicked(_tmp_id, _offset_from);
+                btpmOnCommentBtClicked(_tmp_id, _offset_from);
             }, false)
         }
     }
 
-function onCommentBtClicked(id_suffix, _offset_from){
+function btpmOnCommentBtClicked(id_suffix, _offset_from){
     //에디터 안에서 바꿔봄
     let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
     let _top_pos = 0;
@@ -156,7 +156,7 @@ function onCommentBtClicked(id_suffix, _offset_from){
         let from = current[i].from
         let to = current[i].to
         if(Number(id_suffix)===id){
-            setSelectByOffsetFrom(to, _top_pos);
+            btpmSetSelectByOffsetFrom(to, _top_pos);
             break;
         }
         // console.log(">>>>>>>>>>>>>>>>>>>>>" + current[i].spec.comment.id)
@@ -167,8 +167,16 @@ function onCommentBtClicked(id_suffix, _offset_from){
     // setSelectByOffsetFrom(_offset_from, _top_pos);
 }
 
-
-
+    /** 커서를 원하는 위치로 옮김 */
+    function btpmSetSelectByOffsetFrom(offset_from, top_pos){
+      _editorView.dispatch(
+          _editorView.state.tr.setSelection(
+              // TextSelection.near( connection.view.state.doc.resolve(offset_from) )
+              TextSelection.create( _editorView.state.tr.doc, Number(offset_from) )
+          )
+      )
+      _editorView.focus();
+    }
 
 
     var _editorView = null;
@@ -193,7 +201,8 @@ function onCommentBtClicked(id_suffix, _offset_from){
         let _new_state = _editorView.state.apply(action.transaction);
         _editorView.updateState(_new_state);
 
-        btpm_handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, action.comment_target_id);
+        btpm_handle_comment_draw_by_btpm_array(btpm_get_all_comments(), action.comment_target_id);
+        // btpm_handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, action.comment_target_id);
     }
 
     function btpmGetState(_doc, comments){
@@ -213,4 +222,8 @@ function onCommentBtClicked(id_suffix, _offset_from){
         return editState;
     }
 
-    //function
+   function btpm_get_all_comments(){
+       var _decos = _editorView.state.plugin$.decos.find()
+       return _decos;
+   }
+

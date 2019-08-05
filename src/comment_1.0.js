@@ -2,7 +2,7 @@ import crel from "crel"
 import {Plugin} from "prosemirror-state"
 import {Decoration, DecorationSet} from "prosemirror-view"
 
-export let PM_BT_G_COMMENTS_ARRAY = Array()
+// export let PM_BT_G_COMMENTS_ARRAY = Array()
 
 class Comment {
   constructor(text, id) {
@@ -64,10 +64,10 @@ class CommentState {
 
 
             //collab 을 끄고 여기서 직접 핸들링
-            PM_BT_G_COMMENTS_ARRAY.push({
-                type:'create', id : action.comment.id, from:action.from, to:action.to,
-                text:action.comment.text
-            });
+            // PM_BT_G_COMMENTS_ARRAY.push({
+            //     type:'create', id : action.comment.id, from:action.from, to:action.to,
+            //     text:action.comment.text
+            // });
             alert('add 핸들링 완료!');
 
         } else if (actionType == "deleteComment") {
@@ -85,17 +85,17 @@ class CommentState {
       if (event.type == "delete") {
         let found = this.findComment(event.id)
         if (found) set = set.remove([found])
-          let i=0;
-          for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
-              if(PM_BT_G_COMMENTS_ARRAY[i].id==event.id){
-                  break;
-              }
-          }
-          PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
+          // let i=0;
+          // for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
+          //     if(PM_BT_G_COMMENTS_ARRAY[i].id==event.id){
+          //         break;
+          //     }
+          // }
+          // PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
       } else { // "create"
         if (!this.findComment(event.id))
           set = set.add(doc, [deco(event.from, event.to, new Comment(event.text, event.id))])
-          PM_BT_G_COMMENTS_ARRAY.push(event);
+          // PM_BT_G_COMMENTS_ARRAY.push(event);
       }
     }
     return new CommentState(version, set, this.unsent.slice(sent))
@@ -111,19 +111,19 @@ class CommentState {
         if (found) result.push({type: "create", id: action.comment.id,
                                 from: found.from, to: found.to,
                                 text: action.comment.text})
-          PM_BT_G_COMMENTS_ARRAY.push(result[result.length-1]);
+          // PM_BT_G_COMMENTS_ARRAY.push(result[result.length-1]);
       } else {
         result.push({type: "delete", id: action.comment.id})
-        let i=0;
-        for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
-            console.log("=================== 비교")
-            console.log(PM_BT_G_COMMENTS_ARRAY[i])
-            console.log(action.comment)
-          if(PM_BT_G_COMMENTS_ARRAY[i].id==action.comment.id){
-              break;
-          }
-        }
-        PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
+        // let i=0;
+        // for(;i<PM_BT_G_COMMENTS_ARRAY.length; i++){
+        //     console.log("=================== 비교")
+        //     console.log(PM_BT_G_COMMENTS_ARRAY[i])
+        //     console.log(action.comment)
+        //   if(PM_BT_G_COMMENTS_ARRAY[i].id==action.comment.id){
+        //       break;
+        //   }
+        // }
+        // PM_BT_G_COMMENTS_ARRAY.splice(i, 1);
       }
     }
     return result
@@ -131,7 +131,7 @@ class CommentState {
 
   static init(config) {
       let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id)))
-      PM_BT_G_COMMENTS_ARRAY = PM_BT_G_COMMENTS_ARRAY.concat(config.comments.comments)
+      // PM_BT_G_COMMENTS_ARRAY = PM_BT_G_COMMENTS_ARRAY.concat(config.comments.comments)
         // alert('푸쉬완료 : ' + PM_BT_G_COMMENTS_ARRAY.length);
       return new CommentState(config.comments.version, DecorationSet.create(config.doc, decos), [])
   }
