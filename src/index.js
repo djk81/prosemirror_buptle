@@ -9,10 +9,17 @@ import {DOMParser} from "prosemirror-model";
 
 import {PM_BT_G_COMMENTS_ARRAY, commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 
+//ie - 빌드 테스트
+class TestClass{
+    init(){
+        alert('TestClass init!!');
+    }
+}
 
 /** index.js 외부에서 호출할때     */
 export function editorInit(target_id, content_id, _comment_target_id){
     alert('editorInit');
+    new TestClass().init()
     
     // 문서조회
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
