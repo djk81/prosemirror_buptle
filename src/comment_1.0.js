@@ -4,6 +4,7 @@ import {Decoration, DecorationSet} from "prosemirror-view"
 
 // export let PM_BT_G_COMMENTS_ARRAY = Array()
 
+// 속성추가 고려
 class Comment {
   constructor(text, id) {
     this.id = id
@@ -11,36 +12,28 @@ class Comment {
   }
 }
 
-/** UI에서 활용하기 위한 다른 spec의 객체 */
-class CommentToUI{
-    constructor(id, from, to, text){
-        this.id = id
-        this.from = from
-        this.to = to
-        this.text = text
-    }
-}
 
 function deco(from, to, comment) {
-    console.log('데코레이터로 변환 ->>>>> ' + comment.id);
-  return Decoration.inline(from, to, {class: "comment _comment_btpm_"+comment.id}, {comment})
+    // console.log('데코레이터로 변환 ->>>>> ' + comment.id);
+    return Decoration.inline(from, to, {class: "comment _comment_btpm_"+comment.id}, {comment})
 }
 
 class CommentState {
   constructor(version, decos, unsent) {
-    this.version = version
-    this.decos = decos
-    this.unsent = unsent
+      this.version = version
+      this.decos = decos
+      //collab 미사용으로인하여 unsent 는 사용하지 않을지도 모른다.
+      this.unsent = unsent
   }
 
   findComment(id) {
-    let current = this.decos.find()
-    for (let i = 0; i < current.length; i++)
-      if (current[i].spec.comment.id == id) return current[i]
+      let current = this.decos.find()
+      for (let i = 0; i < current.length; i++)
+          if (current[i].spec.comment.id == id) return current[i]
   }
 
   commentsAt(pos) {
-    return this.decos.find(pos, pos)
+      return this.decos.find(pos, pos)
   }
 
   apply(tr) {
@@ -152,8 +145,13 @@ function randomID() {
 }
 
 // Command for adding an annotation
+export var userCustomFunction = function(state, dispatch){
+    alert('구현하시오');
+}
+
 
 export const addAnnotation = function(state, dispatch) {
+    userCustomFunction(state, dispatch);
     console.log('addAnnotation >> state');
     console.log(state);
     console.log('addAnnotation >> dispatch');
@@ -191,34 +189,32 @@ export const commentUI = function(dispatch) {
 
 function commentTooltip(state, dispatch) {
 // console.log('commentTooltip ! ');
-  releaseFoucusToAllSelectedComment();
-  let sel = state.selection
-  if (!sel.empty) {
-      // console.log('commentTooltip 1111 ');
-      return null
-  }
-  let comments = commentPlugin.getState(state).commentsAt(sel.from)
-  if (!comments.length) {
-      // console.log('commentTooltip 2222 ');
-      return null
-  }
-  // console.log('commentTooltip 3333 ');
-  return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderComments(comments, dispatch, state))])
+    releaseFoucusToAllSelectedComment();
+    let sel = state.selection
+    if (!sel.empty) {
+        return null
+    }
+    let comments = commentPlugin.getState(state).commentsAt(sel.from)
+    if (!comments.length) {
+        // console.log('commentTooltip 2222 ');
+        return null
+    }
+    return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderComments(comments, dispatch, state))])
 }
 
 function renderComments(comments, dispatch, state) {
-console.log('render ss!! :' + comments.length);
-  return crel("div", {class: "tooltip-wrapper"},
+    console.log('render ss!! :' + comments.length);
+    return crel("div", {class: "tooltip-wrapper"},
               crel("ul", {class: "commentList"},
                    comments.map(c => renderComment(c.spec.comment, dispatch, state))))
 }
 
 function renderComment(comment, dispatch, state) {
-console.log('render comment!! -> ' + comment.id);
-  let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
-  btn.addEventListener("click", () =>
+    console.log('render comment!! -> ' + comment.id);
+    let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
+    btn.addEventListener("click", () =>
     dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
-  )
+)
 
   // 선택된 코멘트 강조
   makeFocusToSelectedComment(comment.id);
@@ -231,10 +227,13 @@ console.log('render comment!! -> ' + comment.id);
  function makeFocusToSelectedComment(_comment_id){
      var _element = document.getElementById('_comments_bt_id_' + _comment_id);
      if(_element){
-         _element.style.backgroundColor = 'lightblue';
+         _element.style.backgroundColor = 'lightblue;';
+         document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
+         alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
          _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
          // _element.style.color = 'white';
-         console.log('코멘트 강조 킴!!');
+         console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
+         console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
          //에디터 안에서 바꿔봄
          let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
          let _selected_btpm_text = '';

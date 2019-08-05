@@ -235,7 +235,9 @@
 
 		window.addEventListener('DOMContentLoaded', function(){
 		    //실행될 코드
-		    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper');
+		    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper', function(p1, p2){
+		        alert('커스텀');
+		    });
 		})
 
 		//콘바다음에

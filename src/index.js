@@ -7,7 +7,7 @@ import {MenuItem} from "prosemirror-menu"
 import crel from "crel"
 import {DOMParser} from "prosemirror-model";
 
-import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
+import {userCustomFunction, commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 
 //ie - 빌드 테스트
 class TestClass{
@@ -16,11 +16,14 @@ class TestClass{
     }
 }
 
+var test_function = null;
+
 /** index.js 외부에서 호출할때     */
-export function editorInit(target_id, content_id, _comment_target_id){
+export function editorInit(target_id, content_id, _comment_target_id, _userCustomFunction){
     alert('editorInit');
     new TestClass().init()
-    
+
+    test_function = _userCustomFunction.bind(this);
     // 문서조회
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
     btpmInitView(target_id);
@@ -150,7 +153,7 @@ function btpmOnCommentBtClicked(id_suffix, _offset_from){
     }
     console.log(_editorView.state.plugin$.decos.find())
     let current = _editorView.state.plugin$.decos.find()
-    console.log('모든 comment?? ' + current.length)
+    console.log('=> 모든 comment?? ' + current.length)
     for (let i = 0; i < current.length; i++){
         let id = current[i].spec.comment.id
         let from = current[i].from
@@ -195,8 +198,7 @@ function btpmOnCommentBtClicked(id_suffix, _offset_from){
     function btpmMyDispatch(action){
         window.console.log(action);
         window.console.log(action + " <<<<< btpmMyDispatch ");
-        console.log("Document size went from", action.transaction.before.content.size,
-                "to", action.transaction.doc.content.size)
+        console.log("Document size went from", action.transaction.before.content.size, "to", action.transaction.doc.content.size)
         // alert(action.type, action.transaction);
         let _new_state = _editorView.state.apply(action.transaction);
         _editorView.updateState(_new_state);
