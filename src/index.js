@@ -71,7 +71,7 @@ import {DOMParser} from "prosemirror-model";
         }
 
         receive({version, events, sent}, doc) {
-            alert('receive 들어오는 경우가 있는지?? 이부분은 collab 이 발동되지 않으면 호출되면 안됨.');
+            alert('collab 을 사용하지 않을때. receive 들어오는 경우가 있는지?? 이부분은 collab 이 발동되지 않으면 호출되면 안됨.');
             let set = this.decos
             for (let i = 0; i < events.length; i++) {
                 let event = events[i]
@@ -87,7 +87,7 @@ import {DOMParser} from "prosemirror-model";
         }
 
         unsentEvents() {
-            alert('unsentEvents() 호출됨. 이부분은 collab 이 발동되지 않으면 호출되면 안됨. ');
+            alert('collab 을 사용하지 않을때. unsentEvents() 호출됨. 이부분은 collab 이 발동되지 않으면 호출되면 안됨. ');
             let result = []
             for (let i = 0; i < this.unsent.length; i++) {
                 let action = this.unsent[i]
@@ -124,88 +124,20 @@ import {DOMParser} from "prosemirror-model";
     });
 
     let addAnnotation = function(state, dispatch) {
-        let sel = state.selection
-        if (sel.empty) {
-            return false
-        }
-        if (dispatch) {
-            let text = prompt("입력하시오", "")
-            if (text)
-              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment(text, randomID())}))
-        }
-        return true
+        return addAnnotationHandler(state, dispatch);
     }
 
     export const commentUI = function(dispatch) {
         return new Plugin({
             props: {
                 decorations(state) {
-                    return commentTooltip(state, dispatch)
+                    return commentTooltipHandler(state, dispatch)
                 }
             }
         })
     }
 
-    function commentTooltip(state, dispatch) {
-        // releaseFoucusToAllSelectedComment(); TODO
-        let sel = state.selection
-        if (!sel.empty) {
-            return null
-        }
-        let comments = commentPlugin.getState(state).commentsAt(sel.from)
-        if (!comments.length) {
-            // console.log('commentTooltip 2222 ');
-            return null
-        }
-        return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderComments(comments, dispatch, state))])
-    }
 
-    function renderComments(comments, dispatch, state) {
-        console.log('render ss!! :' + comments.length);
-        return crel("div", {class: "tooltip-wrapper"},
-                  crel("ul", {class: "commentList"},
-                       comments.map(c => renderComment(c.spec.comment, dispatch, state))))
-    }
-
-    function renderComment(comment, dispatch, state) {
-        console.log('render comment!! -> ' + comment.id);
-        let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
-        btn.addEventListener("click", () =>
-            dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
-        )
-
-        // 선택된 코멘트 강조
-        makeFocusToSelectedComment(comment.id);
-        return crel("li", {class: "commentText"}, comment.text, btn)
-    }
-
-    // 코멘트 강조
-    function makeFocusToSelectedComment(_comment_id){
-        var _element = document.getElementById('_comments_bt_id_' + _comment_id);
-        if(_element){
-            _element.style.backgroundColor = 'lightblue;';
-            document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
-            // alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
-            _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
-            // _element.style.color = 'white';
-            console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
-            console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
-            //에디터 안에서 바꿔봄
-            let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
-            let _selected_btpm_text = '';
-            for(var i=0; i<_classesEle.length; _classesEle++){
-                if(i==0){
-                     _classesEle[i].style.borderLeft = '10px solid red';
-                     // _classesEle[i].style.border = '5px dotted red';
-                     // _classesEle[i].style.padding = '3px 5px 3px 5px';
-                     // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
-                }else{}
-                _selected_btpm_text += _classesEle[i].outerText;
-            }
-        }else{
-         console.log('코멘트 div 없음 : ' + _comment_id)
-        }
-    }
 
     function randomID() {
         return Math.floor(Math.random() * 0xffffffff)
@@ -221,9 +153,6 @@ import {DOMParser} from "prosemirror-model";
 /** index.js 외부에서 호출할때 CORE 초기화 START  */
 export function editorInit(target_id, content_id, _comment_target_id, _userCustomFunction){
     alert('editorInit');
-
-    btpm_custom_test_function = _userCustomFunction.bind(this);
-    btpm_custom_test_function('a', 'b');
     // 문서조회
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
     btpmInitView(target_id, content_id, _comment_target_id);
@@ -430,12 +359,85 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
 
 
 
-/** */
-export function btpm_custom_test_function(p1, p2){
-    alert('오리지날 : ' + p1 + p2);
-}
+
 
 
 
 
 /** 외부에서 export해서 사용하자. 플러그인 방식 제작은 추후에 다시 리팩토링.. **/
+export
+    function addAnnotationHandler( state, dispatch ){
+        let sel = state.selection
+        if (sel.empty) {
+            return false
+        }
+        if (dispatch) {
+            let text = prompt("입력하시오", "")
+            if (text)
+              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment(text, randomID())}))
+        }
+        return true
+    }
+
+export
+    function commentTooltipHandler(state, dispatch) {
+        // releaseFoucusToAllSelectedComment(); TODO
+        let sel = state.selection
+        if (!sel.empty) {
+            return null
+        }
+        let comments = commentPlugin.getState(state).commentsAt(sel.from)
+        if (!comments.length) {
+            return null
+        }
+        return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderCommentsHandler(comments, dispatch, state))])
+    }
+
+export
+    function renderCommentsHandler(comments, dispatch, state) {
+        console.log('render ss!! :' + comments.length);
+        return crel("div", {class: "tooltip-wrapper"},
+                  crel("ul", {class: "commentList"},
+                       comments.map(c => renderCommentHandler(c.spec.comment, dispatch, state))))
+    }
+
+export
+    function renderCommentHandler(comment, dispatch, state) {
+        console.log('render comment!! -> ' + comment.id);
+        let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
+        btn.addEventListener("click", () =>
+            dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
+        )
+
+        // 선택된 코멘트 강조
+        makeFocusToSelectedComment(comment.id);
+        return crel("li", {class: "commentText"}, comment.text, btn)
+    }
+
+    // 코멘트 강조
+    function makeFocusToSelectedComment(_comment_id){
+        var _element = document.getElementById('_comments_bt_id_' + _comment_id);
+        if(_element){
+            _element.style.backgroundColor = 'lightblue;';
+            document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
+            // alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
+            _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
+            // _element.style.color = 'white';
+            console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
+            console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
+            //에디터 안에서 바꿔봄
+            let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
+            let _selected_btpm_text = '';
+            for(var i=0; i<_classesEle.length; _classesEle++){
+                if(i==0){
+                     _classesEle[i].style.borderLeft = '10px solid red';
+                     // _classesEle[i].style.border = '5px dotted red';
+                     // _classesEle[i].style.padding = '3px 5px 3px 5px';
+                     // _classesEle[i].innerHTML = '☞' + _classesEle[i].innerHTML;
+                }else{}
+                _selected_btpm_text += _classesEle[i].outerText;
+            }
+        }else{
+         console.log('코멘트 div 없음 : ' + _comment_id)
+        }
+    }
