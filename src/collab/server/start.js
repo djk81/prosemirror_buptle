@@ -30,7 +30,7 @@ createServer((req, resp) => {
             });
         }
         if( req.url.indexOf('dist/')!=-1){
-            fs.readFile('./dist/buptle_ProseMirror.js',(err,data)=>{
+            fs.readFile('./dist/buptle_editor.js',(err,data)=>{
                 if(err){
                     throw err;
                 }

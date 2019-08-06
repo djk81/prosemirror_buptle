@@ -230,15 +230,37 @@
 
 
 
-	<script src="../dist/buptle_ProseMirror.js"></script>
+	<script src="../dist/buptle_editor.js"></script>
 	<script>
 
-		window.addEventListener('DOMContentLoaded', function(){
-		    //실행될 코드
-		    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper', function(p1, p2){
-		        alert('커스텀 : ' + p1 + p2);
-		    });
-		})
+		var _editorSpec = new ProseMirror.EditorSpec();
+		_editorSpec.div_target_id = 'editor';
+		_editorSpec.div_comments_target_id = '_comment_list_wrapper';
+		_editorSpec.get_document_html_handler = function(){
+			return document.querySelector("#content")
+		};
+		_editorSpec.functions = {
+			get_comments : function(){
+			    return {
+			        comments : [
+			            {
+			            from : 0,
+			            to : 2,
+			            text: '_default comment',
+			            id : '1234'
+			            }
+			        ]
+			    }
+			},
+		};
+		ProseMirror.editorInitBySpec(_editorSpec);
+
+	// window.addEventListener('DOMContentLoaded', function(){
+	// 	    //실행될 코드
+	// 	    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper', function(p1, p2){
+	// 	        alert('커스텀 : ' + p1 + p2);
+	// 	    });
+	// 	})
 
 		//콘바다음에
       // var width = window.innerWidth;
