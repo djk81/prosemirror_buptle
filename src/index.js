@@ -185,7 +185,7 @@ import {DOMParser} from "prosemirror-model";
         if(_element){
             _element.style.backgroundColor = 'lightblue;';
             document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
-            alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
+            // alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
             _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
             // _element.style.color = 'white';
             console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
@@ -245,13 +245,12 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
     function btpmMyDispatch(action){
         window.console.log(action);
         window.console.log(action + " <<<<< btpmMyDispatch ");
-        console.log("Document size went from", action.transaction.before.content.size, "to", action.transaction.doc.content.size)
+        // console.log("Document size went from", action.transaction.before.content.size, "to", action.transaction.doc.content.size)
         // alert(action.type, action.transaction);
         let _new_state = _editorView.state.apply(action.transaction);
         _editorView.updateState(_new_state);
 
-        btpm_handle_comment_draw_by_btpm_array(btpm_get_all_comments(), action.comment_target_id);
-        // btpm_handle_comment_draw_by_btpm_array(PM_BT_G_COMMENTS_ARRAY, action.comment_target_id);
+        btpm_handle_comment_draw(btpm_get_all_comments(), action.comment_target_id);
     }
 
     function btpmGetState(_doc, comments){
@@ -261,7 +260,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
             plugins: exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([
                 history({preserveItems: true}),
                 commentPlugin,
-                commentUI( transaction => this.dispatch({type: "transaction", transaction}) ),
+                commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) ),
                 highlightPlugin
                 // trackPlugin,
             ]),
@@ -306,7 +305,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
                 return new TrackState([new Span(0, instance.doc.content.size, null)], [], [], [])
             },
             apply(tr, tracked) {
-                alert('나도야간다 trackplugin');
+                alert(' 변경사항 추적 apply 가 호출됨 trackplugin');
                 if (tr.docChanged) tracked = tracked.applyTransform(tr)
                 let commitMessage = tr.getMeta(this)
                 if (commitMessage) tracked = tracked.applyCommit(commitMessage, new Date(tr.time))
@@ -349,9 +348,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
     menu.fullMenu[0].push(_annotationMenuItem)
 
 
-    export function btpm_handle_comment_draw_by_btpm_array(_comments, _comment_target_id) {
-	  btpm_handle_comment_draw(_comments, _comment_target_id);
-	}
+
 
     export function btpm_handle_comment_draw(_comments, _comment_target_id){
         _comment_target_id = _comment_target_id || '_comment_list_wrapper';
@@ -368,7 +365,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
             console.log(_comments[indx]);
             console.log(from + " -> " + to + " : " + text);
 
-            _htmlText += '<div class="_comments_bt" data-pmbt-offset-from="'+from+'" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+            _htmlText += '<div class="_comments_bt" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
             _htmlText += 'comment id : ' + id + "<br>";
             _htmlText += 'index from : ' + from + " ~ ";
             _htmlText += 'index to : ' + to;
@@ -380,14 +377,13 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
         let _comments_bts = document.querySelectorAll("._comments_bt");
         for(var i=0; i<_comments_bts.length; i++){
             let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
-            let _offset_from = _comments_bts[i].getAttribute('data-pmbt-offset-from');
             _comments_bts[i].addEventListener("click", function(){
-                btpmOnCommentBtClicked(_tmp_id, _offset_from);
+                btpmOnCommentBtClicked(_tmp_id);
             }, false)
         }
     }
 
-    function btpmOnCommentBtClicked(id_suffix, _offset_from){
+    function btpmOnCommentBtClicked(id_suffix){
         //에디터 안에서 바꿔봄
         let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
         let _top_pos = 0;
@@ -398,9 +394,9 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
                 _target.scrollIntoView({ block: 'center',  behavior: 'smooth' });
             }, 0.3 * 1000);
         }
-        console.log(_editorView.state.plugin$.decos.find())
+
         let current = _editorView.state.plugin$.decos.find()
-        console.log('=> 모든 comment?? ' + current.length)
+
         for (let i = 0; i < current.length; i++){
             let id = current[i].spec.comment.id
             let from = current[i].from
@@ -409,10 +405,6 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
                 btpmSetSelectByOffsetFrom(to, _top_pos);
                 break;
             }
-            // console.log(">>>>>>>>>>>>>>>>>>>>>" + current[i].spec.comment.id)
-            // console.log(current[i].spec.comment)
-            // console.log(current[i].spec)
-            // console.log(current[i])
         }
         // setSelectByOffsetFrom(_offset_from, _top_pos);
     }
@@ -444,3 +436,6 @@ export function btpm_custom_test_function(p1, p2){
 }
 
 
+
+
+/** 외부에서 export해서 사용하자. 플러그인 방식 제작은 추후에 다시 리팩토링.. **/
