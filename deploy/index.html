@@ -205,7 +205,7 @@
 		<div>
 			<button type="button" id="add_comment_to_doc" style="margin: 2px 0px 6px 6px;" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
 		</div>
-		<div id="_comment_list_wrapper" style="overflow-y:scroll; max-height: 600px; ">
+		<div id="indexhtml_comment_list_wrapper" style="overflow-y:scroll; max-height: 600px; ">
 		</div>
 	</div>
 
@@ -235,7 +235,7 @@
 
 		var _editorSpec = new ProseMirror.EditorSpec();
 		_editorSpec.div_target_id = 'editor';
-		_editorSpec.div_comments_target_id = '_comment_list_wrapper';
+		_editorSpec.div_comments_target_id = 'indexhtml_comment_list_wrapper';
 		_editorSpec.get_document_html_handler = function(){
 			return document.querySelector("#content")
 		};
