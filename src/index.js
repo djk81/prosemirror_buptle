@@ -171,7 +171,6 @@ var _editorView = null;
 var _editorState = null;
 
 export function editorInitBySpec(editorSpec){
-    alert('editorInitBySpec');
     var document_html = editorSpec.get_document_html_handler();
     var comments = editorSpec.functions.get_comments();
     ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
@@ -180,7 +179,6 @@ export function editorInitBySpec(editorSpec){
 }
 
 export function editorInit(div_target_id, content_id, _comment_target_id){
-    alert('editorInit');
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
     ptpm_comment_list_target_element_id = _comment_target_id;
     return __btpmInitView(div_target_id, _tmp_doc, _tmp_comments);
