@@ -241,7 +241,7 @@
 		};
 		_editorSpec.functions = {
 			get_comments : function(){
-			    return {
+			    var rtn = {
 			        comments : [
 			            {
 			            from : 0,
@@ -250,7 +250,9 @@
 			            id : '1234'
 			            }
 			        ]
-			    }
+			    };
+
+			    return null;
 			},
 		};
 		ProseMirror.editorInitBySpec(_editorSpec);

@@ -104,6 +104,14 @@ import {DOMParser} from "prosemirror-model";
         }
 
         static init(config) {
+            if(config.comments){
+            }else{
+                config.comments = {comments:[]}
+            }
+            if(config.comments.comments){
+            }else{
+                config.comments.comments = [];
+            }
             let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id)))
             return new CommentState(config.comments.version, DecorationSet.create(config.doc, decos), [])
         }
@@ -158,27 +166,32 @@ export class EditorSpec {
 
 
 /** index.js 외부에서 호출할때 CORE 초기화 START    */
+export var ptpm_comment_list_target_element_id = null;
+var _editorView = null;
+var _editorState = null;
+
 export function editorInitBySpec(editorSpec){
     alert('editorInitBySpec');
     var document_html = editorSpec.get_document_html_handler();
     var comments = editorSpec.functions.get_comments();
-    return __btpmInitView(editorSpec.div_target_id, editorSpec.div_comments_target_id, document_html, comments);
+    ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
+
+    return __btpmInitView(editorSpec.div_target_id, document_html, comments);
 }
 
 export function editorInit(div_target_id, content_id, _comment_target_id){
     alert('editorInit');
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
-    return __btpmInitView(div_target_id, _comment_target_id, _tmp_doc, _tmp_comments);
+    ptpm_comment_list_target_element_id = _comment_target_id;
+    return __btpmInitView(div_target_id, _tmp_doc, _tmp_comments);
 }
 
-    var _editorView = null;
-    var _editorState = null;
-    function __btpmInitView(target_id, comment_target_id, document_html, comments){
+    function __btpmInitView(target_id, document_html, comments){
         _editorState = btpmGetState(document_html, comments);
         _editorView = new EditorView(document.querySelector("#" + target_id), {
               state: _editorState,
               dispatchTransaction(transaction) {
-                  btpmMyDispatch({type: "transaction", transaction, '_comment_target_id' : comment_target_id})
+                  btpmMyDispatch({type: "transaction", transaction})
               }
         });
         return _editorView;
@@ -307,12 +320,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
 export
     function btpmDispatchPostProcessor(_editorView, action){
-        btpmHandleCommentDraw(btpmGetAllComments(), action.comment_target_id);
+        btpmHandleCommentDraw(btpmGetAllComments(), action);
     }
 
 export
-    function btpmHandleCommentDraw(_comments, _comment_target_id){
-        _comment_target_id = _comment_target_id || '_comment_list_wrapper';
+    function btpmHandleCommentDraw(_comments, action){
 
         var indx = 0;
         var _htmlText = '';
@@ -333,7 +345,9 @@ export
             _htmlText += '<br> comment : <span style="font-weight: bold;">' + text + '</span>';
             _htmlText += '</div>';
         }
-        document.querySelector("#"+_comment_target_id).innerHTML = _htmlText;
+
+        window.console.log(document.querySelector("#"+ptpm_comment_list_target_element_id) + " << ptpm_comment_list_target_element_id : " + ptpm_comment_list_target_element_id);
+        document.querySelector("#"+ptpm_comment_list_target_element_id).innerHTML = _htmlText;
 
         let _comments_bts = document.querySelectorAll("._comments_bt");
         for(var i=0; i<_comments_bts.length; i++){
