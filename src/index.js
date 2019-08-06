@@ -124,14 +124,14 @@ import {DOMParser} from "prosemirror-model";
     });
 
     let addAnnotation = function(state, dispatch) {
-        return addAnnotationHandler(state, dispatch);
+        return btpmAddAnnotationHandler(state, dispatch);
     }
 
     export const commentUI = function(dispatch) {
         return new Plugin({
             props: {
                 decorations(state) {
-                    return commentTooltipHandler(state, dispatch)
+                    return btpmCommentTooltipHandler(state, dispatch)
                 }
             }
         })
@@ -147,28 +147,41 @@ import {DOMParser} from "prosemirror-model";
  * Comment Plugin END
 *****************************************************/
 
-
+export class EditorSpec {
+    constructor(div_target_id, div_comments_target_id, get_document_html_handler, functions) {
+        this.div_target_id = div_target_id
+        this.div_comments_target_id = div_comments_target_id
+        this.get_document_html_handler = get_document_html_handler
+        this.functions = functions
+    }
+}
 
 
 /** index.js 외부에서 호출할때 CORE 초기화 START  */
-export function editorInit(target_id, content_id, _comment_target_id, _userCustomFunction){
+export function editorInitBySpec(editorSpec){
+    alert('editorInitBySpec');
+    var document_html = editorSpec.get_document_html_handler();
+    var comments = editorSpec.functions.get_comments();
+    return btpmInitView(editorSpec.div_target_id, editorSpec.div_comments_target_id, document_html, comments);
+}
+
+export function editorInit(div_target_id, content_id, _comment_target_id){
     alert('editorInit');
-    // 문서조회
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
-    btpmInitView(target_id, content_id, _comment_target_id);
+    return __btpmInitView(div_target_id, _comment_target_id, _tmp_doc, _tmp_comments);
 }
 
     var _editorView = null;
     var _editorState = null;
-    function btpmInitView(target_id, content_id, _comment_target_id){
-        _editorState = btpmGetState(_tmp_doc, _tmp_comments);
+    function __btpmInitView(target_id, comment_target_id, document_html, comments){
+        _editorState = btpmGetState(document_html, comments);
         _editorView = new EditorView(document.querySelector("#" + target_id), {
               state: _editorState,
               dispatchTransaction(transaction) {
-                  btpmMyDispatch({type: "transaction", transaction, '_comment_target_id' : _comment_target_id})
+                  btpmMyDispatch({type: "transaction", transaction, '_comment_target_id' : comment_target_id})
               }
         });
-
+        return _editorView;
     }
 
     function btpmMyDispatch(action){
@@ -179,7 +192,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
         let _new_state = _editorView.state.apply(action.transaction);
         _editorView.updateState(_new_state);
 
-        btpm_handle_comment_draw(btpm_get_all_comments(), action.comment_target_id);
+        btpmDispatchPostProcessor(_editorView, action);
     }
 
     function btpmGetState(_doc, comments){
@@ -276,10 +289,29 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
     let menu = buildMenuItems(schema)
     menu.fullMenu[0].push(_annotationMenuItem)
 
+   function btpmGetAllComments(){
+       var _decos = _editorView.state.plugin$.decos.find()
+       return _decos;
+   }
 
 
 
-    export function btpm_handle_comment_draw(_comments, _comment_target_id){
+
+
+
+
+
+/****
+ * 외부에서 export 혹은 내부에서 재정의하여 사용하자. 플러그인 방식 제작은 추후에 다시 리팩토링..
+ ***/
+
+export
+    function btpmDispatchPostProcessor(_editorView, action){
+        btpmHandleCommentDraw(btpmGetAllComments(), action.comment_target_id);
+    }
+
+export
+    function btpmHandleCommentDraw(_comments, _comment_target_id){
         _comment_target_id = _comment_target_id || '_comment_list_wrapper';
 
         var indx = 0;
@@ -312,6 +344,7 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
         }
     }
 
+export
     function btpmOnCommentBtClicked(id_suffix){
         //에디터 안에서 바꿔봄
         let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
@@ -349,24 +382,8 @@ export function editorInit(target_id, content_id, _comment_target_id, _userCusto
       _editorView.focus();
     }
 
-
-
-
-   function btpm_get_all_comments(){
-       var _decos = _editorView.state.plugin$.decos.find()
-       return _decos;
-   }
-
-
-
-
-
-
-
-
-/** 외부에서 export해서 사용하자. 플러그인 방식 제작은 추후에 다시 리팩토링.. **/
 export
-    function addAnnotationHandler( state, dispatch ){
+    function btpmAddAnnotationHandler( state, dispatch ){
         let sel = state.selection
         if (sel.empty) {
             return false
@@ -380,7 +397,7 @@ export
     }
 
 export
-    function commentTooltipHandler(state, dispatch) {
+    function btpmCommentTooltipHandler(state, dispatch) {
         // releaseFoucusToAllSelectedComment(); TODO
         let sel = state.selection
         if (!sel.empty) {
@@ -390,19 +407,19 @@ export
         if (!comments.length) {
             return null
         }
-        return DecorationSet.create(state.doc, [Decoration.widget(sel.from, renderCommentsHandler(comments, dispatch, state))])
+        return DecorationSet.create(state.doc, [Decoration.widget(sel.from, btpmRenderCommentsHandler(comments, dispatch, state))])
     }
 
 export
-    function renderCommentsHandler(comments, dispatch, state) {
+    function btpmRenderCommentsHandler(comments, dispatch, state) {
         console.log('render ss!! :' + comments.length);
         return crel("div", {class: "tooltip-wrapper"},
                   crel("ul", {class: "commentList"},
-                       comments.map(c => renderCommentHandler(c.spec.comment, dispatch, state))))
+                       comments.map(c => btpmRenderCommentHandler(c.spec.comment, dispatch, state))))
     }
 
 export
-    function renderCommentHandler(comment, dispatch, state) {
+    function btpmRenderCommentHandler(comment, dispatch, state) {
         console.log('render comment!! -> ' + comment.id);
         let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
         btn.addEventListener("click", () =>
@@ -410,21 +427,26 @@ export
         )
 
         // 선택된 코멘트 강조
-        makeFocusToSelectedComment(comment.id);
+        btpmMakeFocusToSelectedComment(comment.id);
         return crel("li", {class: "commentText"}, comment.text, btn)
     }
 
     // 코멘트 강조
-    function makeFocusToSelectedComment(_comment_id){
+    function btpmMakeFocusToSelectedComment(_comment_id){
         var _element = document.getElementById('_comments_bt_id_' + _comment_id);
         if(_element){
+
             _element.style.backgroundColor = 'lightblue;';
             document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
+
             // alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
             _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
+
             // _element.style.color = 'white';
+
             console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
             console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
+
             //에디터 안에서 바꿔봄
             let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
             let _selected_btpm_text = '';
