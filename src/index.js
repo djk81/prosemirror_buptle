@@ -1,11 +1,13 @@
 import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
 import {schema} from "prosemirror-schema-basic"
+import {addListNodes} from "prosemirror-schema-list"
 import {TextSelection, Plugin, EditorState} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
 import {MenuItem} from "prosemirror-menu"
 import crel from "crel"
-import {DOMParser} from "prosemirror-model";
+import {Schema, DOMParser} from "prosemirror-model";
+
 
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
@@ -206,10 +208,30 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         btpmDispatchPostProcessor(_editorView, action);
     }
 
+
+    /*****************************************************
+     * Schema 확장
+    *****************************************************/
+
+    const buptleSchema = new Schema({
+        nodes: {
+            doc: {
+                content: "paragraph+"
+            },
+            paragraph: {
+                content: "text*",
+                toDOM(node) { return ["p", 0] },
+                parseDOM: [{tag: "p"}]
+            },
+            text: {
+                inline: true,
+            },
+      }
+    });
+
     function btpmGetState(_doc, comments){
         let editState = EditorState.create({
-            schema,
-            doc: DOMParser.fromSchema(schema).parse(_doc),
+            doc: DOMParser.fromSchema(buptleSchema).parse(_doc),
             plugins: exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([
                 history({preserveItems: true}),
                 commentPlugin,
