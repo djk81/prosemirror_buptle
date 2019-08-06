@@ -7,7 +7,7 @@ export default {
   input: './src/index.js',
   output: {
     format: 'iife',
-    file: 'dist/buptle_ProseMirror.js',
+    file: 'dist/buptle_editor.js',
     name: 'ProseMirror'
   },
   plugins: [

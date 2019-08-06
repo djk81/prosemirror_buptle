@@ -159,10 +159,10 @@ export class EditorSpec {
 
 /** index.js 외부에서 호출할때 CORE 초기화 START  */
 export function editorInitBySpec(editorSpec){
-    alert('editorInitBySpec');
+    // alert('editorInitBySpec');
     var document_html = editorSpec.get_document_html_handler();
     var comments = editorSpec.functions.get_comments();
-    return btpmInitView(editorSpec.div_target_id, editorSpec.div_comments_target_id, document_html, comments);
+    return __btpmInitView(editorSpec.div_target_id, editorSpec.div_comments_target_id, document_html, comments);
 }
 
 export function editorInit(div_target_id, content_id, _comment_target_id){
