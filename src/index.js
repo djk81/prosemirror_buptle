@@ -237,10 +237,32 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }]
     };
 
+    const buptleLabelSpec = {
+        attrs : {for:{default:''}},
+        // content: "text*",
+        // marks: "",
+        // group: "block",
+        // defining: true,
+        content: "inline",
+        inline: true,
+        group: "inline",
+        toDOM(node){
+            return ['label', {for:node.attrs.for},0]
+        },
+        parseDOM: [{
+            tag: "label",
+            getAttrs(dom){
+                console.log(dom);
+                alert('getAttrs :' + dom.className );
+                return { class:dom.className }
+            }
+        }]
+    };
+
 
 
     const buptleSchema = new Schema({
-        nodes: schema.spec.nodes.addBefore("image", "span", buptleSpanSpec),
+        nodes: schema.spec.nodes.addBefore("image", "span", buptleSpanSpec).addBefore("span", "label", buptleLabelSpec),
         marks: schema.spec.marks
     })
 
