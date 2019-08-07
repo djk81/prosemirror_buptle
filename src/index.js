@@ -215,21 +215,33 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
      * Schema 확장
     *****************************************************/
 
+    const buptleSpanSpec = {
+        attrs : {class:{default:'btpm_default_class'}},
+        // content: "text*",
+        // marks: "",
+        // group: "block",
+        // defining: true,
+        content: "inline*",
+        group: "block",
+        toDOM(node){
+            return ['span', {class:node.attrs.class},0]
+        },
+        parseDOM: [{
+            tag: "span",
+            getAttrs(dom){
+                console.log(dom);
+                alert('getAttrs :' + dom.className );
+                return { class:dom.className }
+            }
+        }]
+    };
+
+
+
     const buptleSchema = new Schema({
-        nodes: {
-            doc: {
-                content: "paragraph+"
-            },
-            paragraph: {
-                content: "text*",
-                toDOM(node) { return ["p", 0] },
-                parseDOM: [{tag: "p"}]
-            },
-            text: {
-                inline: true,
-            },
-      }
-    });
+        nodes: schema.spec.nodes.addBefore("image", "span", buptleSpanSpec),
+        marks: schema.spec.marks
+    })
 
     function btpmGetState(_doc, comments){
         let editState = EditorState.create({
@@ -321,7 +333,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
     });
 
-    let menu = buildMenuItems(schema)
+    let menu = buildMenuItems(buptleSchema)
     menu.fullMenu[0].push(_annotationMenuItem)
 
    function btpmGetAllComments(){
