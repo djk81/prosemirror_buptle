@@ -300,12 +300,16 @@
 		};
 		ProseMirror.editorInitBySpec(_editorSpec);
 
-	// window.addEventListener('DOMContentLoaded', function(){
-	// 	    //실행될 코드
-	// 	    ProseMirror.editorInit('editor', 'content', '_comment_list_wrapper', function(p1, p2){
-	// 	        alert('커스텀 : ' + p1 + p2);
-	// 	    });
-	// 	})
+		window.addEventListener('DOMContentLoaded', function(){
+		    var _rs_fields = document.querySelectorAll('.buptleparam_content_required_none');
+		    for(var i=0; i<_rs_fields.length; i++){
+			    _rs_fields[i].addEventListener("click", function(){
+	                alert(this.innerText);
+	                this.innerText = '입력했음';
+	            }, false)
+
+		    }
+		})
 
 		//콘바다음에
       // var width = window.innerWidth;
