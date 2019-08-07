@@ -1,3 +1,4 @@
+import {Mapping} from "prosemirror-transform"
 import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
 import {addListNodes} from "prosemirror-schema-list"
 import {TextSelection, Plugin, EditorState} from "prosemirror-state"
@@ -192,7 +193,6 @@ import {schema} from "./schema-basic-btpm.js"
         for (let i = 0; i < mapping.maps.length; i++) {
             let map = mapping.maps[i], after = mapping.slice(i + 1)
             map.forEach((_s, _e, start, end) => {
-                // insertIntoBlameMap(result, after.map(start, 1), after.map(end, -1), id)
                 insertIntoBlameMap(result, after.map(start, 1), after.map(end, -1), id)
             })
         }
@@ -276,6 +276,129 @@ import {schema} from "./schema-basic-btpm.js"
         }
     }
 
+
+    document.querySelector("#commitbutton").addEventListener("click", e => {
+        e.preventDefault()
+        var message = document.querySelector("#message").value;
+        console.log(message);
+        doCommit(message || "Unnamed")
+        document.querySelector("#message").value = ""
+        _editorView.focus()
+    })
+
+    function doCommit(message) {
+        console.log('message ==> ' + message);
+        let _tr = _editorView.state.tr.setMeta(trackPlugin, message)
+        btpmMyHistoryDispatch(_tr)
+    }
+
+    function btpmMyHistoryDispatch(tr){
+        console.log('=============== btpmMyHistoryDispatch ===================')
+        console.log(tr)
+        let _new_state = btpmMyDispatch({type: "transaction", transaction:tr})
+        
+    }
+
+    function setDisabled(state) {
+        let input = document.querySelector("#message")
+        let button = document.querySelector("#commitbutton")
+        let result = trackPlugin.getState(state).uncommittedSteps.length == 0
+        console.log('disabled result => ' + result);
+        input.disabled = button.disabled = result
+    }
+
+    let lastRendered = null
+    function renderCommits(state, dispatch) {
+        let curState = trackPlugin.getState(state)
+        if (lastRendered == curState) {
+            console.log(lastRendered);
+            console.log(curState);
+            console.log('커밋 렌더 - 리턴됨..!!');
+            return
+        }
+        lastRendered = curState
+
+        let out = document.querySelector("#commits")
+        out.textContent = ""
+        let commits = curState.commits
+        commits.forEach(commit => {
+            let node = elt(
+                "div",
+                {class: "commit"},
+                elt("span",
+                    {class: "commit-time"},
+                    commit.time.getHours() + ":" + (commit.time.getMinutes() < 10 ? "0" : "")+ commit.time.getMinutes()  + ":" + (commit.time.getSeconds() < 10 ? "0" : "") + commit.time.getSeconds()
+                ),
+                "\u00a0 " + commit.message + "\u00a0 ",
+                elt("button", {class: "commit-revert"}, "revert")
+            )
+            node.lastChild.addEventListener("click", () => revertCommit(commit))
+
+
+            node.addEventListener("mouseover", e => {
+                if (!node.contains(e.relatedTarget)){
+                    dispatch(_editorView.state.tr.setMeta(highlightPlugin, {add: commit}))
+                    // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {add: commit})
+                    // btpmMyHistoryDispatch(_tr)
+                }
+            })
+            node.addEventListener("mouseout", e => {
+                if (!node.contains(e.relatedTarget))
+                    dispatch(_editorView.state.tr.setMeta(highlightPlugin, {clear: commit}))
+                    // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {clear: commit})
+                    // btpmMyHistoryDispatch(_tr)
+            })
+            out.appendChild(node)
+        })
+    }
+
+    function elt(name, attrs, ...children) {
+        let dom = document.createElement(name)
+        if (attrs) for (let attr in attrs) dom.setAttribute(attr, attrs[attr])
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i]
+            dom.appendChild(typeof child == "string" ? document.createTextNode(child) : child)
+        }
+        return dom
+    }
+
+    function revertCommit(commit) {
+        let _state = _editorView.state
+        let trackState = trackPlugin.getState(_state)
+        let index = trackState.commits.indexOf(commit)
+        // If this commit is not in the history, we can't revert it
+        if (index == -1) return
+
+        // Reverting is only possible if there are no uncommitted changes
+        if (trackState.uncommittedSteps.length)
+            return alert("Commit your changes first!")
+
+        // This is the mapping from the document as it was at the start of
+        // the commit to the current document.
+        let remap = new Mapping(trackState.commits.slice(index)
+            .reduce((maps, c) => maps.concat(c.maps), []))
+        let tr = _state.tr
+        // Build up a transaction that includes all (inverted) steps in this
+        // commit, rebased to the current document. They have to be applied
+        // in reverse order.
+        for (let i = commit.steps.length - 1; i >= 0; i--) {
+            // The mapping is sliced to not include maps for this step and the
+            // ones before it.
+            let remapped = commit.steps[i].map(remap.slice(i + 1))
+            if (!remapped) continue
+            let result = tr.maybeStep(remapped)
+            // If the step can be applied, add its map to our mapping
+            // pipeline, so that subsequent steps are mapped over it.
+            if (result.doc) remap.appendMap(remapped.getMap(), i)
+        }
+        // Add a commit message and dispatch.
+        if (tr.docChanged) {
+            var _tr = tr.setMeta(trackPlugin, `Revert '${commit.message}'`)
+
+            btpmMyHistoryDispatch(_tr)
+        }
+    }
+
 /*****************************************************
  * Track changes END
 *****************************************************/
@@ -294,7 +417,7 @@ export class EditorSpec {
 /** index.js 외부에서 호출할때 CORE 초기화 START    */
 export var ptpm_comment_list_target_element_id = null;
 var _editorView = null;
-var _editorState = null;
+
 
 export function editorInitBySpec(editorSpec){
     var document_html = editorSpec.get_document_html_handler();
@@ -311,7 +434,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 }
 
     function __btpmInitView(target_id, document_html, comments){
-        _editorState = btpmGetState(document_html, comments);
+        let _editorState = btpmGetState(document_html, comments);
         _editorView = new EditorView(document.querySelector("#" + target_id), {
               state: _editorState,
               dispatchTransaction(transaction) {
@@ -321,15 +444,24 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         return _editorView;
     }
 
-    function btpmMyDispatch(action){
+    function btpmMyDispatch(action, no_note_update){
+
+        window.console.log('================ action in transaction ===============');
         window.console.log(action);
-        window.console.log(action + " <<<<< btpmMyDispatch ");
         // console.log("Document size went from", action.transaction.before.content.size, "to", action.transaction.doc.content.size)
         // alert(action.type, action.transaction);
         let _new_state = _editorView.state.apply(action.transaction);
         _editorView.updateState(_new_state);
 
-        btpmDispatchPostProcessor(_editorView, action);
+        if(no_note_update && true===no_note_update){
+        }else{
+            btpmDispatchPostProcessor(_editorView, action);
+        }
+        
+        /**  Track Changes 적용*/
+        setDisabled(_new_state)
+        renderCommits(_new_state, btpmMyHistoryDispatch)
+        return _new_state
     }
 
 
@@ -425,7 +557,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 commentPlugin,
                 commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) ),
                 highlightPlugin,
-                // trackPlugin,
+                trackPlugin,
             ]),
             comments: comments
         });
@@ -470,6 +602,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             apply(tr, tracked) {
                 if (tr.docChanged) tracked = tracked.applyTransform(tr)
                 let commitMessage = tr.getMeta(this)
+                console.log('커밋메세지 : ' + commitMessage);
                 if (commitMessage) tracked = tracked.applyCommit(commitMessage, new Date(tr.time))
                 return tracked
             }
@@ -485,16 +618,20 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 console.log('의도치 않은 highlightPlugin apply 가 호출됨.');
                 let highlight = tr.getMeta(this)
                 if (highlight && highlight.add != null && prev.commit != highlight.add) {
+                    console.log('blame marker!');
                     let tState = trackPlugin.getState(oldState)
                     let decos = tState.blameMap
                         .filter(span => tState.commits[span.commit] == highlight.add)
                         .map(span => Decoration.inline(span.from, span.to, {class: "blame-marker"}))
                     return {deco: DecorationSet.create(state.doc, decos), commit: highlight.add}
                 } else if (highlight && highlight.clear != null && prev.commit == highlight.clear) {
+                    console.log('clear!');
                     return {deco: DecorationSet.empty, commit: null}
                 } else if (tr.docChanged && prev.commit) {
+                    console.log('else if ');
                     return {deco: prev.deco.map(tr.mapping, tr.doc), commit: prev.commit}
                 } else {
+                    console.log('else');
                     return prev
                 }
             }
