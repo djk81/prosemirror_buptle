@@ -1,5 +1,4 @@
 import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
-import {schema} from "prosemirror-schema-basic"
 import {addListNodes} from "prosemirror-schema-list"
 import {TextSelection, Plugin, EditorState} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
@@ -8,6 +7,9 @@ import {MenuItem} from "prosemirror-menu"
 import crel from "crel"
 import {Schema, DOMParser} from "prosemirror-model";
 
+
+// import {schema} from "prosemirror-schema-basic"
+import {schema} from "./schema-basic-btpm.js"
 
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
