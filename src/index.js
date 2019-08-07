@@ -2,9 +2,10 @@
 import {Mapping} from "prosemirror-transform"
 import {EditorState, Plugin} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
-import {schema} from "prosemirror-schema-basic"
+// import {schema} from "prosemirror-schema-basic"
 import {exampleSetup} from "prosemirror-example-setup"
-import {DOMParser} from "prosemirror-model"
+import {DOMParser, Schema} from "prosemirror-model"
+import {schema} from "./schema-basic-btpm.js"
 
 
 
@@ -225,6 +226,7 @@ import {DOMParser} from "prosemirror-model"
                 // elt("button", {class: "commit-revert"}, "revert")
             )
             node.lastChild.addEventListener("click", () => revertCommit(commit))
+
             node.addEventListener("mouseover", e => {
                 if (!node.contains(e.relatedTarget))
                     dispatch(state.tr.setMeta(highlightPlugin, {add: commit}))
@@ -305,9 +307,63 @@ import {DOMParser} from "prosemirror-model"
 
 
 export function EditorInit(element_id, content_id) {
+
+    const buptleSpanSpec = {
+        attrs : {id:{default:'tmp_span_id'}, class:{default:'btpm_default_class'}},
+        // content: "text*",
+        // marks: "",
+        // group: "block",
+        // defining: true,
+        content: "inline",
+        inline: true,
+        group: "inline",
+        toDOM(node){
+            return ['span',
+                {
+                    id:node.attrs.id,
+                    class:node.attrs.class
+                },
+                0]
+        },
+        parseDOM: [{
+            tag: "span",
+            getAttrs(dom){
+                console.log(dom);
+                // alert('getAttrs :' + dom.className );
+                 return { id: dom.id, class:dom.className }
+            }
+        }]
+    };
+
+    const buptleLabelSpec = {
+        attrs : {for:{default:''}, class:{default:'btpm_label_class'}},
+        // content: "text*",
+        // marks: "",
+        // group: "block",
+        // defining: true,
+        content: "inline",
+        inline: true,
+        group: "inline",
+        toDOM(node){
+            return ['label', {for:node.attrs.for, class:node.attrs.class},0]
+        },
+        parseDOM: [{
+            tag: "label",
+            getAttrs(dom){
+                console.log(dom);
+                // alert('getAttrs :' + dom.className );
+                return { class:dom.className }
+            }
+        }]
+    };
+
+    const buptleSchema = new Schema({
+        nodes: schema.spec.nodes.addBefore("image", "span", buptleSpanSpec).addBefore("span", "label", buptleLabelSpec),
+        marks: schema.spec.marks
+    })
+
     state = EditorState.create({
-        schema,
-        doc: DOMParser.fromSchema(schema).parse(document.querySelector("#"+content_id)) ,
+        doc: DOMParser.fromSchema(buptleSchema).parse(document.querySelector("#"+content_id)),
         plugins: exampleSetup({schema}).concat(trackPlugin, highlightPlugin)
     });
 
