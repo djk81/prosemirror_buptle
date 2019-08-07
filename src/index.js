@@ -221,8 +221,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "inline*",
-        group: "block",
+        content: "inline",
+        inline: true,
+        group: "inline",
         toDOM(node){
             return ['span', {class:node.attrs.class},0]
         },
