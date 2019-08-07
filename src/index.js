@@ -216,7 +216,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     *****************************************************/
 
     const buptleSpanSpec = {
-        attrs : {class:{default:'btpm_default_class'}},
+        attrs : {id:{default:'tmp_span_id'}, class:{default:'btpm_default_class'}},
         // content: "text*",
         // marks: "",
         // group: "block",
@@ -225,20 +225,25 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         inline: true,
         group: "inline",
         toDOM(node){
-            return ['span', {class:node.attrs.class},0]
+            return ['span',
+                {
+                    id:node.attrs.id,
+                    class:node.attrs.class
+                },
+                0]
         },
         parseDOM: [{
             tag: "span",
             getAttrs(dom){
                 console.log(dom);
-                alert('getAttrs :' + dom.className );
-                return { class:dom.className }
+                // alert('getAttrs :' + dom.className );
+                 return { id: dom.id, class:dom.className }
             }
         }]
     };
 
     const buptleLabelSpec = {
-        attrs : {for:{default:''}},
+        attrs : {for:{default:''}, class:{default:'btpm_label_class'}},
         // content: "text*",
         // marks: "",
         // group: "block",
@@ -247,13 +252,13 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         inline: true,
         group: "inline",
         toDOM(node){
-            return ['label', {for:node.attrs.for},0]
+            return ['label', {for:node.attrs.for, class:node.attrs.class},0]
         },
         parseDOM: [{
             tag: "label",
             getAttrs(dom){
                 console.log(dom);
-                alert('getAttrs :' + dom.className );
+                // alert('getAttrs :' + dom.className );
                 return { class:dom.className }
             }
         }]
