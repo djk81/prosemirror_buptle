@@ -223,7 +223,7 @@ import {schema} from "./schema-basic-btpm.js"
                     commit.time.getHours() + ":" + (commit.time.getMinutes() < 10 ? "0" : "")+ commit.time.getMinutes()  + ":" + (commit.time.getSeconds() < 10 ? "0" : "") + commit.time.getSeconds()
                 ),
                 "\u00a0 " + commit.message + "\u00a0 ",
-                // elt("button", {class: "commit-revert"}, "revert")
+                elt("button", {class: "commit-revert"}, "revert")
             )
             node.lastChild.addEventListener("click", () => revertCommit(commit))
 
