@@ -204,7 +204,7 @@
 	<div id="users">유저수</div>
 	<script>
 		function fn_test(){
-			document.getElementsByClassName('temp_text')[0].innerHTML = '가나다라마바사아차카타타파하';
+			document.getElementsByClassName('temp_text')[0].innerHTML = '<span class="temp_text default_buptle_required">가나다라마바사아차카타타파하</span>';
 		}
 	</script>
 
@@ -244,7 +244,7 @@
 		<p>피<pre>자식</pre></p>
 		<p>
 			<span id="temp_text" class="temp_text">
-				span1 <label>라벨1</label>
+				<label for="temp_text">라벨1</label>
 			</span>
 		</p>
 		<p>
@@ -303,8 +303,8 @@
 		    window.console.log(e);
 		}
 
-		// ProseMirror.editorInitBySpec(_editorSpec);
-		ProseMirror.EditorInit("editor", "content");
+		ProseMirror.editorInitBySpec(_editorSpec);
+		// ProseMirror.EditorInit("editor", "content");
 
 		window.addEventListener('DOMContentLoaded', function(){
 		    var _rs_fields = document.querySelectorAll('.buptleparam_content_required_none');
