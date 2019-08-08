@@ -12,6 +12,7 @@ import {Schema, DOMParser} from "prosemirror-model";
 // import {schema} from "prosemirror-schema-basic"
 import {schema} from "./schema-basic-btpm.js"
 
+let _editorSpec = null;
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
  * Comment Plugin
@@ -407,6 +408,8 @@ import {schema} from "./schema-basic-btpm.js"
 export class EditorSpec {
     constructor(div_target_id, div_comments_target_id, get_document_html_handler, functions) {
         this.div_target_id = div_target_id
+        this.is_memo_activate = false
+        this.is_track_changes_activate = false
         this.div_comments_target_id = div_comments_target_id
         this.get_document_html_handler = get_document_html_handler
         this.functions = functions
@@ -418,11 +421,14 @@ export class EditorSpec {
 export var ptpm_comment_list_target_element_id = null;
 var _editorView = null;
 
-
 export function editorInitBySpec(editorSpec){
+    _editorSpec = editorSpec;
     var document_html = editorSpec.get_document_html_handler();
-    var comments = editorSpec.functions.get_comments();
-    ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
+    var comments = null;
+    if(editorSpec.is_memo_activate){
+        comments = editorSpec.functions.get_comments();
+        ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
+    }
 
     return __btpmInitView(editorSpec.div_target_id, document_html, comments);
 }
@@ -455,12 +461,10 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         if(no_note_update && true===no_note_update){
         }else{
-            btpmDispatchPostProcessor(_editorView, action);
+            btpmDispatchPostProcessor(_editorView, _new_state,  action);
         }
         
-        /**  Track Changes 적용*/
-        setDisabled(_new_state)
-        renderCommits(_new_state, btpmMyHistoryDispatch)
+
         return _new_state
     }
 
@@ -550,15 +554,20 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     })
 
     function btpmGetState(_doc, comments){
+        let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]);
+
+        if(_editorSpec.is_memo_activate){
+            pluginsArray = pluginsArray.concat([commentPlugin, commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) )]);
+            menu.fullMenu[0].push(_annotationMenuItem)
+        }
+
+        if(_editorSpec.is_track_changes_activate){
+            pluginsArray = pluginsArray.concat([trackPlugin, highlightPlugin]);
+        }
+
         let editState = EditorState.create({
             doc: DOMParser.fromSchema(buptleSchema).parse(_doc),
-            plugins: exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([
-                history({preserveItems: true}),
-                commentPlugin,
-                commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) ),
-                highlightPlugin,
-                trackPlugin,
-            ]),
+            plugins: pluginsArray,
             comments: comments
         });
 
@@ -644,7 +653,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     });
 
     let menu = buildMenuItems(buptleSchema)
-    menu.fullMenu[0].push(_annotationMenuItem)
+
 
    function btpmGetAllComments(){
        var _decos = _editorView.state.plugin$.decos.find()
@@ -663,8 +672,18 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
  ***/
 
 export
-    function btpmDispatchPostProcessor(_editorView, action){
-        btpmHandleCommentDraw(btpmGetAllComments(), action);
+    function btpmDispatchPostProcessor(_editorView, _new_state, action){
+
+        if(_editorSpec.is_memo_activate){
+            btpmHandleCommentDraw(btpmGetAllComments(), action);
+        }
+
+        if(_editorSpec.is_track_changes_activate){
+            /**  Track Changes 적용*/
+            setDisabled(_new_state)
+            renderCommits(_new_state, btpmMyHistoryDispatch)
+        }
+
     }
 
 export

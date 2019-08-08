@@ -279,6 +279,8 @@
 		try{
 		    var _editorSpec = new ProseMirror.EditorSpec();
 			_editorSpec.div_target_id = 'editor';
+			_editorSpec.is_memo_activate = true
+			_editorSpec.is_track_changes_activate = true
 			_editorSpec.div_comments_target_id = 'indexhtml_comment_list_wrapper';
 			_editorSpec.get_document_html_handler = function(){
 				return document.querySelector("#content")
