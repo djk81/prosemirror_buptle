@@ -521,13 +521,14 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             getAttrs(dom){
                 console.log(dom);
                 // alert('getAttrs :' + dom.className );
-                return { class:dom.className }
+                return { class:dom.className, for:dom.getAttribute('for') }
             }
         }]
     };
 
     const buptleInputsSpec = {
         attrs : {
+            id : {default:''},
             width:{default:''},
             height:{default:''},
             style:{default:''},
@@ -539,10 +540,10 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "buptle_extra",
         atom:false,
         toDOM(node){
-            let {src, alt, title, align, width, height, style, float} = node.attrs;
+            let {id, src, alt, title, align, width, height, style, float} = node.attrs;
             let type = node.attrs.type
             return ["input",
-                {width, height, style, type, class : node.attrs.class}, 0
+                {width, height, style, type, class : node.attrs.class, id:node.attrs.id}, 0
                 ]
         },
         parseDOM: [{
@@ -556,6 +557,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                     style: dom.getAttribute("style"),
                     type: dom.getAttribute("type"),
                     class: dom.getAttribute("class"),
+                    id: dom.getAttribute("id"),
                 }
             }
         }]
