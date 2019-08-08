@@ -472,7 +472,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "(inline | text*)",
+        content: "(inline | text* | buptle_extra* )",
         inline: true,
         group: "inline",
         atom:true,
@@ -501,8 +501,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // defining: true,
         content: "(inline | text*)",
         inline: true,
-        group: "inline",
-        atom:true,
+        group: "buptle_extra",
+        atom:false,
         toDOM(node){
             return ['label', {for:node.attrs.for, class:node.attrs.class},0]
         },
@@ -512,6 +512,41 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 console.log(dom);
                 // alert('getAttrs :' + dom.className );
                 return { class:dom.className }
+            }
+        }]
+    };
+
+    const buptleInputsSpec = {
+        attrs : {
+            width:{default:''},
+            height:{default:''},
+            style:{default:''},
+            type:{default:'text'},
+            class:{default:'btpm_inputs_class'}
+            },
+        content: "(inline | text*)",
+        inline: true,
+        group: "buptle_extra",
+        atom:false,
+        toDOM(node){
+            let {src, alt, title, align, width, height, style, float} = node.attrs;
+            let type = node.attrs.type
+            return ["input",
+                {width, height, style, type, class : node.attrs.class}, 0
+                ]
+        },
+        parseDOM: [{
+            tag: "input",
+            getAttrs(dom){
+                console.log(dom);
+                // alert('getAttrs :' + dom.className );
+                return {
+                    width: dom.getAttribute("width"),
+                    height: dom.getAttribute("height"),
+                    style: dom.getAttribute("style"),
+                    type: dom.getAttribute("type"),
+                    class: dom.getAttribute("class"),
+                }
             }
         }]
     };
@@ -537,9 +572,113 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 }
             }]
     };
-    const nodeSpec = schema.spec.nodes.addBefore("image", "span", buptleSpanSpec)
+
+    const buptleImgSpec = {
+        inline: true,
+        attrs: {
+          src: {},
+          alt: {default: null},
+          title: {default: null},
+          align : {default : 'left'},
+          width : {default : '100%'},
+          height : {default : '100%'},
+          style : {default : ''},
+        },
+        group: "inline",
+        draggable: true,
+        parseDOM: [{tag: "img[src]", getAttrs(dom) {
+          return {
+            src: dom.getAttribute("src"),
+            title: dom.getAttribute("title"),
+            alt: dom.getAttribute("alt"),
+            align: dom.getAttribute("align"),
+            width: dom.getAttribute("width"),
+            height: dom.getAttribute("height"),
+            style: dom.getAttribute("style"),
+            float: dom.getAttribute("float"),
+          }
+        }}],
+        toDOM(node) {
+            let {src, alt, title, align, width, height, style, float} = node.attrs;
+            return ["img",
+                {src, alt, title, align, width, height, style, float}
+                ]
+        }
+    }
+
+    const buptleHeadingSpec = {
+        attrs: {level: {default: 1}, align: {default:'left'}},
+        content: "inline*",
+        group: "block",
+        defining: true,
+        parseDOM: [
+            {
+                tag: "h1",
+                getAttrs(dom) {
+                    return {
+                        level: 1,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            },
+            {
+                tag: "h2",
+                getAttrs(dom) {
+                    return {
+                        level: 2,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            },
+            {
+                tag: "h3",
+                getAttrs(dom) {
+                    return {
+                        level: 3,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            },
+            {
+                tag: "h4",
+                getAttrs(dom) {
+                    return {
+                        level: 4,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            },
+            {
+                tag: "h5",
+                getAttrs(dom) {
+                    return {
+                        level: 5,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            },
+            {
+                tag: "h6",
+                getAttrs(dom) {
+                    return {
+                        level: 6,
+                        align: dom.getAttribute('align')
+                    }
+                }
+            }
+
+                   ],
+        toDOM(node) { return ["h" + node.attrs.level, {align : node.attrs.align}, 0] }
+    }
+
+
+    const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'heading',buptleHeadingSpec)
+        .remove('image').addBefore('hard_break', 'image',buptleImgSpec)
+        .addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
+        .addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
+
 
     const buptleSchema = new Schema({
         nodes: nodeSpec,
