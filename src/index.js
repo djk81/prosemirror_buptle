@@ -472,7 +472,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "inline",
+        content: "(inline | text*)",
         inline: true,
         group: "inline",
         atom:true,
@@ -499,7 +499,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "inline",
+        content: "(inline | text*)",
         inline: true,
         group: "inline",
         atom:true,
@@ -540,7 +540,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     const nodeSpec = schema.spec.nodes.addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
-// console.log(nodeSpec);
+
     const buptleSchema = new Schema({
         nodes: nodeSpec,
         marks: schema.spec.marks
