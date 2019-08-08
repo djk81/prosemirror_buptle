@@ -278,14 +278,7 @@ let _editorSpec = null;
     }
 
 
-    document.querySelector("#commitbutton").addEventListener("click", e => {
-        e.preventDefault()
-        var message = document.querySelector("#message").value;
-        console.log(message);
-        doCommit(message || "Unnamed")
-        document.querySelector("#message").value = ""
-        _editorView.focus()
-    })
+
 
     function doCommit(message) {
         console.log('message ==> ' + message);
@@ -563,6 +556,14 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         if(_editorSpec.is_track_changes_activate){
             pluginsArray = pluginsArray.concat([trackPlugin, highlightPlugin]);
+            document.querySelector("#commitbutton").addEventListener("click", e => {
+                e.preventDefault()
+                var message = document.querySelector("#message").value;
+                console.log(message);
+                doCommit(message || "Unnamed")
+                document.querySelector("#message").value = ""
+                _editorView.focus()
+            })
         }
 
         let editState = EditorState.create({
