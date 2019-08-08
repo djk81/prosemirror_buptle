@@ -294,11 +294,16 @@ let _editorSpec = null;
     }
 
     function setDisabled(state) {
-        let input = document.querySelector("#message")
-        let button = document.querySelector("#commitbutton")
-        let result = trackPlugin.getState(state).uncommittedSteps.length == 0
-        console.log('disabled result => ' + result);
-        input.disabled = button.disabled = result
+        try{
+            let input = document.querySelector("#message")
+            let button = document.querySelector("#commitbutton")
+            let result = trackPlugin.getState(state).uncommittedSteps.length == 0
+            console.log('disabled result => ' + result);
+            input.disabled = button.disabled = result
+        }catch(e){
+            console.log('setDisabled 실패');
+            console.log(e);
+        }
     }
 
     let lastRendered = null
