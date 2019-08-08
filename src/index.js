@@ -307,6 +307,8 @@ let _editorSpec = null;
     }
 
     let lastRendered = null
+
+export
     function renderCommits(state, dispatch) {
         let curState = trackPlugin.getState(state)
         if (lastRendered == curState) {
@@ -318,6 +320,11 @@ let _editorSpec = null;
         lastRendered = curState
 
         let out = document.querySelector("#commits")
+        if(!out){
+            //이런건 나중에 정리..
+            window.console.log('#commits 없음.. ');
+            return false
+        }
         out.textContent = ""
         let commits = curState.commits
         commits.forEach(commit => {
