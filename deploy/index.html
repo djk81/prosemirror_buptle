@@ -458,8 +458,9 @@
 	<script>
 
 		try{
-		    var activate_plugins = false
-		    var _editorSpec = new ProseMirror.EditorSpec();
+		    var activate_plugins = true
+			var pm = ProseMirror;
+		    var _editorSpec = new pm.EditorSpec();
 
 		    if(activate_plugins){
 				_editorSpec.div_target_id = 'editor';
@@ -483,6 +484,9 @@
 					    // };
 					    return null;
 					},
+					btpmHandleCommentDraw : function(_comments, action){
+						console.log(11 + " : " + _comments + " : " + action);
+					}
 				};
 
 		    }else{
@@ -495,7 +499,13 @@
 		    window.console.log(e);
 		}
 
-		ProseMirror.editorInitBySpec(_editorSpec);
+
+
+
+		ProseMirror.editorInitBySpec(_editorSpec, function(){
+		    alert('시작됨');
+
+		});
 		// ProseMirror.EditorInit("editor", "content");
 
 		window.addEventListener('DOMContentLoaded', function(){

@@ -431,13 +431,17 @@ export class EditorSpec {
 export var ptpm_comment_list_target_element_id = null;
 var _editorView = null;
 
-export function editorInitBySpec(editorSpec){
+export function editorInitBySpec(editorSpec, init_function){
     _editorSpec = editorSpec;
     var document_html = editorSpec.get_document_html_handler();
     var comments = null;
     if(editorSpec.is_memo_activate){
         comments = editorSpec.functions.get_comments();
         ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
+
+        if(editorSpec.functions.btpmHandleCommentDraw){
+            btpmHandleCommentDraw = editorSpec.functions.btpmHandleCommentDraw.bind(this);
+        }
     }
 
     return __btpmInitView(editorSpec.div_target_id, document_html, comments);
