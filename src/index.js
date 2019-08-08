@@ -326,22 +326,27 @@ let _editorSpec = null;
                 "\u00a0 " + commit.message + "\u00a0 ",
                 elt("button", {class: "commit-revert"}, "revert")
             )
-            node.lastChild.addEventListener("click", () => revertCommit(commit))
 
+            try{
+                node.lastChild.addEventListener("click", () => revertCommit(commit))
+                node.addEventListener("mouseover", e => {
+                    if (!node.contains(e.relatedTarget)){
+                        dispatch(_editorView.state.tr.setMeta(highlightPlugin, {add: commit}))
+                        // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {add: commit})
+                        // btpmMyHistoryDispatch(_tr)
+                    }
+                })
+                node.addEventListener("mouseout", e => {
+                    if (!node.contains(e.relatedTarget))
+                        dispatch(_editorView.state.tr.setMeta(highlightPlugin, {clear: commit}))
+                        // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {clear: commit})
+                        // btpmMyHistoryDispatch(_tr)
+                })
+            }catch(e){
+                console.log('====== 이벤트 attach 실패 ===========');
+                console.log(e);
+            }
 
-            node.addEventListener("mouseover", e => {
-                if (!node.contains(e.relatedTarget)){
-                    dispatch(_editorView.state.tr.setMeta(highlightPlugin, {add: commit}))
-                    // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {add: commit})
-                    // btpmMyHistoryDispatch(_tr)
-                }
-            })
-            node.addEventListener("mouseout", e => {
-                if (!node.contains(e.relatedTarget))
-                    dispatch(_editorView.state.tr.setMeta(highlightPlugin, {clear: commit}))
-                    // var _tr = _editorView.state.tr.setMeta(highlightPlugin, {clear: commit})
-                    // btpmMyHistoryDispatch(_tr)
-            })
             out.appendChild(node)
         })
     }
@@ -694,14 +699,18 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         if(_editorSpec.is_track_changes_activate){
             pluginsArray = pluginsArray.concat([trackPlugin, highlightPlugin]);
-            document.querySelector("#commitbutton").addEventListener("click", e => {
-                e.preventDefault()
-                var message = document.querySelector("#message").value;
-                console.log(message);
-                doCommit(message || "Unnamed")
-                document.querySelector("#message").value = ""
-                _editorView.focus()
-            })
+            try{
+                document.querySelector("#commitbutton").addEventListener("click", e => {
+                    e.preventDefault()
+                    var message = document.querySelector("#message").value;
+                    console.log(message);
+                    doCommit(message || "Unnamed")
+                    document.querySelector("#message").value = ""
+                    _editorView.focus()
+                })
+            }catch(e){
+                console.log(e);
+            }
         }
 
         let editState = EditorState.create({
@@ -854,9 +863,13 @@ export
         let _comments_bts = document.querySelectorAll("._comments_bt");
         for(var i=0; i<_comments_bts.length; i++){
             let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
-            _comments_bts[i].addEventListener("click", function(){
-                btpmOnCommentBtClicked(_tmp_id);
-            }, false)
+            try{
+                _comments_bts[i].addEventListener("click", function(){
+                    btpmOnCommentBtClicked(_tmp_id);
+                }, false)
+            }catch(e){
+                console.log(e);
+            }
         }
     }
 
@@ -938,9 +951,14 @@ export
     function btpmRenderCommentHandler(comment, dispatch, state) {
         console.log('render comment!! -> ' + comment.id);
         let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
-        btn.addEventListener("click", () =>
-            dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
-        )
+
+        try {
+            btn.addEventListener("click", () =>
+                dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
+            )
+        }catch(e){
+            console.log(e);
+        }
 
         // 선택된 코멘트 강조
         btpmMakeFocusToSelectedComment(comment.id);
