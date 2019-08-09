@@ -498,7 +498,7 @@
 				        if (dispatch) {
 				            let text = prompt("진짜진짜진짜", "");
 				            if (text)
-				              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new _Comment(text, _randomId_fnc())}))
+				              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new _Comment(text, _randomId_fnc(), {111:'2222'})}))
 				        }
 				        return true
 

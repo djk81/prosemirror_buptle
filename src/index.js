@@ -26,9 +26,10 @@ let _editorSpec = null;
 
     // 브라우저 내장 Comment 랑 헷갈리지 않게 하자.
     class Comment {
-      constructor(text, id) {
-        this.id = id
+      constructor(text, id, extra) {
         this.text = text
+        this.id = id
+        this.extra = extra
       }
     }
 
@@ -86,7 +87,7 @@ let _editorSpec = null;
                     if (found) set = set.remove([found])
                 } else { // "create"
                     if (!this.findComment(event.id))
-                    set = set.add(doc, [deco(event.from, event.to, new Comment(event.text, event.id))])
+                    set = set.add(doc, [deco(event.from, event.to, new Comment(event.text, event.id, event.extra))])
                 }
             }
             return new CommentState(version, set, this.unsent.slice(sent))
@@ -118,7 +119,7 @@ let _editorSpec = null;
             }else{
                 config.comments.comments = [];
             }
-            let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id)))
+            let decos = config.comments.comments.map(c => deco(c.from, c.to, new Comment(c.text, c.id, c.extra)))
             return new CommentState(config.comments.version, DecorationSet.create(config.doc, decos), [])
         }
     }
@@ -941,8 +942,15 @@ export
         }
         if (dispatch) {
             let text = prompt("입력하시오", "")
+
+            var extra = {
+                  name:'extra_name',
+                  info_1:'extra_info_1',
+                  info_2:'extra_info_2',
+                  };
+
             if (text)
-              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment(text, randomID())}))
+              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new Comment(  text, randomID(), extra  )}))
         }
         return true
     }
