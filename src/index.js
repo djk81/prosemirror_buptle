@@ -931,6 +931,10 @@ export
 
 export
     function btpmAddAnnotationHandler( state, dispatch ){
+        if(_editorSpec.functions.addAnnotation){
+            return _editorSpec.functions.addAnnotation(commentPlugin, state, dispatch, Comment, randomID );
+        }
+
         let sel = state.selection
         if (sel.empty) {
             return false
