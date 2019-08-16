@@ -500,8 +500,8 @@
 						fn_draw_memo_handle(_comments, action);
 					},
 					addAnnotation : function(commentPlugin, state, dispatch, _Comment, _randomId_fnc){
-					    console.log(' >>>>>> ' + state);
-					    console.log(' >>>>>> ' + dispatch);
+					    // console.log(' >>>>>> ' + state);
+					    // console.log(' >>>>>> ' + dispatch);
 					    let sel = state.selection
 				        if (sel.empty) {
 				            return false
@@ -601,10 +601,6 @@
 
             var _oneComment = _comments[indx];
             var _ex = _oneComment.spec.comment.extra
-
-
-            // alert(_comments[indx]);
-
             // _htmlText += '<div class="_comments_bt" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
 
             _htmlText += _memo_html_text.replace( '{user_name}', _ex.user_name )

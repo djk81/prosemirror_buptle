@@ -462,6 +462,13 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                   btpmMyDispatch({type: "transaction", transaction})
               }
         });
+
+        //최초 init 콜 패치
+        if(_editorSpec.is_memo_activate){
+            var comments = btpmGetAllComments()
+            btpmHandleCommentDraw(comments, null);
+        }
+
         return _editorView;
     }
 
@@ -842,7 +849,9 @@ export
     function btpmDispatchPostProcessor(_editorView, _new_state, action){
 
         if(_editorSpec.is_memo_activate){
-            btpmHandleCommentDraw(btpmGetAllComments(), action);
+            var comments = btpmGetAllComments()
+            // console.log(comments.length + " < 메모active 되었고. 길이는 다음과 같음.");
+            btpmHandleCommentDraw(comments, action);
         }
 
         if(_editorSpec.is_track_changes_activate){
@@ -858,7 +867,7 @@ export
 
         var indx = 0;
         var _htmlText = '';
-        alert('코멘트갯수 안에서 : ' + _comments.length + " : " + ptpm_comment_list_target_element_id);
+        // alert('코멘트갯수 안에서 : ' + _comments.length + " : " + ptpm_comment_list_target_element_id);
 
         for(indx in _comments){
             var id = _comments[indx].spec.comment.id;
