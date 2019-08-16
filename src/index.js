@@ -125,7 +125,7 @@ let _editorSpec = null;
     }
 
     function deco(from, to, comment) {
-        return Decoration.inline(from, to, {class: "comment _comment_btpm_"+comment.id}, {comment})
+        return Decoration.inline(from, to, {class: "comment memo _comment_btpm_"+comment.id}, {comment})
     }
 
     export
