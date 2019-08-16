@@ -858,7 +858,7 @@ export
 
         var indx = 0;
         var _htmlText = '';
-        console.log('코멘트갯수 : ' + _comments.length);
+        alert('코멘트갯수 안에서 : ' + _comments.length + " : " + ptpm_comment_list_target_element_id);
 
         for(indx in _comments){
             var id = _comments[indx].spec.comment.id;

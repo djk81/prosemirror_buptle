@@ -496,10 +496,9 @@
 					    };
 					    return comments;
 					},
-					btpmHandleCommentDraw333 : function(_comments, action){
-						console.log(11 + " : " + _comments + " : " + action);
-					}
-					,
+					btpmHandleCommentDraw : function(_comments, action){
+						fn_draw_memo_handle(_comments, action);
+					},
 					addAnnotation : function(commentPlugin, state, dispatch, _Comment, _randomId_fnc){
 					    console.log(' >>>>>> ' + state);
 					    console.log(' >>>>>> ' + dispatch);
@@ -577,6 +576,57 @@
       //
       // // add the layer to the stage
       // stage.add(layer);
+
+			// 메모관련
+    function fn_draw_memo_handle(_comments, action){
+	    var _memo_html_text = "<li>";
+	    _memo_html_text += '<div class="cont_memo_box">';
+        _memo_html_text += '  <div class="cont_memo_hd clearfix">';
+        _memo_html_text += '  <p class="sm_p">{user_name}</p>';
+        _memo_html_text += '  <p class="sm_pb4">{time}</p>';
+        _memo_html_text += '  </div>';
+        _memo_html_text += '  <div class="cont_memo_text">';
+        _memo_html_text += '    <p class="sm_p58"><pre>{comment}</pre>';
+        _memo_html_text += '   </p>';
+        _memo_html_text += '  </div>';
+
+        _memo_html_text += '  <div class="cont_memo_btn clearfix"><div class="fl reply_btn_wrap">';
+        _memo_html_text += '  <p class="btn_replay_s">수정</p><p class="btn_replay_s">삭제</p></div>';
+        _memo_html_text += '  <div class="fr reply_btn_wrap"><p class="btn_replay_s">회신</p><p class="btn_replay_s resolve">해결</p></div>';
+        _memo_html_text += '  </div>';
+		_memo_html_text += '</li>';
+
+        var _htmlText = '';
+        for(indx in _comments){
+
+            var _oneComment = _comments[indx];
+            var _ex = _oneComment.spec.comment.extra
+
+
+            // alert(_comments[indx]);
+
+            // _htmlText += '<div class="_comments_bt" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+
+            _htmlText += _memo_html_text.replace( '{user_name}', _ex.user_name )
+                        .replace( '{time}', _ex.time )
+                        .replace( '{comment}', _oneComment.spec.comment.text );
+        }
+
+        document.querySelector("#indexhtml_comment_list_wrapper").innerHTML = _htmlText;
+        // $("#").html(_htmlText);
+
+        // let _comments_bts = document.querySelectorAll("._comments_bt");
+        // for(var i=0; i<_comments_bts.length; i++){
+        //     let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
+        //     try{
+        //         _comments_bts[i].addEventListener("click", function(){
+        //             btpmOnCommentBtClicked(_tmp_id);
+        //         }, false)
+        //     }catch(e){
+        //         console.log(e);
+        //     }
+        // }
+    }
 
 	</script>
 </body>
