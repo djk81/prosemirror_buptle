@@ -128,7 +128,8 @@ let _editorSpec = null;
         return Decoration.inline(from, to, {class: "comment _comment_btpm_"+comment.id}, {comment})
     }
 
-    const commentPlugin = new Plugin({
+    export
+    let commentPlugin = new Plugin({
         state: {
             init: CommentState.init,
             apply(tr, prev) { return prev.apply(tr) }
@@ -442,9 +443,13 @@ export function editorInitBySpec(editorSpec, init_function){
         ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
 
         if(editorSpec.functions.btpmHandleCommentDraw){
-            // alert('editorSpec.functions.btpmHandleCommentDraw 시작');
             btpmHandleCommentDraw = editorSpec.functions.btpmHandleCommentDraw.bind(this);
         }
+
+        if(editorSpec.functions.btpmRenderCommentHandler){
+            btpmRenderCommentHandler = editorSpec.functions.btpmRenderCommentHandler.bind(this);
+        }
+
     }
 
     return __btpmInitView(editorSpec.div_target_id, document_html, comments);
@@ -541,7 +546,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         parseDOM: [{
             tag: "label",
             getAttrs(dom){
-                console.log(dom);
+                // console.log(dom);
                 // alert('getAttrs :' + dom.className );
                 return { class:dom.className, for:dom.getAttribute('for') }
             }
@@ -571,7 +576,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         parseDOM: [{
             tag: "input",
             getAttrs(dom){
-                console.log(dom);
+                // console.log(dom);
                 // alert('getAttrs :' + dom.className );
                 return {
                     width: dom.getAttribute("width"),
@@ -991,7 +996,7 @@ export
 
 export
     function btpmRenderCommentHandler(comment, dispatch, state) {
-        console.log('render comment!! -> ' + comment.id);
+        console.log('render comment original !! -> ' + comment.text);
         let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
 
         try {
@@ -1003,8 +1008,10 @@ export
         }
 
         // 선택된 코멘트 강조
-        btpmMakeFocusToSelectedComment(comment.id);
-        return crel("li", {class: "commentText"}, comment.text, btn)
+        // btpmMakeFocusToSelectedComment(comment.id);
+        var rtn = crel("li", {class: "commentText"}, comment.text, btn);
+        console.log(rtn)
+        return rtn
     }
 
     // 코멘트 강조

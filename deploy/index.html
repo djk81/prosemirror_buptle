@@ -2,8 +2,10 @@
 <meta charset="utf8" />
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <header>
-	<script src="https://unpkg.com/konva@3.3.3/konva.min.js"></script>
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
+	<script src="https://unpkg.com/konva@3.3.3/konva.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
 	<style>
 
 		span.buptleparam_content_required_none{
@@ -510,6 +512,9 @@
 				        }
 				        return true
 
+					},
+					btpmRenderCommentHandler : function(comment, dispatch, state){
+					    return fn_handle_comment_in_editor(comment, dispatch, state);
 					}
 				};
 
@@ -542,6 +547,30 @@
 
 		    }
 		})
+
+		function fn_handle_comment_in_editor(comment, dispatch, state){
+		    console.log('render comment outer !! -> ' + comment.id);
+	        // let btn = crel("button", {class: "commentDelete", title: "delete하기"}, "삭제")
+	        let btn = $('<button></button>').addClass('commentDelete').attr('title', 'del하자').text('delete');
+
+	        try {
+	            btn.bind('click', function(){
+	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment}))
+	            });
+	            // btn.addEventListener("click", () =>
+	            //
+	            // )
+	        }catch(e){
+	            console.log(e);
+	        }
+
+	        // 선택된 코멘트 강조
+	        // btpmMakeFocusToSelectedComment(comment.id);
+	        // return crel("li", {class: "commentText"}, comment.text, btn)
+			var rtn = $('<li></li>').addClass('commentText').text(comment.text).append(btn.get(0)).get(0);
+			console.log(rtn);
+	        return rtn
+		}
 
 		//콘바다음에
       // var width = window.innerWidth;
