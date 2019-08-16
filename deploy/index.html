@@ -473,27 +473,24 @@
 				_editorSpec.functions = {
 					get_comments : function(){
 					    var comments = {
-					        comments : [
-					            {
-						            from : 5,
-						            to : 22,
-						            text: '_default comment',
-						            id : '1234',
-							        extra : {
-			                            user_name: 'my name',
-			                        }
-				                },
-						        {
-						            from : 2,
-						            to : 20,
-						            text: '두번째메시지',
-						            id : '1235',
-							        extra : {
-			                            user_name: 'your name',
-			                        }
-				                }
-					        ]
+					        comments : []
 					    };
+
+					    var memos = [1,200]
+
+	                    for(var indx in memos){
+					        comments.comments.push({
+						        from : 0,
+						        to : 10,
+						        text : '메모샘플',
+						        id : '1',
+						        extra : {
+						            user_name : '유저네임',
+						            user_id : '100'
+						        }
+					        });
+					    }
+
 					    return comments;
 					},
 					btpmHandleCommentDraw : function(_comments, action){

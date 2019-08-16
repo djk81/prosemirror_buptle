@@ -438,9 +438,11 @@ export function editorInitBySpec(editorSpec, init_function){
     var comments = null;
     if(editorSpec.is_memo_activate){
         comments = editorSpec.functions.get_comments();
+        // alert('코멘트 초기화 외부에서 가져옴 : ' + comments.comments.length);
         ptpm_comment_list_target_element_id = editorSpec.div_comments_target_id;
 
         if(editorSpec.functions.btpmHandleCommentDraw){
+            // alert('editorSpec.functions.btpmHandleCommentDraw 시작');
             btpmHandleCommentDraw = editorSpec.functions.btpmHandleCommentDraw.bind(this);
         }
     }
@@ -466,6 +468,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         //최초 init 콜 패치
         if(_editorSpec.is_memo_activate){
             var comments = btpmGetAllComments()
+            // alert('코멘트 초기화 내부. plugin에서 가져옴 : ' + comments.length);
             btpmHandleCommentDraw(comments, null);
         }
 
