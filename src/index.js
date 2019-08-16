@@ -125,7 +125,7 @@ let _editorSpec = null;
     }
 
     function deco(from, to, comment) {
-        return Decoration.inline(from, to, {class: "comment memo _comment_btpm_"+comment.id}, {comment})
+        return Decoration.inline(from, to, {class: "comment memo _inline_comment_"+comment.id}, {comment})
     }
 
     export
@@ -890,7 +890,7 @@ export
             console.log(_comments[indx]);
             console.log(from + " -> " + to + " : " + text);
 
-            _htmlText += '<div class="_comments_bt" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+            _htmlText += '<div class="_comments_panel" id="_comments_panel_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
             _htmlText += 'comment id : ' + id + "<br>";
             _htmlText += 'index from : ' + from + " ~ ";
             _htmlText += 'index to : ' + to;
@@ -901,11 +901,11 @@ export
         window.console.log(document.querySelector("#"+ptpm_comment_list_target_element_id) + " << ptpm_comment_list_target_element_id : " + ptpm_comment_list_target_element_id);
         document.querySelector("#"+ptpm_comment_list_target_element_id).innerHTML = _htmlText;
 
-        let _comments_bts = document.querySelectorAll("._comments_bt");
-        for(var i=0; i<_comments_bts.length; i++){
-            let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
+        let _comments_panels = document.querySelectorAll("._comments_panel");
+        for(var i=0; i<_comments_panels.length; i++){
+            let _tmp_id = _comments_panels[i].id.split('_comments_panel_id_')[1];
             try{
-                _comments_bts[i].addEventListener("click", function(){
+                _comments_panels[i].addEventListener("click", function(){
                     btpmOnCommentBtClicked(_tmp_id);
                 }, false)
             }catch(e){
@@ -918,7 +918,7 @@ export
     function btpmOnCommentBtClicked(id_suffix){
     // alert('id_suffix : ' + id_suffix);
         //에디터 안에서 바꿔봄
-        let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
+        let _classesEle = document.getElementsByClassName('_inline_comment_' + id_suffix);
         let _top_pos = 0;
         for(var i=0; i<_classesEle.length; _classesEle++){
             _top_pos = _classesEle[i].offsetTop;
@@ -1021,22 +1021,22 @@ export
 
     // 코멘트 강조
     function btpmMakeFocusToSelectedComment(_comment_id){
-        var _element = document.getElementById('_comments_bt_id_' + _comment_id);
+        var _element = document.getElementById('_comments_panel_id_' + _comment_id);
         if(_element){
 
             _element.style.backgroundColor = 'lightblue;';
-            document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor = 'lightblue;';
+            document.getElementById('_comments_panel_id_' + _comment_id).style.backgroundColor = 'lightblue;';
 
-            // alert(" << " + document.getElementById('_comments_bt_id_' + _comment_id).style.backgroundColor);
+            // alert(" << " + document.getElementById('_comments_panel_id_' + _comment_id).style.backgroundColor);
             _element.scrollIntoView({ block: 'center',  behavior: 'smooth' });
 
             // _element.style.color = 'white';
 
-            console.log('코멘트 강조 킴 -> _comments_bt_id_' + _comment_id);
+            console.log('코멘트 강조 킴 -> _comments_panel_id_' + _comment_id);
             console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
 
             //에디터 안에서 바꿔봄
-            let _classesEle = document.getElementsByClassName('_comment_btpm_' + _comment_id);
+            let _classesEle = document.getElementsByClassName('_inline_comment_' + _comment_id);
             let _selected_btpm_text = '';
             for(var i=0; i<_classesEle.length; _classesEle++){
                 if(i==0){

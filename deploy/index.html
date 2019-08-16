@@ -577,7 +577,7 @@
       // var height = window.innerHeight;
       //
       // var stage = new Konva.Stage({
-      //   container: '_comments_bt_id_1783625414',
+      //   container: '_comments_panel_id_1783625414',
       //   width: width,
       //   height: height
       // });
@@ -605,7 +605,7 @@
 
 			// 메모관련
     function fn_draw_memo_handle(_comments, action){
-	    var _memo_html_text = "<li class='_comments_bt' id='_comments_bt_id_{id}'>";
+	    var _memo_html_text = "<li class='_comments_panel' id='_comments_panel_id_{id}'>";
 	    _memo_html_text += '<div class="cont_memo_box">';
         _memo_html_text += '  <div class="cont_memo_hd clearfix">';
         _memo_html_text += '  <p class="sm_p">{user_name}</p>';
@@ -628,7 +628,7 @@
 
             var _oneComment = _comments[indx];
             var _ex = _oneComment.spec.comment.extra
-            // _htmlText += '<div class="_comments_bt" id="_comments_bt_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+            // _htmlText += '<div class="_comments_panel" id="_comments_panel_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
 
             _htmlText += _memo_html_text.replace( '{user_name}', _ex.user_name )
                         .replace( '{id}', _oneComment.spec.comment.id )
@@ -639,11 +639,11 @@
         document.querySelector("#indexhtml_comment_list_wrapper").innerHTML = _htmlText;
         // $("#").html(_htmlText);
 
-        let _comments_bts = document.querySelectorAll("._comments_bt");
-        for(var i=0; i<_comments_bts.length; i++){
-            let _tmp_id = _comments_bts[i].id.split('_comments_bt_id_')[1];
+        let _comments_panels = document.querySelectorAll("._comments_panel");
+        for(var i=0; i<_comments_panels.length; i++){
+            let _tmp_id = _comments_panels[i].id.split('_comments_panel_id_')[1];
             try{
-                _comments_bts[i].addEventListener("click", function(){
+                _comments_panels[i].addEventListener("click", function(){
                     // alert('tmp_id' + _tmp_id);
 	                ProseMirror.btpmOnCommentBtClicked(_tmp_id);
                 }, false)
