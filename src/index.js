@@ -6,13 +6,14 @@ import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
 import {MenuItem} from "prosemirror-menu"
 import crel from "crel"
-import {Schema, DOMParser} from "prosemirror-model";
+import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
 
 
 // import {schema} from "prosemirror-schema-basic"
 import {schema} from "./schema-basic-btpm.js"
 
 let _editorSpec = null;
+let buptleSchema = null;
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
  * Comment Plugin
@@ -726,7 +727,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
 
 
-    const buptleSchema = new Schema({
+    buptleSchema = new Schema({
         nodes: nodeSpec,
         marks: schema.spec.marks
     })
@@ -1057,3 +1058,11 @@ export
          console.log('코멘트 div 없음 : ' + _comment_id)
         }
     }
+
+    export
+    let getPMContentString = () => {
+        let fragment = DOMSerializer.fromSchema(buptleSchema).serializeFragment(_editorView.state.doc.content);
+        let tmp = document.createElement("div");
+        tmp.appendChild(fragment);
+        return tmp.innerHTML;
+    };

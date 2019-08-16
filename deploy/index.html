@@ -203,7 +203,7 @@
     </div>
 	<div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
 	<div id="docname" style="position: relative; float:left; display: none; ">문서명</div>
-	<div id="users">유저수</div>
+	<div id="users" onclick="alert( ' >> ' +  ProseMirror.getPMContentString() );">유저수</div>
 	<script>
 		function fn_test(){
 			document.getElementsByClassName('temp_text')[0].innerHTML = '<span class="temp_text default_buptle_required">가나다라마바사아차카타타파하</span>';
