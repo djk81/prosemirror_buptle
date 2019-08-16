@@ -554,8 +554,12 @@
 	        let btn = $('<button></button>').addClass('commentDelete').attr('title', 'del하자').text('delete');
 
 	        try {
+	             var test_function = function(id){
+                    alert(id + "를 삭제합니다.");
+                }
+
 	            btn.bind('click', function(){
-	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment}))
+	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment, ext_func:test_function}))
 	            });
 	            // btn.addEventListener("click", () =>
 	            //

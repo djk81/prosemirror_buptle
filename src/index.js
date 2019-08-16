@@ -73,6 +73,7 @@ let _editorSpec = null;
             } else if (actionType == "deleteComment") {
                 decos = decos.remove([this.findComment(action.comment.id)])
                 unsent = unsent.concat(action)
+                action.ext_func(action.comment.id)
             }
             return new CommentState(base.version, decos, unsent)
         }
@@ -1005,8 +1006,11 @@ export
         let btn = crel("button", {class: "commentDelete", title: "삭제하기"}, "삭제")
 
         try {
+            var test_function = function(id){
+                alert(id + "를 삭제합니다.");
+            }
             btn.addEventListener("click", () =>
-                dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment}))
+                dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment, ext_func: test_function}))
             )
         }catch(e){
             console.log(e);
