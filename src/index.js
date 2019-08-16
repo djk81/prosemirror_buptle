@@ -757,7 +757,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
 
         let editState = EditorState.create({
-            doc: DOMParser.fromSchema(buptleSchema).parse(_doc),
+            doc: DOMParser.fromSchema(buptleSchema).parse(_doc, {preserveWhiteSpace: true}),
             plugins: pluginsArray,
             comments: comments
         });
