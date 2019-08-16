@@ -916,6 +916,7 @@ export
 
 export
     function btpmOnCommentBtClicked(id_suffix){
+    // alert('id_suffix : ' + id_suffix);
         //에디터 안에서 바꿔봄
         let _classesEle = document.getElementsByClassName('_comment_btpm_' + id_suffix);
         let _top_pos = 0;
@@ -933,7 +934,7 @@ export
             let id = current[i].spec.comment.id
             let from = current[i].from
             let to = current[i].to
-            if(Number(id_suffix)===id){
+            if(Number(id_suffix)===Number(id)){
                 btpmSetSelectByOffsetFrom(to, _top_pos);
                 break;
             }
@@ -945,7 +946,6 @@ export
     function btpmSetSelectByOffsetFrom(offset_from, top_pos){
       _editorView.dispatch(
           _editorView.state.tr.setSelection(
-              // TextSelection.near( connection.view.state.doc.resolve(offset_from) )
               TextSelection.create( _editorView.state.tr.doc, Number(offset_from) )
           )
       )
