@@ -73,7 +73,9 @@ let _editorSpec = null;
             } else if (actionType == "deleteComment") {
                 decos = decos.remove([this.findComment(action.comment.id)])
                 unsent = unsent.concat(action)
-                action.ext_func(action.comment.id)
+                if(action && action.ext_func){
+                    action.ext_func(action.comment.id)
+                }
             }
             return new CommentState(base.version, decos, unsent)
         }
