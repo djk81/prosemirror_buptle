@@ -472,17 +472,20 @@
 				};
 				_editorSpec.functions = {
 					get_comments : function(){
-					    // var rtn = {
-					    //     comments : [
-					    //         {
-					    //         from : 0,
-					    //         to : 2,
-					    //         text: '_default comment',
-					    //         id : '1234'
-					    //         }
-					    //     ]
-					    // };
-					    return null;
+					    var comments = {
+					        comments : [
+					            {
+					            from : 5,
+					            to : 22,
+					            text: '_default comment',
+					            id : '1234',
+						        extra : {
+		                            user_name: 'my name',
+		                        }
+					            }
+					        ]
+					    };
+					    return comments;
 					},
 					btpmHandleCommentDraw333 : function(_comments, action){
 						console.log(11 + " : " + _comments + " : " + action);
