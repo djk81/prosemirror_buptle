@@ -446,13 +446,14 @@ export function editorInitBySpec(editorSpec, init_function){
             btpmHandleCommentDraw = editorSpec.functions.btpmHandleCommentDraw.bind(this);
         }
 
-        if(editorSpec.functions.btpmRenderCommentsHandler){
-            btpmRenderCommentsHandler = editorSpec.functions.btpmRenderCommentsHandler.bind(this);
-        }
-        
         if(editorSpec.functions.btpmRenderCommentHandler){
             btpmRenderCommentHandler = editorSpec.functions.btpmRenderCommentHandler.bind(this);
         }
+
+        if(editorSpec.functions.btpmRenderCommentsHandler){
+            btpmRenderCommentsHandler = editorSpec.functions.btpmRenderCommentsHandler.bind(this);
+        }
+
 
     }
 
