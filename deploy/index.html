@@ -204,6 +204,9 @@
 	<div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
 	<div id="docname" style="position: relative; float:left; display: none; ">문서명</div>
 	<div id="users" onclick="alert( ' >> ' +  ProseMirror.getPMContentString() );">유저수</div>
+    <button type="button" onclick="required_field_btn_clicked();">필수입력필드</button>
+    <button type="button" onclick="content_field_btn_clicked();">일반입력필드</button>
+    <button type="button">체크박스</button>
 	<script>
 		function fn_test(){
 			document.getElementsByClassName('temp_text')[0].innerHTML = '<span class="temp_text default_buptle_required">가나다라마바사아차카타타파하</span>';
@@ -458,6 +461,7 @@
 
 	<script src="../dist/buptle_editor.js"></script>
 	<script>
+	var _editorView = null;
 
 		try{
 		    var activate_plugins = true
@@ -531,10 +535,13 @@
 
 
 
-		ProseMirror.editorInitBySpec(_editorSpec, function(){
+		_editorView = ProseMirror.editorInitBySpec(_editorSpec, function(){
 		    alert('시작됨');
 
+
 		});
+		 alert('시작됨');
+		 ProseMirror.setPMContentFromHTML();
 		// ProseMirror.EditorInit("editor", "content");
 
 		window.addEventListener('DOMContentLoaded', function(){
@@ -657,6 +664,50 @@
         }
     }
 
+    function required_field_btn_clicked(){
+
+        <!--let {$from} = state.selection, index = $from.index()-->
+        <!--if (!$from.parent.canReplaceWith(index, index, dinoType))-->
+            <!--return false-->
+        <!--if (dispatch)-->
+            <!--dispatch(state.tr.replaceSelectionWith(dinoType.create({type})))-->
+        <!--return true-->
+
+        var curr_state = _editorView.state;
+        var {$from} = curr_state.selection;
+        <!--alert($from + " : " + $from.empty + " : " + $from.index());-->
+
+        var buptle_span = ProseMirror.buptleSchema.nodes.span;
+        var created = buptle_span.create();
+        <!--alert(created + ' <<< ');-->
+
+        var {state, dispatch} = _editorView;
+
+        node_2 = ProseMirror.buptleSchema.nodes.label.createAndFill({
+            class: '알수가없어',
+        }, ProseMirror.buptleSchema.text("some text"));
+
+        node = ProseMirror.buptleSchema.nodes.span.createAndFill({
+                class: '알수강벗어',
+                'data-param-display-name': '야야야ㅑ',
+            }, node_2 );
+//ProseMirror.buptleSchema.text("some text")
+
+        dispatch(state.tr.replaceSelectionWith(node));
+        alert('끝');
+
+        <!--var _new_state = curr_state.tr.replaceSelectionWith(created);-->
+	    <!--_editorView.updateState(_new_state);-->
+
+        <!--ProseMirror.btpmMyHistoryDispatch(_newState.tr)-->
+
+
+
+    }
+
+    function content_field_btn_clicked(){
+
+    }
 	</script>
 </body>
 </html>

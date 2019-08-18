@@ -13,7 +13,7 @@ import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
 import {schema} from "./schema-basic-btpm.js"
 
 let _editorSpec = null;
-let buptleSchema = null;
+export let buptleSchema = null;
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
  * Comment Plugin
@@ -292,6 +292,7 @@ let buptleSchema = null;
         btpmMyHistoryDispatch(_tr)
     }
 
+export
     function btpmMyHistoryDispatch(tr){
         console.log('=============== btpmMyHistoryDispatch ===================')
         console.log(tr)
@@ -510,10 +511,24 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
     /*****************************************************
      * Schema 확장
+     * 필수입력필드 -> class : buptleparam_content_required_none
+     *                 data-param-required : 1
+     * 일반입력필드 -> class : buptleparam_content_none
+     *                 data-param-required : 0
     *****************************************************/
 
     const buptleSpanSpec = {
-        attrs : {id:{default:'tmp_span_id'}, class:{default:'btpm_default_class'}},
+        attrs : {
+            id:{default:'tmp_span_id'},
+            class:{default:'btpm_default_class'},
+            'data-param-id':{default:'default_name'},
+            'data-param-name':{default:'default_name'},
+            'data-param-content':{default:'default_name'},
+            'data-param-desc':{default:'default_name'},
+            'data-param-required':{default:'default_name'},
+            'data-param-kind':{default:'default_name'},
+            'data-param-display-name':{default:'default_name'},
+        },
         // content: "text*",
         // marks: "",
         // group: "block",
@@ -526,7 +541,14 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             return ['span',
                 {
                     id:node.attrs.id,
-                    class:node.attrs.class
+                    class:node.attrs.class,
+                    'data-param-id':node.attrs['data-param-id'],
+                    'data-param-name':node.attrs['data-param-name'],
+                    'data-param-content':node.attrs['data-param-content'],
+                    'data-param-desc':node.attrs['data-param-desc'],
+                    'data-param-required':node.attrs['data-param-required'],
+                    'data-param-kind':node.attrs['data-param-kind'],
+                    'data-param-display-name':node.attrs['data-param-display-name'],
                 },
                 0]
         },
@@ -534,7 +556,17 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             tag: "span",
             getAttrs(dom){
                 // console.log(dom);
-                 return { id: dom.id, class:dom.className }
+                 return {
+                 id: dom.id,
+                 class:dom.className,
+                 'data-param-id':dom.getAttribute('data-param-id'),
+                 'data-param-name':dom.getAttribute('data-param-name'),
+                 'data-param-content':dom.getAttribute('data-param-content'),
+                 'data-param-desc':dom.getAttribute('data-param-desc'),
+                 'data-param-required':dom.getAttribute('data-param-required'),
+                 'data-param-kind':dom.getAttribute('data-param-kind'),
+                 'data-param-display-name':dom.getAttribute('data-param-display-name'),
+                 }
             }
         }]
     };
@@ -548,7 +580,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         content: "(inline | text*)",
         inline: true,
         group: "buptle_extra",
-        atom:false,
+        atom:true,
         toDOM(node){
             return ['label', {for:node.attrs.for, class:node.attrs.class},0]
         },
@@ -757,7 +789,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
 
         let editState = EditorState.create({
-            doc: DOMParser.fromSchema(buptleSchema).parse(_doc, {preserveWhiteSpace: true}),
+            doc: DOMParser.fromSchema(buptleSchema).parse(_doc, {preserveWhitespace: true}),
             plugins: pluginsArray,
             comments: comments
         });
@@ -1065,4 +1097,10 @@ export
         let tmp = document.createElement("div");
         tmp.appendChild(fragment);
         return tmp.innerHTML;
+    };
+
+
+    export
+    let setPMContentFromHTML = () => {
+//        _editorView.setContent(format.fromHTML(pm.schema, "my              html", {preserveWhiteSpace: true}))
     };
