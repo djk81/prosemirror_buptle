@@ -1059,10 +1059,11 @@ export
 
         try {
             var test_function = function(id){
-                alert(id + "를 삭제합니다.");
+                alert(id + "를 삭제합니다.1111");
             }
+
             btn.addEventListener("click", () =>
-                dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment, ext_func: test_function}))
+                dispatch(state.tr.setMeta(commentPlugin, {type: "deleteComment", comment : comment, ext_func: test_function}))
             )
         }catch(e){
             console.log(e);

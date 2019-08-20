@@ -46,10 +46,11 @@ createServer((req, resp) => {
                     console.log('not found')
                     _rst = handleCollabRequest(req, resp);
                     if (!_rst) {
-                        resp.writeHead(404, {"Content-Type": "text/plain"})
+                        resp.writeHead(404, {"Content-Type": "text/plain; charset=utf-8"})
                         resp.end("Not found!!!")
                     }
                 }
+
                 console.log('파일응답!!! ')
                 resp.end(data); //data에 담긴 버퍼를 브라우저(클라이언트)로 요청을 보냄
                 return;
@@ -58,7 +59,7 @@ createServer((req, resp) => {
     }else{
         _rst = handleCollabRequest(req, resp);
         if (!_rst) {
-            resp.writeHead(404, {"Content-Type": "text/plain"})
+            resp.writeHead(404, {"Content-Type": "text/plain; charset=utf-8"})
             resp.end("Not found!!!")
         }
     }

@@ -571,7 +571,7 @@
                 }
 
 	            btn.bind('click', function(){
-	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment, ext_func:test_function}))
+	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment: comment, ext_func:test_function}))
 	            });
 	            // btn.addEventListener("click", () =>
 	            //
@@ -679,14 +679,15 @@
         <!--return true-->
 
         var curr_state = _editorView.state;
-        var {$from} = curr_state.selection;
+        // var {$from} = curr_state.selection;
         <!--alert($from + " : " + $from.empty + " : " + $from.index());-->
 
         var buptle_span = ProseMirror.buptleSchema.nodes.span;
         var created = buptle_span.create();
         <!--alert(created + ' <<< ');-->
 
-        var {state, dispatch} = _editorView;
+        var state = _editorView.state;
+	    var dispatch =  _editorView.dispatch;
 
         node_2 = ProseMirror.buptleSchema.nodes.label.createAndFill({
             class: '알수가없어',
@@ -714,5 +715,6 @@
 
     }
 	</script>
+123123123
 </body>
 </html>

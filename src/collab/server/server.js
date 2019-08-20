@@ -24,7 +24,7 @@ class Output {
 
   // Write the response.
   resp(resp) {
-    resp.writeHead(this.code, {"Content-Type": this.type})
+    resp.writeHead(this.code, {"Content-Type": this.type, "charset" : "utf-8"})
     resp.end(this.body)
   }
 }
