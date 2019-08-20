@@ -782,11 +782,24 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     })
 
     function btpmGetState(_doc, comments){
+        let menu = buildMenuItems(buptleSchema)
         let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]);
 
         if(_editorSpec.is_memo_activate){
             pluginsArray = pluginsArray.concat([commentPlugin, commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) )]);
-            menu.fullMenu[0].push(_annotationMenuItem)
+            var contains_already = false;
+            for(var indx=0; indx<menu.fullMenu[0].length; indx++ ){
+
+                if( "btpm_add_comment_menu" == menu.fullMenu[0][indx].class ){
+                    contains_already = true;
+                    break;
+                }
+
+            }
+            if(!contains_already){
+                menu.fullMenu[0].push(_annotationMenuItem)
+            }
+
         }
 
         if(_editorSpec.is_track_changes_activate){
@@ -892,7 +905,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
     });
 
-    let menu = buildMenuItems(buptleSchema)
+
 
 
    function btpmGetAllComments(){
