@@ -129,7 +129,13 @@ export let buptleSchema = null;
     }
 
     function deco(from, to, comment) {
-        return Decoration.inline(from, to, {class: "comment memo _inline_comment_"+comment.id, id: '_inline_comment_'+comment.id}, {comment})
+        console.log('======================================== 데코')
+        console.log(comment)
+        if(comment.extra.type && 'RESOLVED'== comment.extra.type){
+            return Decoration.inline(from, to, {class: "comment_resolved memo_resolved _inline_comment_"+comment.id, id: '_inline_comment_'+comment.id}, {comment})
+        }else{
+            return Decoration.inline(from, to, {class: "comment memo _inline_comment_"+comment.id, id: '_inline_comment_'+comment.id}, {comment})
+        }
     }
 
     export
