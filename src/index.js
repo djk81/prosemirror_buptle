@@ -57,6 +57,8 @@ export let buptleSchema = null;
             window.console.log('코멘트 action 타입 : ' + actionType);
 
             if (!action && !tr.docChanged) {
+                console.log(action)
+                console.log(tr)
                 window.console.log('코멘트 변경이 아님 그대로 return this : ' + actionType);
                 return this
             }
@@ -638,7 +640,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     };
 
     const buptleParagraphSpec = {
-        attrs : {align:{default:'left'}, style:{default:''}, class:{default:'buptle_editor_default_p_class'}},
+        attrs : {
+            align:{default:'left'},
+            style:{default:''},
+            class:{default:'buptle_editor_default_p_class'}
+            },
         content: "inline*",
         group: "block",
           toDOM(node){
@@ -1115,3 +1121,54 @@ export
     let setPMContentFromHTML = () => {
 //        _editorView.setContent(format.fromHTML(pm.schema, "my              html", {preserveWhiteSpace: true}))
     };
+
+
+    export
+    let getAllNode = function () {
+
+        var _all_memos = _editorView.state.plugin$.decos.find();
+        var indx = 0;
+        for(indx; indx < _all_memos.length; indx++ ){
+            _all_memos[indx].type.attrs.class = 'turn_off'
+            console.log(_all_memos[indx].type.attrs.class)
+        }
+        let _new_state = _editorView.state.apply(_editorView.state.tr);
+        //_editorView.updateState(_new_state);
+        //_editorView.dispatch(_editorView.state.tr)
+
+
+        return;
+        _editorView.state.tr.doc.descendants( (node, pos) => {
+            if("span" == node.type.name){
+                if(node.attrs.class &&
+                    (node.attrs.class.indexOf("buptleparam_content_required_none") !== -1 ||
+                     node.attrs.class.indexOf("buptleparam_content_none") !== -1 ||
+                     node.attrs.class.indexOf("memo") !== -1
+                    )){
+                    // console.log(node.attrs.class)
+                    node.attrs.class = 'active';
+                    // console.log(node.attrs.class)
+
+
+                    var _tr = _editorView.state.tr.setNodeMarkup(pos, node.type, {class:'active_nonono'})
+                    // _editorView.dispatch(_tr)
+                }else if(node.attrs.class &&
+                    (node.attrs.class.indexOf("memo") !== -1
+                    )){
+                    console.log("memo == > " + node.attrs.class)
+                    node.attrs.class = 'active';
+                    console.log(node.attrs.class)
+
+
+                    var _tr = _editorView.state.tr.setNodeMarkup(pos, node.type, {class:'active_nonono'})
+                    // _editorView.dispatch(_tr)
+                }
+
+            }
+        } )
+
+
+        // let _new_state = _editorView.state.apply(_editorView.state.tr);
+        // _editorView.updateState(_new_state);
+
+    }
