@@ -638,14 +638,15 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     };
 
     const buptleParagraphSpec = {
-        attrs : {align:{default:'left'}, style:{default:''}},
+        attrs : {align:{default:'left'}, style:{default:''}, class:{default:'buptle_editor_default_p_class'}},
         content: "inline*",
         group: "block",
           toDOM(node){
                 return ['p',
                     {
                         align:node.attrs.align,
-                        style:node.attrs.style
+                        style:node.attrs.style,
+                        class:node.attrs.class
                     },
                     0]
             },
@@ -653,7 +654,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 tag: "p",
                 getAttrs(dom){
                     // console.log(dom);
-                     return { align:dom.align, style:dom.getAttribute('style') }
+                     return {
+                         align:dom.align,
+                         style:dom.getAttribute('style'),
+                         class:dom.getAttribute("class"),
+                     }
                 }
             }]
     };
