@@ -1001,7 +1001,8 @@ export
             let from = current[i].from
             let to = current[i].to
             if(Number(id_suffix)===Number(id)){
-                btpmSetSelectByOffsetFrom(to, _top_pos);
+                //btpmSetSelectByOffsetFrom(to, _top_pos);
+                btpmSetSelectByOffsetFrom(from, _top_pos);
                 break;
             }
         }
