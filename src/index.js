@@ -858,12 +858,6 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
             pluginsArray = pluginsArray.concat(
                 [
                     commentPlugin, commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) )
-                    ,columnResizing(),
-                      tableEditing(),
-                      keymap({
-                        "Tab": goToNextCell(1),
-                        "Shift-Tab": goToNextCell(-1)
-                      })
                 ]
             );
             var contains_already = false;
@@ -879,7 +873,16 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
                 menu.fullMenu[0].push(_annotationMenuItem)
             }
 
-        }
+        };
+
+        pluginsArray = pluginsArray.concat([
+            ,columnResizing(),
+              tableEditing(),
+              keymap({
+                "Tab": goToNextCell(1),
+                "Shift-Tab": goToNextCell(-1)
+              })
+        ])
 
         if(_editorSpec.is_track_changes_activate){
             pluginsArray = pluginsArray.concat([trackPlugin, highlightPlugin]);
