@@ -199,6 +199,61 @@
 		  background: rgb(255, 255, 200);
 		  border-color: rgb(200, 200, 120);
 		}
+
+	/** table */
+	  .ProseMirror table {
+	    margin: 0;
+	  }
+	  .ProseMirror th, .ProseMirror td {
+	    min-width: 1em;
+	    border: 1px solid #ddd;
+	    padding: 3px 5px;
+	  }
+	  .ProseMirror .tableWrapper {
+	    margin: 1em 0;
+	  }
+	  .ProseMirror th {
+	    font-weight: bold;
+	    text-align: left;
+	  }
+
+		.ProseMirror .tableWrapper {
+  overflow-x: auto;
+}
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+.ProseMirror td, .ProseMirror th {
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px; top: 0; bottom: 0;
+  width: 4px;
+  z-index: 20;
+  background-color: #adf;
+  pointer-events: none;
+}
+.ProseMirror.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+/* Give selected cells a blue overlay */
+.ProseMirror .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+}
+
+
 	</style>
 </header>
 
@@ -276,12 +331,15 @@
 		</p>
 		<p style="padding-left: 30px;"><span data-id-key-now="1563968555469_3727" data-checkbox-id="bt_tinymce_add_checkbox_1563968555469_3727" class="checkbox-ed-wrapper" contenteditable="false" draggable="false" onclick="parent.fn_checkbox_clicked(this);"><input id="bt_tinymce_add_checkbox_1563968555469_3727" class="checkbox-ed" name="bt_tinymce_checkbox_1563968555469_3727" type="checkbox" value="1"><label class="checkbox-ed-label" for="bt_tinymce_add_checkbox_1563968555469_3727"></label></span>&nbsp; 품질 인증 등 수급사업자의 인증관련 자료</p>
 		<table>
-			<tr>
-				<td>1</td><td>2</td><td>3</td>
-			</tr>
-			<tr>
-				<td>a</td><td>b</td><td>c</td>
-			</tr>
+		    <tr>
+			    <th colspan=3 data-colwidth="100,0,0">헤더</th>
+		    </tr>
+		    <tr>
+			    <td>하나둘셋</td><td>둘둘</td><td>셋셋</td>
+		    </tr>
+		    <tr>
+			    <td>넷넷넷</td><td>다섯다섯</td><td>여섯여섯</td>
+		    </tr>
 		</table>
 	</div>
 
@@ -311,6 +369,19 @@
 					    };
 
 					    var memos = [1,200]
+
+	                    for(var indx in memos){
+					        comments.comments.push({
+						        from : 0,
+						        to : 10,
+						        text : '메모샘플',
+						        id : '1',
+						        extra : {
+						            user_name : '유저네임',
+						            user_id : '100'
+						        }
+					        });
+					    }
 
 
 					    return comments;
@@ -352,11 +423,8 @@
 
 
 		_editorView = ProseMirror.editorInitBySpec(_editorSpec, function(){
-		    alert('시작됨');
-
 
 		});
-		 alert('시작됨');
 		 ProseMirror.setPMContentFromHTML();
 		// ProseMirror.EditorInit("editor", "content");
 

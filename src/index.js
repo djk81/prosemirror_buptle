@@ -4,13 +4,36 @@ import {addListNodes} from "prosemirror-schema-list"
 import {TextSelection, Plugin, EditorState} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
-import {MenuItem} from "prosemirror-menu"
+import {MenuItem, Dropdown}  from "prosemirror-menu"
+import {keymap}  from "prosemirror-keymap"
 import crel from "crel"
 import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
+
+/** table 추가 */
+import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore, deleteRow,
+        mergeCells, splitCell, setCellAttr, toggleHeaderRow, toggleHeaderColumn, toggleHeaderCell,
+        goToNextCell, deleteTable}  from "./table/commands"
+// import {tableEditing, columnResizing, tableNodes, fixTables}  from "./table/schema.js"
+
+import {tableEditing, columnResizing, tableNodes, fixTables} from "./table"
 
 
 // import {schema} from "prosemirror-schema-basic"
 import {schema} from "./schema-basic-btpm.js"
+
+
+/** 드래그 앤 드롭 플러그인 작성 */
+  // let dom_events_plugin = new Plugin({
+  //   props: {
+  //     handleDOMEvents: {
+  //       touchmove(view, event) { return alert("touchmove") },
+  //       touchstart(view, event) { return alert("touchstart") },
+  //       dragstart(view, event) { return alert("dragstart") },
+  //       dragend(view, event) { return alert("dragend") },
+  //     },
+  //   }
+  // });
+
 
 let _editorSpec = null;
 export let buptleSchema = null;
@@ -495,6 +518,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             btpmHandleCommentDraw(comments, null);
         }
 
+
+        //btpm_attach_drop_evt();
+
         return _editorView;
     }
 
@@ -776,17 +802,70 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
 
 
+    // 테이블
+
     buptleSchema = new Schema({
-        nodes: nodeSpec,
+        nodes: nodeSpec.append(tableNodes(
+            {
+            tableGroup: "block",
+            cellContent: "block+",
+            cellAttributes: {
+              background: {
+                default: null,
+                getFromDOM(dom) { return dom.style.backgroundColor || null },
+                setDOMAttr(value, attrs) { if (value) attrs.style = (attrs.style || "") + `background-color: ${value};` }
+              }
+            }
+          }
+        )),
         marks: schema.spec.marks
     })
 
+
+function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) }
+    let tableMenu = [
+  item("컬럼추가(앞)", addColumnBefore),
+  item("컬럼추가(뒤)", addColumnAfter),
+  item("컬람삭제", deleteColumn),
+  item("행추가(앞)", addRowBefore),
+  item("행추가(뒤)", addRowAfter),
+  item("행삭제", deleteRow),
+  item("테이블삭제", deleteTable),
+  item("병합하기", mergeCells),
+  item("병합해제", splitCell),
+  // item("헤더컬럼", toggleHeaderColumn),
+  // item("헤더로우", toggleHeaderRow),
+  // item("헤더셀", toggleHeaderCell),
+  item("컬럼강조", setCellAttr("background", "#C5D0DE")),
+  item("컬럼강조(해제)", setCellAttr("background", null))
+]
+
+
+    let table_top_menu_icon_attr = {
+        // width: 951,
+	    // height: 1024,
+	    path: "M832 694q0-22-16-38l-118-118q-16-16-38-16-24 0-41 18 1 1 10 10t12 12 8 10 7 14 2 15q0 22-16 38t-38 16q-8 0-15-2t-14-7-10-8-12-12-10-10q-18 17-18 41 0 22 16 38l117 118q15 15 38 15 22 0 38-14l84-83q16-16 16-38zM430 292q0-22-16-38l-117-118q-16-16-38-16-22 0-38 15l-84 83q-16 16-16 38 0 22 16 38l118 118q15 15 38 15 24 0 41-17-1-1-10-10t-12-12-8-10-7-14-2-15q0-22 16-38t38-16q8 0 15 2t14 7 10 8 12 12 10 10q18-17 18-41zM941 694q0 68-48 116l-84 83q-47 47-116 47-69 0-116-48l-117-118q-47-47-47-116 0-70 50-119l-50-50q-49 50-118 50-68 0-116-48l-118-118q-48-48-48-116t48-116l84-83q47-47 116-47 69 0 116 48l117 118q47 47 47 116 0 70-50 119l50 50q49-50 118-50 68 0 116 48l118 118q48 48 48 116z"
+    }
     function btpmGetState(_doc, comments){
         let menu = buildMenuItems(buptleSchema)
+        //<img src='https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.icon-icons.com%2Ficons2%2F776%2FPNG%2F512%2Ftable_icon-icons.com_64652.png&imgrefurl=https%3A%2F%2Ficon-icons.com%2Fko%2F%25EC%2595%2584%25EC%259D%25B4%25EC%25BD%2598%2F%25ED%2585%258C%25EC%259D%25B4%25EB%25B8%2594%2F64652&docid=1G6Umk6SrUKiJM&tbnid=YDDgfkBk7ocvrM%3A&vet=10ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA..i&w=512&h=512&bih=888&biw=1920&q=%ED%85%8C%EC%9D%B4%EB%B8%94%20%EC%95%84%EC%9D%B4%EC%BD%98&ved=0ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA&iact=mrc&uact=8'>"
+        //     menu.fullMenu.splice(2, 0, [new Dropdown(tableMenu, {label:'표', title:'표 제어하기', icon:table_top_menu_icon_attr})]);
+            menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+
         let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]);
 
         if(_editorSpec.is_memo_activate){
-            pluginsArray = pluginsArray.concat([commentPlugin, commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) )]);
+            pluginsArray = pluginsArray.concat(
+                [
+                    commentPlugin, commentUI( transaction => btpmMyDispatch({type: "transaction", transaction}) )
+                    ,columnResizing(),
+                      tableEditing(),
+                      keymap({
+                        "Tab": goToNextCell(1),
+                        "Shift-Tab": goToNextCell(-1)
+                      })
+                ]
+            );
             var contains_already = false;
             for(var indx=0; indx<menu.fullMenu[0].length; indx++ ){
 
@@ -1187,3 +1266,42 @@ export
         // _editorView.updateState(_new_state);
 
     }
+    //
+    //
+    // function btpm_attach_drop_evt(){
+    //     alert('드롭이벤트');
+    //         document.getElementsByClassName('ProseMirror')[0].addEventListener('drop', e =>  {
+    //             alert('드롭이벤트 시작');
+    //       var files = e.dataTransfer.files;
+    //       if (files.length > 0) {
+    //         e.preventDefault();
+    //         var file = files[0];
+    //         var reader = new FileReader();
+    //         reader.onload = function(e) {
+    //           let imgAttr = {
+    //             class: 'uploading',
+    //             src: e.target.result
+    //           }
+    //           let image = buptleSchema.node('image', imgAttr);
+    //           _editorView.state.tr.insertInline(_editorView.state.selection.anchor, image).apply();
+    //
+    //           let currentSel = _editorView.state.selection;
+    //           let newAnchor = _editorView.state.selection.anchor.move(-1);
+    //           let mr = _editorView.state.markRange( newAnchor, currentSel.anchor, {className: 'marked'});
+    //
+    //           let moveToSelection = new TextSelection(newAnchor);
+    //           _editorView.state.setSelection(moveToSelection);
+    //           options.imageUploader(file, function(err, data){
+    //             if (err) return console.error(err);
+    //             let image = buptleSchema.node('image', {
+    //               src: data.imageUrl
+    //             });
+    //             let newSel = new TextSelection(mr.from, mr.to)
+    //             _editorView.state.setSelection(newSel);
+    //             _editorView.state.tr.replaceSelection(image, false).apply();
+    //           });
+    //         }
+    //         reader.readAsDataURL(file);
+    //       }
+    //     });
+    // }
