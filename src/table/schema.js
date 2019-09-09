@@ -7,7 +7,8 @@ function getCellAttrs(dom, extraAttrs) {
   let result = {
     colspan,
     rowspan: Number(dom.getAttribute("rowspan") || 1),
-    colwidth: widths && widths.length == colspan ? widths : null
+    colwidth: widths && widths.length == colspan ? widths : null,
+    width: widths && widths.length == colspan ? widths : null,
   }
   for (let prop in extraAttrs) {
     let getter = extraAttrs[prop].getFromDOM
@@ -21,8 +22,10 @@ function setCellAttrs(node, extraAttrs) {
   let attrs = {}
   if (node.attrs.colspan != 1) attrs.colspan = node.attrs.colspan
   if (node.attrs.rowspan != 1) attrs.rowspan = node.attrs.rowspan
-  if (node.attrs.colwidth)
-    attrs["data-colwidth"] = node.attrs.colwidth.join(",")
+  if (node.attrs.colwidth) {
+      attrs["data-colwidth"] = node.attrs.colwidth.join(",")
+      attrs["width"] = node.attrs.colwidth.join(",")
+  }
   for (let prop in extraAttrs) {
     let setter = extraAttrs[prop].setDOMAttr
     if (setter) setter(node.attrs[prop], attrs)
@@ -65,7 +68,8 @@ export function tableNodes(options) {
   let cellAttrs = {
     colspan: {default: 1},
     rowspan: {default: 1},
-    colwidth: {default: null}
+    colwidth: {default: null},
+    width: {default: null},
   }
   for (let prop in extraAttrs)
     cellAttrs[prop] = {default: extraAttrs[prop].default}
