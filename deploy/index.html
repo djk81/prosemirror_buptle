@@ -270,6 +270,10 @@
 
 
 	<div id="content" style="display: none;">
+		<p>123456789</p>
+		<span>
+			바로 span
+		</span>
 		<p style="padding-left: 30px;">
 			<strong>
 				<span data-id-key-now="1563968555469_7817" data-checkbox-id="bt_tinymce_add_checkbox_1563968555469_7817" class="checkbox-ed-wrapper" contenteditable="false"
@@ -318,13 +322,13 @@
 					        comments : []
 					    };
 
-					    var memos = [1,200]
+					    var memos = [1]
 
 	                    for(var indx in memos){
 					        comments.comments.push({
-						        from : 0,
-						        to : 10,
-						        text : '메모샘플',
+						        from : 3,
+						        to : 4,
+						        text : '메모',
 						        id : '1',
 						        extra : {
 						            user_name : '유저네임',
@@ -332,7 +336,6 @@
 						        }
 					        });
 					    }
-
 
 					    return comments;
 					},

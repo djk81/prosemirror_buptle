@@ -13,7 +13,6 @@ import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
 import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore, deleteRow,
         mergeCells, splitCell, setCellAttr, toggleHeaderRow, toggleHeaderColumn, toggleHeaderCell,
         goToNextCell, deleteTable}  from "./table/commands"
-// import {tableEditing, columnResizing, tableNodes, fixTables}  from "./table/schema.js"
 
 import {tableEditing, columnResizing, tableNodes, fixTables} from "./table"
 
@@ -553,7 +552,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
     const buptleSpanSpec = {
         attrs : {
-            id:{default:'tmp_span_id'},
+            id:{default:'tmp_span_id_' + randomID()},
             class:{default:'btpm_default_class'},
             'data-param-id':{default:''},
             'data-param-name':{default:''},
@@ -572,6 +571,26 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom:true,
         toDOM(node){
+
+            // alert(node.attrs.id + " : " + node.attrs.class + " : " + node.type.spec.atom)
+            // 프로스미러 hack 제작자는 절대로 하지 말라고 했으나 현재 두개이상의 다른 spec 을 동일한 html 태그로 변환해야하는 방법은 현재 존재하지 않는다...
+            if(node.attrs.id && node.attrs.id.indexOf('tmp_span_id')!==-1){
+                //필수입력필드같은애들은 atom true
+            }else{
+                node.type.spec.atom = false;
+                //그외의 span 태그가 들어오면 의도하지 않은 스펙이므로 p태그로 변환
+
+                // alert(node.attrs.id);
+                // return ['p',
+                //     {
+                //         align:node.attrs.align,
+                //         style:node.attrs.style,
+                //         class:node.attrs.class
+                //     },
+                //     0]
+
+            }
+
             return ['span',
                 {
                     id:node.attrs.id,
@@ -852,7 +871,7 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
         //     menu.fullMenu.splice(2, 0, [new Dropdown(tableMenu, {label:'표', title:'표 제어하기', icon:table_top_menu_icon_attr})]);
             menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
 
-        let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]);
+        let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]).concat(content_paste_plugin);
 
         if(_editorSpec.is_memo_activate){
             pluginsArray = pluginsArray.concat(
@@ -986,6 +1005,28 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
             }
         }
     });
+
+
+    /** paste 플러그인 */
+    const content_paste_plugin = new Plugin({
+        props: {
+            clipboardParser : {
+                parseSlice : function(str, $context){
+                    //console.log($context);
+                    var doc = document.cloneNode(false);
+				    var dom = doc.createElement('div');
+				    dom.innerHTML = str;
+				    console.log("======================================================= " + typeof(str));
+                    console.log(dom.innerHTML);
+                    console.log(str);
+
+				    var parser = _editorView.someProp("domParser") || DOMParser.fromSchema(_editorView.state.schema);
+				    return parser.parseSlice(str, {preserveWhitespace: true, context: $context});
+                }
+            }
+        }
+    });
+
 
 
 
