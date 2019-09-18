@@ -1011,17 +1011,55 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
     const content_paste_plugin = new Plugin({
         props: {
             clipboardParser : {
-                parseSlice : function(str, $context){
+                parseSlice : function(_dom, $context){
                     //console.log($context);
-                    var doc = document.cloneNode(false);
-				    var dom = doc.createElement('div');
-				    dom.innerHTML = str;
-				    console.log("======================================================= " + typeof(str));
-                    console.log(dom.innerHTML);
-                    console.log(str);
 
-				    var parser = _editorView.someProp("domParser") || DOMParser.fromSchema(_editorView.state.schema);
-				    return parser.parseSlice(str, {preserveWhitespace: true, context: $context});
+                    console.log("BEFORE ======================================================= " + typeof(_dom));
+                    //console.log(_dom.innerHTML);
+                    console.log(_dom);
+                    /** docx, hwp paste 시 컨텐츠 가공 */
+                    $('p', _dom).each(function(indx, _p){
+                        var _tot_text = ""
+                        $(this).find("> span:not('btpm_default_class')").each(function(indx, item){
+                            var _text = $(item).text();
+                            _tot_text += _text;
+                            console.log("span => " + indx + " : " + item.innerHTML + " : " + _text);
+                            item.remove()
+                        });
+
+                        if(_tot_text.length>0){
+                            $(this).html("");
+                            $(this).html(_tot_text);
+                        }
+                    });
+
+                    /**
+                    $('p', _dom).each(function(indx, _p){
+                        var _tot_text = ""
+                        $(this).find("b").each(function(indx, item){
+                            var _text = $(item).text();
+                            _tot_text += _text;
+                            console.log("b => " + indx + " : " + item.innerHTML + " : " + _text);
+                            item.remove()
+                        });
+
+                        if(_tot_text.length>0){
+                            $(this).text("");
+                            $(this).text(_tot_text);
+                        }
+                    });
+                    */
+
+                    // var doc = document.cloneNode(false);
+				    // var dom = doc.createElement('div');
+				    // dom.innerHTML = _dom.innerHTML;
+                    console.log("AFTER ======================================================= " + typeof(_dom));
+                    //console.log(dom.innerHTML);
+                    console.log(_dom);
+
+				    //var parser = _editorView.someProp("domParser") || DOMParser.fromSchema(_editorView.state.schema);
+				    var parser = DOMParser.fromSchema(buptleSchema);
+				    return parser.parseSlice(_dom, {preserveWhitespace: true, context: $context});
                 }
             }
         }
