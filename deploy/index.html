@@ -267,7 +267,7 @@
 	<br/>
 	<div>
 		<h2>BUPTLE - Prosemirror (IE 버전은 빌드 수정 작업중. 크롬에서만 사용가능)</h2>
-	<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" alt="샘플" title="sample" contenteditable="false" draggable="true" class="ProseMirror-selectednode">
+	<!--<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" alt="샘플" title="sample" contenteditable="false" draggable="true" class="ProseMirror-selectednode">-->
 	</div>
 	<br/>
 
@@ -277,6 +277,8 @@
 	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
         </div>
 	</form>
+
+	<button id="click_upload_btn">이미지업로드</button>  <input type="file" id="image-upload"/>
 
     <div id="commits" style="margin-bottom: 23px;">
 	    <!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
@@ -300,8 +302,9 @@
 				<label></label>
 			</span>
 			체크박스1
-
 	<br/>
+
+
 	<div style="width:800px; margin-bottom: 23px; position: absolute; max-height:900px; float:left; ">
 		<!--style="overflow-y:scroll; max-height:700px;"-->
 		<div id="editor" >
@@ -628,7 +631,18 @@ text-align:center;line-height:150%">확 인 서</p>
     function content_field_btn_clicked(){
 
     }
+
+    document.querySelector("#click_upload_btn").addEventListener("click", e => {
+		document.querySelector("#image-upload").click();
+	})
+
+    document.querySelector("#image-upload").addEventListener("change", e => {
+	  if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+	    ProseMirror.startImageUpload(_editorView, e.target.files[0])
+	    _editorView.focus()
+	})
+
 	</script>
-123123123
+
 </body>
 </html>

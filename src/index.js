@@ -1,5 +1,5 @@
 import {Mapping} from "prosemirror-transform"
-import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
+import {exampleSetup, } from "prosemirror-example-setup" //buildMenuItems
 import {addListNodes} from "prosemirror-schema-list"
 import {NodeSelection, TextSelection, Plugin, EditorState, PluginKey} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
@@ -24,6 +24,90 @@ import {tableEditing, columnResizing, tableNodes, fixTables} from "./table"
 import {schema} from "./schema-basic-btpm.js"
 
 var prefix = "ProseMirror-prompt";
+
+
+/** 이미지업로드 */
+let placeholderPlugin = new Plugin({
+  state: {
+    init() { return DecorationSet.empty },
+    apply(tr, set) {
+      // Adjust decoration positions to changes made by the transaction
+      set = set.map(tr.mapping, tr.doc)
+      // See if the transaction adds or removes any placeholders
+      let action = tr.getMeta(this)
+      if (action && action.add) {
+        let widget = document.createElement("placeholder")
+        let deco = Decoration.widget(action.add.pos, widget, {id: action.add.id})
+        set = set.add(tr.doc, [deco])
+      } else if (action && action.remove) {
+        set = set.remove(set.find(null, null,
+                                  spec => spec.id == action.remove.id))
+      }
+      return set
+    }
+  },
+  props: {
+    decorations(state) { return this.getState(state) }
+  }
+})
+
+function findPlaceholder(state, id) {
+  let decos = placeholderPlugin.getState(state)
+  let found = decos.find(null, null, spec => spec.id == id)
+  return found.length ? found[0].from : null
+}
+
+
+export function startImageUpload(view, file) {
+  // A fresh object to act as the ID for this upload
+  let id = {}
+
+  // Replace the selection with a placeholder
+  let tr = view.state.tr
+  if (!tr.selection.empty) tr.deleteSelection()
+  tr.setMeta(placeholderPlugin, {add: {id, pos: tr.selection.from}})
+  view.dispatch(tr)
+
+    if ( file ) {
+        var FR= new FileReader();
+        FR.onload = function(e) {
+            let url = e.target.result
+
+             let pos = findPlaceholder(view.state, id)
+            // If the content around the placeholder has been deleted, drop
+            // the image
+            if (pos == null) return
+            // Otherwise, insert it at the placeholder's position, and remove
+            // the placeholder
+            view.dispatch(view.state.tr
+                          .replaceWith(pos, pos, buptleSchema.nodes.resizableImage.create({src: url}))
+                          .setMeta(placeholderPlugin, {remove: {id}}))
+        };
+        FR.readAsDataURL( file );
+    }
+
+    return;
+  uploadFile(file).then(url => {
+    let pos = findPlaceholder(view.state, id)
+    // If the content around the placeholder has been deleted, drop
+    // the image
+    if (pos == null) return
+    // Otherwise, insert it at the placeholder's position, and remove
+    // the placeholder
+    view.dispatch(view.state.tr
+                  .replaceWith(pos, pos, schema.nodes.image.create({src: url}))
+                  .setMeta(placeholderPlugin, {remove: {id}}))
+  }, () => {
+    // On failure, just clean up the placeholder
+    view.dispatch(tr.setMeta(placeholderPlugin, {remove: {id}}))
+  })
+}
+
+function uploadFile(files){
+
+
+
+}
 
 /** 드래그 앤 드롭 플러그인 작성 */
   // let dom_events_plugin = new Plugin({
@@ -913,7 +997,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         handle.style.right = "0px"
         handle.style.width = "10px"
         handle.style.height = "10px"
-        handle.style.border = "3px solid black"
+        handle.style.border = "3px solid orange"
         handle.style.borderTop = "none"
         handle.style.borderLeft = "none"
         handle.style.display = "none"
@@ -1357,7 +1441,7 @@ function markItem(markType, options) {
 
         //console.log(buptle_menu);
 
-
+        pluginsArray = pluginsArray.concat(placeholderPlugin)
         //buptle_menu = buptle_menu.concat( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] )
         // pluginsArray = pluginsArray.concat(buptle_menu)
 
