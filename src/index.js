@@ -1322,13 +1322,13 @@ function markItem(markType, options) {
             type;
         if (type = schema.marks.strong) {
             r.toggleStrong = markItem(type, {
-                title: "Toggle strong style",
+                title: "굵게",
                 icon: icons.strong
             });
         }
         if (type = schema.marks.em) {
             r.toggleEm = markItem(type, {
-                title: "Toggle emphasis",
+                title: "기울이기",
                 icon: icons.em
             });
         }
@@ -1418,6 +1418,7 @@ function markItem(markType, options) {
             label: "문단타입..."
         });
 
+        selectParentNodeItem.title = "블럭선택"
         r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
         r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
             liftItem, selectParentNodeItem
@@ -1466,8 +1467,32 @@ function markItem(markType, options) {
 
         //<img src='https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.icon-icons.com%2Ficons2%2F776%2FPNG%2F512%2Ftable_icon-icons.com_64652.png&imgrefurl=https%3A%2F%2Ficon-icons.com%2Fko%2F%25EC%2595%2584%25EC%259D%25B4%25EC%25BD%2598%2F%25ED%2585%258C%25EC%259D%25B4%25EB%25B8%2594%2F64652&docid=1G6Umk6SrUKiJM&tbnid=YDDgfkBk7ocvrM%3A&vet=10ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA..i&w=512&h=512&bih=888&biw=1920&q=%ED%85%8C%EC%9D%B4%EB%B8%94%20%EC%95%84%EC%9D%B4%EC%BD%98&ved=0ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA&iact=mrc&uact=8'>"
         //     menu.fullMenu.splice(2, 0, [new Dropdown(tableMenu, {label:'표', title:'표 제어하기', icon:table_top_menu_icon_attr})]);
-        menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+        menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블 편집', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+        menu.blockMenu[0].push(new MenuItem({
+          title: "이미지업로드",
+          run: function(){
+              let eleId = _editorSpec.functions.getBtpmUploadImgTriggerId();
+              document.getElementById(eleId).click();
+          },
+          class : "btpm_add_img_upload_menu",
+            label:"이미지업로드"
+        }))
+
         menu.blockMenu[0].push(makeImage)
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "테이블 만들기",
+          run: function run(state, dispatch) {
+                return;
+              dispatch( state.tr.replaceSelectionWith(ProseMirror.buptleSchema.nodes.table.createAndFill(
+                  {
+                    class: '알수가없어',
+                }
+              )) );
+          },
+          class : "btpm_add_add_table_menu",
+            label:"테이블"
+        }))
 
         if(_editorSpec.is_memo_activate){
             pluginsArray = pluginsArray.concat(
