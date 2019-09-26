@@ -1,6 +1,6 @@
 import {Mapping} from "prosemirror-transform"
 import {exampleSetup, } from "prosemirror-example-setup" //buildMenuItems
-import {addListNodes} from "prosemirror-schema-list"
+import {wrapInList, addListNodes} from "prosemirror-schema-list"
 import {NodeSelection, TextSelection, Plugin, EditorState, PluginKey} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
@@ -953,7 +953,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     // 테이블
 
     buptleSchema = new Schema({
-        nodes: nodeSpec.append(tableNodes(
+        nodes:
+        addListNodes(
+            nodeSpec.append(tableNodes(
             {
             tableGroup: "block",
             cellContent: "block+",
@@ -965,9 +967,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
               }
             }
           }
-        )).append(
-            schema.spec.nodes, "paragraph block*", "block"
-        ),
+        ))
+        , "paragraph block*", "block")
+        ,
         marks: schema.spec.marks
     })
 
@@ -984,11 +986,12 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         outer.style.display = "inline-block"
         //outer.style.paddingRight = "0.25em"
         outer.style.paddingLeft = "0.25em"
-        outer.style.lineHeight = "0"; // necessary so the bottom right arrow is aligned nicely
+        // outer.style.lineHeight = "0"; // necessary so the bottom right arrow is aligned nicely
 
         const img = document.createElement("img")
         img.setAttribute("src", node.attrs.src)
         img.style.width = "100%"
+        img.style.setProperty('vertical-align', 'bottom', 'important');
         //img.style.border = "1px solid red"
 
         const handle = document.createElement("span")
@@ -1330,13 +1333,13 @@ function markItem(markType, options) {
             });
         }
         if (type = schema.marks.code) {
-            r.toggleCode = markItem(type, {
-                title: "Toggle code font",
-                icon: icons.code
-            });
+            // r.toggleCode = markItem(type, {
+            //     title: "Toggle code font",
+            //     icon: icons.code
+            // });
         }
         if (type = schema.marks.link) {
-            r.toggleLink = linkItem(type);
+            // r.toggleLink = linkItem(type);
         }
 
         if (type = schema.nodes.image) {
@@ -1362,21 +1365,21 @@ function markItem(markType, options) {
         }
         if (type = schema.nodes.paragraph) {
             r.makeParagraph = blockTypeItem(type, {
-                title: "Change to paragraph",
-                label: "Plain"
+                title: "기본으로 돌아가기",
+                label: "기본"
             });
         }
         if (type = schema.nodes.code_block) {
-            r.makeCodeBlock = blockTypeItem(type, {
-                title: "Change to code block",
-                label: "Code"
-            });
+            // r.makeCodeBlock = blockTypeItem(type, {
+            //     title: "Change to code block",
+            //     label: "Code"
+            // });
         }
         if (type = schema.nodes.heading) {
             for (var i = 1; i <= 10; i++) {
                 r["makeHead" + i] = blockTypeItem(type, {
-                    title: "Change to heading " + i,
-                    label: "Level " + i,
+                    title: "제목으로변경 " + i,
+                    label: "헤더 " + i,
                     attrs: {
                         level: i
                     }
@@ -1402,26 +1405,37 @@ function markItem(markType, options) {
                 return x;
             });
         };
+        /**
         r.insertMenu = new Dropdown(cut([r.insertImage, r.insertHorizontalRule]), {
             label: "Insert"
         });
+         */
         r.typeMenu = new Dropdown(cut([r.makeParagraph, r.makeCodeBlock, r.makeHead1 && new DropdownSubmenu(cut([
             r.makeHead1, r.makeHead2, r.makeHead3, r.makeHead4, r.makeHead5, r.makeHead6
         ]), {
-            label: "Heading"
+            label: "제목"
         })]), {
-            label: "Type..."
+            label: "문단타입..."
         });
 
         r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
         r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
             liftItem, selectParentNodeItem
         ])];
+
+        r.fullMenu = r.inlineMenu.concat([
+            [r.typeMenu]
+        ], [
+            [undoItem, redoItem]
+        ], r.blockMenu);
+
+        /**
         r.fullMenu = r.inlineMenu.concat([
             [r.insertMenu, r.typeMenu]
         ], [
             [undoItem, redoItem]
         ], r.blockMenu);
+         */
 
         return r
     }
@@ -2101,4 +2115,8 @@ function getValues(fields, domFields) {
     result[name] = field.clean(value);
   }
   return result
+}
+
+function wrapListItem(nodeType, options) {
+  return cmdItem(wrapInList(nodeType, options.attrs), options)
 }
