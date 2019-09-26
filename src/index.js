@@ -1,13 +1,14 @@
 import {Mapping} from "prosemirror-transform"
 import {exampleSetup, buildMenuItems} from "prosemirror-example-setup"
 import {addListNodes} from "prosemirror-schema-list"
-import {TextSelection, Plugin, EditorState} from "prosemirror-state"
+import {NodeSelection, TextSelection, Plugin, EditorState, PluginKey} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
-import {MenuItem, Dropdown}  from "prosemirror-menu"
+import {redoItem, undoItem, selectParentNodeItem, liftItem, joinUpItem, DropdownSubmenu, blockTypeItem, wrapItem, icons, MenuItem, Dropdown}  from "prosemirror-menu"
 import {keymap}  from "prosemirror-keymap"
 import crel from "crel"
 import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
+import {toggleMark, setBlockType, wrapIn} from "prosemirror-commands"
 
 /** table 추가 */
 import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore, deleteRow,
@@ -17,9 +18,12 @@ import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore
 import {tableEditing, columnResizing, tableNodes, fixTables} from "./table"
 
 
+
+
 // import {schema} from "prosemirror-schema-basic"
 import {schema} from "./schema-basic-btpm.js"
 
+var prefix = "ProseMirror-prompt";
 
 /** 드래그 앤 드롭 플러그인 작성 */
   // let dom_events_plugin = new Plugin({
@@ -36,6 +40,7 @@ import {schema} from "./schema-basic-btpm.js"
 
 let _editorSpec = null;
 export let buptleSchema = null;
+//import {buptle_menu} from "./buptle_menu"
 // import {commentPlugin, commentUI, addAnnotation, annotationIcon} from "./comment_1.0"
 /*****************************************************
  * Comment Plugin
@@ -162,8 +167,11 @@ export let buptleSchema = null;
         }
     }
 
+    export const _key = new PluginKey("commentPlugin")
+
     export
     let commentPlugin = new Plugin({
+        key:_key,
         state: {
             init: CommentState.init,
             apply(tr, prev) { return prev.apply(tr) }
@@ -507,6 +515,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
               state: _editorState,
               dispatchTransaction(transaction) {
                   btpmMyDispatch({type: "transaction", transaction})
+              },
+            nodeViews: {
+                resizableImage(node, view, getPos) { return new FootnoteView(node, view, getPos) }
               }
         });
 
@@ -539,6 +550,38 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         
 
         return _new_state
+    }
+
+
+    /*****************************************************
+     * resizable 이미지
+     ****************************************************/
+    const resizableImage = {
+      inline: true,
+      attrs: {
+        src: {},
+        width: {default: "10em"},
+        alt: {default: null},
+        title: {default: null}
+      },
+      group: "inline",
+      draggable: true,
+      parseDOM: [{
+        priority: 51, // must be higher than the default image spec
+        tag: "img[src][width]",
+        getAttrs(dom) {
+          return {
+            src: dom.getAttribute("src"),
+            title: dom.getAttribute("title"),
+            alt: dom.getAttribute("alt"),
+            width: dom.getAttribute("width")
+          }
+        }
+      }],
+      toDOM(node) {
+        const attrs = {style: `width: ${node.attrs.width}`}
+        return ["span", {}]
+      }
     }
 
 
@@ -724,6 +767,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           width : {default : '100%'},
           height : {default : '100%'},
           style : {default : ''},
+          class:{default:'buptle_editor_default_img_class'}
         },
         group: "inline",
         draggable: true,
@@ -819,6 +863,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         .addBefore("span", "label", buptleLabelSpec)
         .addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
+        .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
 
 
     // 테이블
@@ -836,13 +881,230 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
               }
             }
           }
-        )),
+        )).append(
+            schema.spec.nodes, "paragraph block*", "block"
+        ),
         marks: schema.spec.marks
     })
 
+    function getFontSize(element) {
+      return parseFloat(getComputedStyle(element).fontSize);
+    }
+
+    class FootnoteView {
+      constructor(node, view, getPos) {
+        const outer = document.createElement("span")
+        outer.style.position = "relative"
+        outer.style.width = node.attrs.width
+        //outer.style.border = "1px solid blue"
+        outer.style.display = "inline-block"
+        //outer.style.paddingRight = "0.25em"
+        outer.style.paddingLeft = "0.25em"
+        outer.style.lineHeight = "0"; // necessary so the bottom right arrow is aligned nicely
+
+        const img = document.createElement("img")
+        img.setAttribute("src", node.attrs.src)
+        img.style.width = "100%"
+        //img.style.border = "1px solid red"
+
+        const handle = document.createElement("span")
+        handle.style.position = "absolute"
+        handle.style.bottom = "0px"
+        handle.style.right = "0px"
+        handle.style.width = "10px"
+        handle.style.height = "10px"
+        handle.style.border = "3px solid black"
+        handle.style.borderTop = "none"
+        handle.style.borderLeft = "none"
+        handle.style.display = "none"
+        handle.style.cursor = "nwse-resize"
+
+        handle.onmousedown = function(e) {
+          e.preventDefault()
+
+          const startX = e.pageX;
+          const startY = e.pageY;
+
+          const fontSize = getFontSize(outer)
+
+          const startWidth = parseFloat(node.attrs.width.match(/(.+)em/)[1])
+
+          const onMouseMove = (e) => {
+            const currentX = e.pageX;
+            const currentY = e.pageY;
+
+            const diffInPx = currentX - startX
+            const diffInEm = diffInPx / fontSize
+
+            outer.style.width = `${startWidth + diffInEm}em`
+          }
+
+          const onMouseUp = (e) => {
+            e.preventDefault()
+
+            document.removeEventListener("mousemove", onMouseMove)
+            document.removeEventListener("mouseup", onMouseUp)
+
+            const transaction = view.state.tr.setNodeMarkup(getPos(), null, {src: node.attrs.src, width: outer.style.width} ).setSelection(view.state.selection);
+
+            view.dispatch(transaction)
+          }
+
+          document.addEventListener("mousemove", onMouseMove)
+          document.addEventListener("mouseup", onMouseUp)
+        }
+
+        outer.appendChild(handle)
+        outer.appendChild(img)
+
+        this.dom = outer
+        this.img = img
+        this.handle = handle
+      }
+
+      selectNode() {
+        this.img.classList.add("ProseMirror-selectednode")
+        this.handle.style.display = ""
+      }
+
+      deselectNode() {
+        this.img.classList.remove("ProseMirror-selectednode")
+        this.handle.style.display = "none"
+      }
+    }
+
+    // ===============================================================
+
+    function makeImageMenuItem(options) {
+      let command = (state, dispatch) => {
+        const nodeName = state.selection && state.selection.node && state.selection.node.type.name;
+
+        if (nodeName === "image" || nodeName === "resizableImage") {
+          if (dispatch) {
+            const nodeType = nodeName === "image"
+              ? buptleSchema.nodes.resizableImage
+              : buptleSchema.nodes.image
+
+            const tr = state.tr.replaceSelectionWith(nodeType.create({src: state.selection.node.attrs.src}))
+
+            dispatch(tr)
+          }
+
+          return true
+        }
+
+        return false
+      }
+
+      let passedOptions = {
+        run: command,
+        enable(state, dispatch) { return command(state, dispatch) },
+        active(state, dispatch) {
+          const nodeName = state.selection && state.selection.node && state.selection.node.type.name;
+          return nodeName === "resizableImage"
+        }
+      }
+
+      for (let prop in options) passedOptions[prop] = options[prop]
+
+      return new MenuItem(passedOptions)
+    }
+
+    // ===============================================================
+
+    const makeImage = makeImageMenuItem({ label: "이미지조정" });
+
+
+/** 메뉴 */
+
+class MenuView {
+  constructor(items, editorView) {
+    this.items = items
+    this.editorView = editorView
+    this.dom = document.createElement("div")
+    this.dom.className = "btpm_menubar"
+    items.forEach(({dom}) => this.dom.appendChild(dom))
+    this.update()
+
+    this.dom.addEventListener("mousedown", e => {
+      e.preventDefault()
+      editorView.focus()
+      items.forEach(({command, dom}) => {
+        if (dom.contains(e.target))
+          command(editorView.state, editorView.dispatch, editorView)
+      })
+    })
+  }
+
+  update() {
+    this.items.forEach(({command, dom}) => {
+      let active = command(this.editorView.state, null, this.editorView)
+      dom.style.display = active ? "" : "none"
+    })
+  }
+
+  destroy() { this.dom.remove() }
+}
+
+// 메뉴플러그인
+function menuPlugin(items) {
+  return new Plugin({
+    view(editorView) {
+      let menuView = new MenuView(items, editorView)
+      //editorView.dom.parentNode.insertBefore(menuView.dom, editorView.dom)
+      $(".ProseMirror-menubar").html(menuView.dom)
+      return menuView
+    }
+  })
+}
+
+// 아이콘생성
+function icon(text, name) {
+  let span = document.createElement("span")
+  span.className = "ProseMirror-menuitem menuicon " + name
+  span.title = name
+  span.textContent = text
+  return span
+}
+
+//heading 아이콘
+function heading(level) {
+  return {
+    command: setBlockType(buptleSchema.nodes.heading, {level}),
+    dom: icon("H" + level, "heading")
+  }
+}
+
+//buptle table 1depth 메뉴
+function table_menu_1(level) {
+    //menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+  return {
+    command: setBlockType(buptleSchema.nodes.heading, {level}),
+    dom: icon("표", "테이블")
+  }
+}
+
+function canInsert(state, nodeType) {
+  var $from = state.selection.$from;
+  for (var d = $from.depth; d >= 0; d--) {
+    var index = $from.index(d);
+    if ($from.node(d).canReplaceWith(index, index, nodeType)) { return true }
+  }
+  return false
+}
+
+function markActive(state, type) {
+  var ref = state.selection;
+  var from = ref.from;
+  var $from = ref.$from;
+  var to = ref.to;
+  var empty = ref.empty;
+  if (empty) { return type.isInSet(state.storedMarks || $from.marks()) }
+  else { return state.doc.rangeHasMark(from, to, type) }
+}
 
 function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) }
-    let tableMenu = [
+let tableMenu = [
   item("컬럼추가(앞)", addColumnBefore),
   item("컬럼추가(뒤)", addColumnAfter),
   item("컬람삭제", deleteColumn),
@@ -852,26 +1114,262 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
   item("테이블삭제", deleteTable),
   item("병합하기", mergeCells),
   item("병합해제", splitCell),
-  // item("헤더컬럼", toggleHeaderColumn),
-  // item("헤더로우", toggleHeaderRow),
-  // item("헤더셀", toggleHeaderCell),
+  item("헤더컬럼", toggleHeaderColumn),
+  item("헤더로우", toggleHeaderRow),
+  item("헤더셀", toggleHeaderCell),
   item("컬럼강조", setCellAttr("background", "#C5D0DE")),
   item("컬럼강조(해제)", setCellAttr("background", null))
 ]
 
 
-    let table_top_menu_icon_attr = {
-        // width: 951,
-	    // height: 1024,
-	    path: "M832 694q0-22-16-38l-118-118q-16-16-38-16-24 0-41 18 1 1 10 10t12 12 8 10 7 14 2 15q0 22-16 38t-38 16q-8 0-15-2t-14-7-10-8-12-12-10-10q-18 17-18 41 0 22 16 38l117 118q15 15 38 15 22 0 38-14l84-83q16-16 16-38zM430 292q0-22-16-38l-117-118q-16-16-38-16-22 0-38 15l-84 83q-16 16-16 38 0 22 16 38l118 118q15 15 38 15 24 0 41-17-1-1-10-10t-12-12-8-10-7-14-2-15q0-22 16-38t38-16q8 0 15 2t14 7 10 8 12 12 10 10q18-17 18-41zM941 694q0 68-48 116l-84 83q-47 47-116 47-69 0-116-48l-117-118q-47-47-47-116 0-70 50-119l-50-50q-49 50-118 50-68 0-116-48l-118-118q-48-48-48-116t48-116l84-83q47-47 116-47 69 0 116 48l117 118q47 47 47 116 0 70-50 119l50 50q49-50 118-50 68 0 116 48l118 118q48 48 48 116z"
+let table_top_menu_icon_attr = {
+    // width: 951,
+    // height: 1024,
+    path: "M832 694q0-22-16-38l-118-118q-16-16-38-16-24 0-41 18 1 1 10 10t12 12 8 10 7 14 2 15q0 22-16 38t-38 16q-8 0-15-2t-14-7-10-8-12-12-10-10q-18 17-18 41 0 22 16 38l117 118q15 15 38 15 22 0 38-14l84-83q16-16 16-38zM430 292q0-22-16-38l-117-118q-16-16-38-16-22 0-38 15l-84 83q-16 16-16 38 0 22 16 38l118 118q15 15 38 15 24 0 41-17-1-1-10-10t-12-12-8-10-7-14-2-15q0-22 16-38t38-16q8 0 15 2t14 7 10 8 12 12 10 10q18-17 18-41zM941 694q0 68-48 116l-84 83q-47 47-116 47-69 0-116-48l-117-118q-47-47-47-116 0-70 50-119l-50-50q-49 50-118 50-68 0-116-48l-118-118q-48-48-48-116t48-116l84-83q47-47 116-47 69 0 116 48l117 118q47 47 47 116 0 70-50 119l50 50q49-50 118-50 68 0 116 48l118 118q48 48 48 116z"
+}
+
+/**
+const _annotationMenuItem = new MenuItem({
+      title: "코멘트입력",
+      run: addAnnotation,
+      select: state => addAnnotation(state),
+      icon: annotationIcon,
+      class : "btpm_add_comment_menu"
+    })
+ */
+
+//menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+export let buptle_menu = menuPlugin([
+  {command: toggleMark(buptleSchema.marks.strong), dom: icon("B", "strong")},
+  {command: toggleMark(buptleSchema.marks.em), dom: icon("i", "em")},
+  {command: setBlockType(buptleSchema.nodes.paragraph), dom: icon("p", "paragraph")},
+  heading(1), heading(2), heading(3),
+  {command: wrapIn(buptleSchema.nodes.blockquote), dom: icon(">", "blockquote")},
+    {command: addAnnotation, dom:icon("메모", "메모남기기") },
+    // {command: addAnnotation, dom:icon("메모", "메모남기기") },
+])
+
+
+
+function insertImageItem(nodeType) {
+  return new MenuItem({
+    title: "Insert image",
+    label: "Image",
+    enable: function enable(state) { return canInsert(state, nodeType) },
+    run: function run(state, _, view) {
+      var ref = state.selection;
+      var from = ref.from;
+      var to = ref.to;
+      var attrs = null;
+      if (state.selection instanceof NodeSelection && state.selection.node.type == nodeType)
+        { attrs = state.selection.node.attrs; }
+      openPrompt({
+        title: "Insert image",
+        fields: {
+          src: new TextField({label: "Location", required: true, value: attrs && attrs.src}),
+          title: new TextField({label: "Title", value: attrs && attrs.title}),
+          alt: new TextField({label: "Description",
+                              value: attrs ? attrs.alt : state.doc.textBetween(from, to, " ")})
+        },
+        callback: function callback(attrs) {
+          view.dispatch(view.state.tr.replaceSelectionWith(nodeType.createAndFill(attrs)));
+          view.focus();
+        }
+      });
     }
+  })
+}
+
+function linkItem(markType) {
+  return new MenuItem({
+    title: "Add or remove link",
+    icon: icons.link,
+    active: function active(state) { return markActive(state, markType) },
+    enable: function enable(state) { return !state.selection.empty },
+    run: function run(state, dispatch, view) {
+      if (markActive(state, markType)) {
+        prosemirrorCommands.toggleMark(markType)(state, dispatch);
+        return true
+      }
+      openPrompt({
+        title: "Create a link",
+        fields: {
+          href: new TextField({
+            label: "Link target",
+            required: true
+          }),
+          title: new TextField({label: "Title"})
+        },
+        callback: function callback(attrs) {
+          toggleMark(markType, attrs)(view.state, view.dispatch);
+          view.focus();
+        }
+      });
+    }
+  })
+}
+
+function cmdItem(cmd, options) {
+  var passedOptions = {
+    label: options.title,
+    run: cmd
+  };
+  for (var prop in options) { passedOptions[prop] = options[prop]; }
+  if ((!options.enable || options.enable === true) && !options.select)
+    { passedOptions[options.enable ? "enable" : "select"] = function (state) { return cmd(state); }; }
+
+  return new MenuItem(passedOptions)
+}
+
+function markItem(markType, options) {
+  var passedOptions = {
+    active: function active(state) { return markActive(state, markType) },
+    enable: true
+  };
+  for (var prop in options) { passedOptions[prop] = options[prop]; }
+  return cmdItem(toggleMark(markType), passedOptions)
+}
+
+    function buildMenuItems_btpm(schema) {
+        var r = {},
+            type;
+        if (type = schema.marks.strong) {
+            r.toggleStrong = markItem(type, {
+                title: "Toggle strong style",
+                icon: icons.strong
+            });
+        }
+        if (type = schema.marks.em) {
+            r.toggleEm = markItem(type, {
+                title: "Toggle emphasis",
+                icon: icons.em
+            });
+        }
+        if (type = schema.marks.code) {
+            r.toggleCode = markItem(type, {
+                title: "Toggle code font",
+                icon: icons.code
+            });
+        }
+        if (type = schema.marks.link) {
+            r.toggleLink = linkItem(type);
+        }
+
+        if (type = schema.nodes.image) {
+            r.insertImage = insertImageItem(type);
+        }
+        if (type = schema.nodes.bullet_list) {
+            r.wrapBulletList = wrapListItem(type, {
+                title: "Wrap in bullet list",
+                icon: icons.bulletList
+            });
+        }
+        if (type = schema.nodes.ordered_list) {
+            r.wrapOrderedList = wrapListItem(type, {
+                title: "Wrap in ordered list",
+                icon: icons.orderedList
+            });
+        }
+        if (type = schema.nodes.blockquote) {
+            r.wrapBlockQuote = wrapItem(type, {
+                title: "Wrap in block quote",
+                icon: icons.blockquote
+            });
+        }
+        if (type = schema.nodes.paragraph) {
+            r.makeParagraph = blockTypeItem(type, {
+                title: "Change to paragraph",
+                label: "Plain"
+            });
+        }
+        if (type = schema.nodes.code_block) {
+            r.makeCodeBlock = blockTypeItem(type, {
+                title: "Change to code block",
+                label: "Code"
+            });
+        }
+        if (type = schema.nodes.heading) {
+            for (var i = 1; i <= 10; i++) {
+                r["makeHead" + i] = blockTypeItem(type, {
+                    title: "Change to heading " + i,
+                    label: "Level " + i,
+                    attrs: {
+                        level: i
+                    }
+                });
+            }
+        }
+        if (type = schema.nodes.horizontal_rule) {
+            var hr = type;
+            r.insertHorizontalRule = new MenuItem({
+                title: "Insert horizontal rule",
+                label: "Horizontal rule",
+                enable: function enable(state) {
+                    return canInsert(state, hr)
+                },
+                run: function run(state, dispatch) {
+                    dispatch(state.tr.replaceSelectionWith(hr.create()));
+                }
+            });
+        }
+
+        var cut = function(arr) {
+            return arr.filter(function(x) {
+                return x;
+            });
+        };
+        r.insertMenu = new Dropdown(cut([r.insertImage, r.insertHorizontalRule]), {
+            label: "Insert"
+        });
+        r.typeMenu = new Dropdown(cut([r.makeParagraph, r.makeCodeBlock, r.makeHead1 && new DropdownSubmenu(cut([
+            r.makeHead1, r.makeHead2, r.makeHead3, r.makeHead4, r.makeHead5, r.makeHead6
+        ]), {
+            label: "Heading"
+        })]), {
+            label: "Type..."
+        });
+
+        r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
+        r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
+            liftItem, selectParentNodeItem
+        ])];
+        r.fullMenu = r.inlineMenu.concat([
+            [r.insertMenu, r.typeMenu]
+        ], [
+            [undoItem, redoItem]
+        ], r.blockMenu);
+
+        return r
+    }
+
+
     function btpmGetState(_doc, comments){
-        let menu = buildMenuItems(buptleSchema)
+        let menu = buildMenuItems_btpm(buptleSchema)
+        // let menu = {
+        //     fullMenu : []
+        // }
+
+        //let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]).concat(content_paste_plugin);
+        let pluginsArray = exampleSetup(
+            {schema, history: false, menuContent: menu.fullMenu}
+            ).concat([history({preserveItems: true})]
+            ).concat(content_paste_plugin);
+
+        //console.log(buptle_menu);
+
+
+        //buptle_menu = buptle_menu.concat( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] )
+        // pluginsArray = pluginsArray.concat(buptle_menu)
+
+        //menu.fullMenu.push([new Dropdown(tableMenu, { label: 'Table' })]);
+        // console.log('pluginArray');
+        // console.log(pluginsArray);
+
+
         //<img src='https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.icon-icons.com%2Ficons2%2F776%2FPNG%2F512%2Ftable_icon-icons.com_64652.png&imgrefurl=https%3A%2F%2Ficon-icons.com%2Fko%2F%25EC%2595%2584%25EC%259D%25B4%25EC%25BD%2598%2F%25ED%2585%258C%25EC%259D%25B4%25EB%25B8%2594%2F64652&docid=1G6Umk6SrUKiJM&tbnid=YDDgfkBk7ocvrM%3A&vet=10ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA..i&w=512&h=512&bih=888&biw=1920&q=%ED%85%8C%EC%9D%B4%EB%B8%94%20%EC%95%84%EC%9D%B4%EC%BD%98&ved=0ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA&iact=mrc&uact=8'>"
         //     menu.fullMenu.splice(2, 0, [new Dropdown(tableMenu, {label:'표', title:'표 제어하기', icon:table_top_menu_icon_attr})]);
-            menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
-
-        let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]).concat(content_paste_plugin);
+        menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+        menu.blockMenu[0].push(makeImage)
 
         if(_editorSpec.is_memo_activate){
             pluginsArray = pluginsArray.concat(
@@ -880,16 +1378,21 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
                 ]
             );
             var contains_already = false;
-            for(var indx=0; indx<menu.fullMenu[0].length; indx++ ){
+            try{
+                for(var indx=0; indx<menu.fullMenu[0].length; indx++ ){
 
-                if( "btpm_add_comment_menu" == menu.fullMenu[0][indx].class ){
-                    contains_already = true;
-                    break;
+                    if( "btpm_add_comment_menu" == menu.fullMenu[0][indx].class ){
+                        contains_already = true;
+                        break;
+                    }
+
                 }
-
-            }
-            if(!contains_already){
-                menu.fullMenu[0].push(_annotationMenuItem)
+                if(!contains_already){
+                    menu.fullMenu[0].push(_annotationMenuItem)
+                }
+            }catch(e){
+                //pass
+                console.log(e)
             }
 
         };
@@ -1070,7 +1573,7 @@ function item(label, cmd) { return new MenuItem({label, select: cmd, run: cmd}) 
 
 
    function btpmGetAllComments(){
-       var _decos = _editorView.state.plugin$.decos.find()
+       var _decos = _editorView.state.commentPlugin$.decos.find()
        return _decos;
    }
 
@@ -1155,7 +1658,7 @@ export
             }, 0.3 * 1000);
         }
 
-        let current = _editorView.state.plugin$.decos.find()
+        let current = _editorView.state.commentPlugin$.decos.find()
 
         for (let i = 0; i < current.length; i++){
             let id = current[i].spec.comment.id
@@ -1302,7 +1805,7 @@ export
     export
     let getAllNode = function () {
 
-        var _all_memos = _editorView.state.plugin$.decos.find();
+        var _all_memos = _editorView.state.commentPlugin$.decos.find();
         var indx = 0;
         for(indx; indx < _all_memos.length; indx++ ){
             _all_memos[indx].type.attrs.class = 'turn_off'
@@ -1387,3 +1890,131 @@ export
     //       }
     //     });
     // }
+
+
+function openPrompt(options) {
+  var wrapper = document.body.appendChild(document.createElement("div"));
+  wrapper.className = prefix;
+
+  var mouseOutside = function (e) { if (!wrapper.contains(e.target)) { close(); } };
+  setTimeout(function () { return window.addEventListener("mousedown", mouseOutside); }, 50);
+  var close = function () {
+    window.removeEventListener("mousedown", mouseOutside);
+    if (wrapper.parentNode) { wrapper.parentNode.removeChild(wrapper); }
+  };
+
+  var domFields = [];
+  for (var name in options.fields) { domFields.push(options.fields[name].render()); }
+
+  var submitButton = document.createElement("button");
+  submitButton.type = "submit";
+  submitButton.className = prefix + "-submit";
+  submitButton.textContent = "OK";
+  var cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.className = prefix + "-cancel";
+  cancelButton.textContent = "Cancel";
+  cancelButton.addEventListener("click", close);
+
+  var form = wrapper.appendChild(document.createElement("form"));
+  if (options.title) { form.appendChild(document.createElement("h5")).textContent = options.title; }
+  domFields.forEach(function (field) {
+    form.appendChild(document.createElement("div")).appendChild(field);
+  });
+  var buttons = form.appendChild(document.createElement("div"));
+  buttons.className = prefix + "-buttons";
+  buttons.appendChild(submitButton);
+  buttons.appendChild(document.createTextNode(" "));
+  buttons.appendChild(cancelButton);
+
+  var box = wrapper.getBoundingClientRect();
+  wrapper.style.top = ((window.innerHeight - box.height) / 2) + "px";
+  wrapper.style.left = ((window.innerWidth - box.width) / 2) + "px";
+
+  var submit = function () {
+    var params = getValues(options.fields, domFields);
+    if (params) {
+      close();
+      options.callback(params);
+    }
+  };
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    submit();
+  });
+
+  form.addEventListener("keydown", function (e) {
+    if (e.keyCode == 27) {
+      e.preventDefault();
+      close();
+    } else if (e.keyCode == 13 && !(e.ctrlKey || e.metaKey || e.shiftKey)) {
+      e.preventDefault();
+      submit();
+    } else if (e.keyCode == 9) {
+      window.setTimeout(function () {
+        if (!wrapper.contains(document.activeElement)) { close(); }
+      }, 500);
+    }
+  });
+
+  var input = form.elements[0];
+  if (input) { input.focus(); }
+}
+var Field = function Field(options) { this.options = options; };
+
+// render:: (state: EditorState, props: Object) → dom.Node
+// Render the field to the DOM. Should be implemented by all subclasses.
+
+// :: (dom.Node) → any
+// Read the field's value from its DOM node.
+Field.prototype.read = function read (dom) { return dom.value };
+
+// :: (any) → ?string
+// A field-type-specific validation function.
+Field.prototype.validateType = function validateType (_value) {};
+
+Field.prototype.validate = function validate (value) {
+  if (!value && this.options.required)
+    { return "Required field" }
+  return this.validateType(value) || (this.options.validate && this.options.validate(value))
+};
+
+Field.prototype.clean = function clean (value) {
+  return this.options.clean ? this.options.clean(value) : value
+};
+
+var TextField = (function (Field) {
+  function TextField () {
+    Field.apply(this, arguments);
+  }
+
+  if ( Field ) TextField.__proto__ = Field;
+  TextField.prototype = Object.create( Field && Field.prototype );
+  TextField.prototype.constructor = TextField;
+
+  TextField.prototype.render = function render () {
+    var input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = this.options.label;
+    input.value = this.options.value || "";
+    input.autocomplete = "off";
+    return input
+  };
+
+  return TextField;
+}(Field));
+
+function getValues(fields, domFields) {
+  var result = Object.create(null), i = 0;
+  for (var name in fields) {
+    var field = fields[name], dom = domFields[i++];
+    var value = field.read(dom), bad = field.validate(value);
+    if (bad) {
+      reportInvalid(dom, bad);
+      return null
+    }
+    result[name] = field.clean(value);
+  }
+  return result
+}

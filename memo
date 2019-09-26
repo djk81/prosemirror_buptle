@@ -17,4 +17,8 @@ collab 서버
 node src/collab/server/start.js
 
 
+# 다운그레이드 한글 fix 버전
+npm install prosemirror-view@1.8.0
+
+
 
