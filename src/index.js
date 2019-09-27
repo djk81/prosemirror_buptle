@@ -1347,19 +1347,19 @@ function markItem(markType, options) {
         }
         if (type = schema.nodes.bullet_list) {
             r.wrapBulletList = wrapListItem(type, {
-                title: "Wrap in bullet list",
+                title: "리스트",
                 icon: icons.bulletList
             });
         }
         if (type = schema.nodes.ordered_list) {
             r.wrapOrderedList = wrapListItem(type, {
-                title: "Wrap in ordered list",
+                title: "순서있는 리스트",
                 icon: icons.orderedList
             });
         }
         if (type = schema.nodes.blockquote) {
             r.wrapBlockQuote = wrapItem(type, {
-                title: "Wrap in block quote",
+                title: "인용구",
                 icon: icons.blockquote
             });
         }
@@ -1483,12 +1483,26 @@ function markItem(markType, options) {
         menu.blockMenu[0].push(new MenuItem({
           title: "테이블 만들기",
           run: function run(state, dispatch) {
+
+              var _table_dom = crel("div", {class: "tableWrapper"},
+                  crel("table", {style: "min-width:150px;"},
+                      crel("colgroup"),
+                      crel("tbody",
+                          crel('tr', crel('th', crel('p', 'HEADER 1')), crel('th', crel('p', 'HEADER 2')) ),
+                          crel('tr', crel('td', crel('p', '상단의 (테이블편집)을 클릭하십시오.')), crel('td', crel('p', '')) ),
+                          crel('tr', crel('td', crel('p', '')), crel('td', crel('p', '')))
+                      )
+                  )
+              )
+              console.log(_table_dom)
+              let _temp = DOMParser.fromSchema(buptleSchema).parse(_table_dom, {preserveWhitespace: true})
+              dispatch( state.tr.replaceSelectionWith( _temp ) )
                 return;
-              dispatch( state.tr.replaceSelectionWith(ProseMirror.buptleSchema.nodes.table.createAndFill(
-                  {
-                    class: '알수가없어',
-                }
-              )) );
+              // dispatch( state.tr.replaceSelectionWith(ProseMirror.buptleSchema.nodes.table.createAndFill(
+              //     {
+              //       class: '알수가없어',
+              //   }
+              // )) );
           },
           class : "btpm_add_add_table_menu",
             label:"테이블"
