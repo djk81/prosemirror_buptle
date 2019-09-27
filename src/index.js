@@ -1538,7 +1538,7 @@ function markItem(markType, options) {
               dispatch( state.tr.replaceSelectionWith( _temp ) )
           },
           class : "btpm_add_checkbox_menu",
-            label:"체크리스트"
+            label:"체크박스"
         }))
 
         if(_editorSpec.is_memo_activate){
