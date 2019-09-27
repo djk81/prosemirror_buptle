@@ -1471,8 +1471,14 @@ function markItem(markType, options) {
         menu.blockMenu[0].push(new MenuItem({
           title: "이미지업로드",
           run: function(){
-              let eleId = _editorSpec.functions.getBtpmUploadImgTriggerId();
-              document.getElementById(eleId).click();
+              const _image_upload_btn_id = "btpm_image_upload_btn"
+              let eleId = _image_upload_btn_id;
+              if(document.getElementById(eleId)!==null){
+                document.getElementById(eleId).click();
+              }else{
+                  let _img_upload_elem = crel('input',  {type: 'file', id:_image_upload_btn_id})
+              }
+
           },
           class : "btpm_add_img_upload_menu",
             label:"이미지업로드"
@@ -1506,6 +1512,27 @@ function markItem(markType, options) {
           },
           class : "btpm_add_add_table_menu",
             label:"테이블"
+        }))
+
+        /**
+         <span class="tmpl_checkbox">
+             <input type="checkbox">
+             <label></label>
+         </span>
+         */
+        menu.blockMenu[0].push(new MenuItem({
+          title: "체크박스 만들기",
+          run: function run(state, dispatch) {
+
+              var _tmpl_checkbox = $('<span class="tmpl_checkbox"><input type="checkbox"><label></label></span>').get(0);
+
+              console.log(_tmpl_checkbox)
+              //DOMParser.fromSchema(buptleSchema);
+              let _temp = DOMParser.fromSchema(buptleSchema).parse(_tmpl_checkbox, {preserveWhitespace: true})
+              dispatch( state.tr.replaceSelectionWith( _temp ) )
+          },
+          class : "btpm_add_checkbox_menu",
+            label:"체크리스트"
         }))
 
         if(_editorSpec.is_memo_activate){
