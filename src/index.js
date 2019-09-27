@@ -1476,7 +1476,13 @@ function markItem(markType, options) {
               if(document.getElementById(eleId)!==null){
                 document.getElementById(eleId).click();
               }else{
-                  let _img_upload_elem = crel('input',  {type: 'file', id:_image_upload_btn_id})
+                  let _img_upload_elem = crel('input',  {type: 'file', id:_image_upload_btn_id, style:'display:none;'})
+                  document.body.appendChild(_img_upload_elem);
+                  document.querySelector("#"+_image_upload_btn_id).addEventListener("change", e => {
+                      if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+                            startImageUpload(_editorView, e.target.files[0])
+                        _editorView.focus()
+                    })
               }
 
           },
