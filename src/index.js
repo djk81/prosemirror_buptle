@@ -79,8 +79,9 @@ export function startImageUpload(view, file) {
             if (pos == null) return
             // Otherwise, insert it at the placeholder's position, and remove
             // the placeholder
+            let img = buptleSchema.nodes.resizableImage.create({src: url})
             view.dispatch(view.state.tr
-                          .replaceWith(pos, pos, buptleSchema.nodes.resizableImage.create({src: url}))
+                          .replaceWith(pos, pos, img)
                           .setMeta(placeholderPlugin, {remove: {id}}))
         };
         FR.readAsDataURL( file );
@@ -665,7 +666,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
       }],
       toDOM(node) {
-        const attrs = {style: 'width: ${node.attrs.width}'}
+        const attrs = {style: 'width: '+node.attrs.width}
         console.log("리사이저블===============");
         console.log(attrs);
         return ["img", {}]
