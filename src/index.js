@@ -664,7 +664,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
       }],
       toDOM(node) {
         const attrs = {style: 'width: ${node.attrs.width}'}
-        return ["span", {}]
+        console.log("리사이저블===============");
+        console.log(attrs);
+        return ["img", {}]
       }
     }
 
@@ -681,6 +683,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         attrs : {
             id:{default:'tmp_span_id_' + randomID()},
             class:{default:'btpm_default_class'},
+            style:{default:''},
             'data-param-id':{default:''},
             'data-param-name':{default:''},
             'data-param-content':{default:''},
@@ -693,7 +696,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "(inline | text* | buptle_extra* )",
+        content: "(inline* | text* | buptle_extra* )",
         inline: true,
         group: "inline",
         atom:true,
@@ -722,6 +725,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 {
                     id:node.attrs.id,
                     class:node.attrs.class,
+                    style: node.attrs.style,
                     'data-param-id':node.attrs['data-param-id'],
                     'data-param-name':node.attrs['data-param-name'],
                     'data-param-content':node.attrs['data-param-content'],
@@ -735,10 +739,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         parseDOM: [{
             tag: "span",
             getAttrs(dom){
-                // console.log(dom);
+                //console.log(dom);
                  return {
                  id: dom.id,
                  class:dom.className,
+                 style: dom.getAttribute("style"),
                  'data-param-id':dom.getAttribute('data-param-id'),
                  'data-param-name':dom.getAttribute('data-param-name'),
                  'data-param-content':dom.getAttribute('data-param-content'),
