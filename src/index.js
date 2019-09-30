@@ -134,6 +134,8 @@ export let buptleSchema = null;
     export let annotationIcon = {
         width: 1024, height: 1024,
         path: "M512 219q-116 0-218 39t-161 107-59 145q0 64 40 122t115 100l49 28-15 54q-13 52-40 98 86-36 157-97l24-21 32 3q39 4 74 4 116 0 218-39t161-107 59-145-59-145-161-107-218-39zM1024 512q0 99-68 183t-186 133-257 48q-40 0-82-4-113 100-262 138-28 8-65 12h-2q-8 0-15-6t-9-15v-0q-1-2-0-6t1-5 2-5l3-5t4-4 4-5q4-4 17-19t19-21 17-22 18-29 15-33 14-43q-89-50-141-125t-51-160q0-99 68-183t186-133 257-48 257 48 186 133 68 183z"
+        //path: "M-3 0h14v14H-3z",
+        //path: "M3.125 7.875V10.5h1.313a1.313 1.313 0 0 0 0-2.625H3.125zm3.867-1.684a3.938 3.938 0 0 1-2.555 6.934H.5V.875H4a3.5 3.5 0 0 1 2.992 5.316zM3.125 3.5v1.75H4A.875.875 0 1 0 4 3.5h-.875z"
     };
 
     // 브라우저 내장 Comment 랑 헷갈리지 않게 하자.
@@ -1483,7 +1485,7 @@ function markItem(markType, options) {
               const _image_upload_btn_id = "btpm_image_upload_btn"
               let eleId = _image_upload_btn_id;
               if(document.getElementById(eleId)!==null){
-                document.getElementById(eleId).click();
+
               }else{
                   let _img_upload_elem = crel('input',  {type: 'file', id:_image_upload_btn_id, style:'display:none;'})
                   document.body.appendChild(_img_upload_elem);
@@ -1493,6 +1495,7 @@ function markItem(markType, options) {
                         _editorView.focus()
                     })
               }
+              document.getElementById(eleId).click();
 
           },
           class : "btpm_add_img_upload_menu",
