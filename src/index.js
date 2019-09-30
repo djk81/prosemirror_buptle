@@ -1,6 +1,6 @@
 import {Mapping} from "prosemirror-transform"
 import {exampleSetup, } from "prosemirror-example-setup" //buildMenuItems
-import {wrapInList, addListNodes} from "prosemirror-schema-list"
+import {splitListItem, wrapInList, addListNodes} from "prosemirror-schema-list"
 import {NodeSelection, TextSelection, Plugin, EditorState, PluginKey} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
@@ -8,7 +8,7 @@ import {redoItem, undoItem, selectParentNodeItem, liftItem, joinUpItem, Dropdown
 import {keymap}  from "prosemirror-keymap"
 import crel from "crel"
 import {Schema, DOMParser, DOMSerializer} from "prosemirror-model";
-import {toggleMark, setBlockType, wrapIn} from "prosemirror-commands"
+import {chainCommands, toggleMark, setBlockType, wrapIn, newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks} from "prosemirror-commands"
 
 /** table 추가 */
 import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore, deleteRow,
@@ -1461,6 +1461,10 @@ function markItem(markType, options) {
 
         //console.log(buptle_menu);
 
+        // pluginsArray = pluginsArray.concat([keymap({
+        //     "Enter" :  chainCommands(splitListItem(buptleSchema.nodes.list_item), newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks),
+        // })])
+
         pluginsArray = pluginsArray.concat(placeholderPlugin)
         //buptle_menu = buptle_menu.concat( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] )
         // pluginsArray = pluginsArray.concat(buptle_menu)
@@ -1547,6 +1551,41 @@ function markItem(markType, options) {
           class : "btpm_add_checkbox_menu",
             label:"체크박스"
         }))
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "좌측정렬",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "letf")
+          },
+          class : "btpm_add_alignment_menu",
+            label:"(좌)정렬"
+        }))
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "중앙정렬",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "center")
+          },
+          class : "btpm_add_alignment_menu",
+            label:"중앙"
+        }))
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "우측정렬",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "right")
+          },
+          class : "btpm_add_alignment_menu",
+            label:"우측"
+        }))
+
+
 
         if(_editorSpec.is_memo_activate){
             pluginsArray = pluginsArray.concat(
@@ -2198,4 +2237,33 @@ function getValues(fields, domFields) {
 
 function wrapListItem(nodeType, options) {
   return cmdItem(wrapInList(nodeType, options.attrs), options)
+}
+
+function selectParentNode(state, dispatch){
+      var ref = state.selection;
+      var $from = ref.$from;
+      var to = ref.to;
+      var pos;
+      var same = $from.sharedDepth(to);
+
+      if (same == 0) {
+        return false;
+      }
+
+      // pos = $from.before(same);
+      pos = $from.before(same);
+
+      if (dispatch) {
+        dispatch(state.tr.setSelection(NodeSelection.create(state.doc, pos)));
+      }
+
+      return pos
+}
+
+function setAlignment(pos, dispatch, align){
+    let $pos = pos
+    //let node = state.doc.resolve(state.selection.head).nodeBefore;
+    //buptleSchema.spec.nodes.paragraph
+    var _tr = _editorView.state.tr.setNodeMarkup($pos, null, {align:align})
+    dispatch( _tr )
 }
