@@ -18,7 +18,7 @@ createServer((req, resp) => {
 	resp.setHeader('Access-Control-Allow-Headers', '*');
 
 	console.log("================ url : " + req.url);
-    if( req.url.indexOf('deploy/')!=-1 || req.url.indexOf('dist/')!=-1 || req.url.indexOf('img/')!=-1){
+    if( req.url.indexOf('static/')!=-1 || req.url.indexOf('deploy/')!=-1 || req.url.indexOf('dist/')!=-1 || req.url.indexOf('img/')!=-1){
         // if( req.url.indexOf('deploy/')!=-1){
         //     fs.readFile('./deploy/index.html',(err,data)=>{
         //         if(err){

@@ -1567,14 +1567,15 @@ function markItem(markType, options) {
         }))
 
         menu.blockMenu[0].push(new MenuItem({
-          title: "중앙정렬",
+          title: "중앙",
           run: function run(state, dispatch) {
 
               let pos = selectParentNode(state, dispatch)
               setAlignment(pos, dispatch, "center")
           },
           class : "btpm_add_alignment_menu",
-            label:"중앙"
+            label:"중앙정렬",
+            // icon: { dom:crel('object', {type:'image/svg+xml', data:'/static/adele/imgs/editor_03.svg'}) }
         }))
 
         menu.blockMenu[0].push(new MenuItem({
@@ -1585,7 +1586,7 @@ function markItem(markType, options) {
               setAlignment(pos, dispatch, "right")
           },
           class : "btpm_add_alignment_menu",
-            label:"우측"
+            label:"(우)정렬"
         }))
 
 
