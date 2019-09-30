@@ -663,7 +663,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
       }],
       toDOM(node) {
-        const attrs = {style: `width: ${node.attrs.width}`}
+        const attrs = {style: 'width: ${node.attrs.width}'}
         return ["span", {}]
       }
     }
@@ -855,7 +855,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         },
         group: "inline",
         draggable: true,
-        parseDOM: [{tag: "img[src]", getAttrs(dom) {
+        parseDOM: [{priority:50, tag: "img[src]", getAttrs(dom) {
           return {
             src: dom.getAttribute("src"),
             title: dom.getAttribute("title"),
@@ -1530,11 +1530,13 @@ function markItem(markType, options) {
           title: "체크박스 만들기",
           run: function run(state, dispatch) {
 
-              var _tmpl_checkbox = $('<span class="tmpl_checkbox"><input type="checkbox"><label></label></span>').get(0);
+              var _tmpl_checkbox = $('<p><span>&nbsp;&nbsp;&nbsp;</span><span class="tmpl_checkbox"><input type="checkbox"><label></label></span>&nbsp;&nbsp;(체크박스)</p>').get(0);
 
-              console.log(_tmpl_checkbox)
+              // console.log(_tmpl_checkbox)
               //DOMParser.fromSchema(buptleSchema);
               let _temp = DOMParser.fromSchema(buptleSchema).parse(_tmpl_checkbox, {preserveWhitespace: true})
+              // console.log("체크박스 파싱 결과==========")
+              // console.log(_temp)
               dispatch( state.tr.replaceSelectionWith( _temp ) )
           },
           class : "btpm_add_checkbox_menu",
