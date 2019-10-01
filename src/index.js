@@ -1,6 +1,6 @@
 import {Mapping} from "prosemirror-transform"
 import {exampleSetup, } from "prosemirror-example-setup" //buildMenuItems
-import {splitListItem, wrapInList, addListNodes} from "prosemirror-schema-list"
+import {liftListItem, splitListItem, wrapInList, addListNodes} from "prosemirror-schema-list"
 import {NodeSelection, TextSelection, Plugin, EditorState, PluginKey} from "prosemirror-state"
 import {Decoration, DecorationSet, EditorView} from "prosemirror-view"
 import {history} from "prosemirror-history"
@@ -26,6 +26,64 @@ import {schema} from "./schema-basic-btpm.js"
 var prefix = "ProseMirror-prompt";
 
 let BTPM_BASE_ICONS_PATH = null;
+
+
+/** todolist */
+const todoItemSpec = {
+    attrs: {
+        done: {default: false},
+    },
+    content: "paragraph block*",
+    toDOM(node) {
+        const {done} = node.attrs
+
+        return ['li', {
+            'data-type': 'todo_item',
+            'data-done': done.toString(),
+        },
+            ['span', {class: 'todo-checkbox todo-checkbox-unchecked', contenteditable: "false"}],
+            ['span', {class: 'todo-checkbox todo-checkbox-checked', contenteditable: "false"}],
+            ['div', {class: 'todo-content'}, 0],
+        ]
+    },
+    parseDOM: [{
+        priority: 51, // Needs higher priority than other nodes that use a "li" tag
+        tag: '[data-type="todo_item"]', getAttrs(dom) {
+            return {
+                done: dom.getAttribute('data-done') === 'true',
+            }
+        },
+    }],
+}
+
+const todoListSpec = {
+  group: 'block',
+  content: "todo_item+ | list_item+",
+  toDOM(node) {
+    return ['ul', {
+      'data-type': 'todo_list',
+    }, 0]
+  },
+  parseDOM: [{
+    priority: 51, // Needs higher priority than other nodes that use a "ul" tag
+    tag: '[data-type="todo_list"]',
+  }],
+}
+
+function handleClickOn(editorView, pos, node, nodePos, event) {
+  if (event.target.classList.contains('todo-checkbox')) {
+    editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
+    return true
+  }
+}
+
+function toggleTodoItemAction(state, pos, todoItemNode) {
+  return state.tr.setNodeMarkup(pos, null, {done: !todoItemNode.attrs.done})
+}
+
+
+
+
 
 
 /** 이미지업로드 */
@@ -609,7 +667,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
               },
             nodeViews: {
                 resizableImage(node, view, getPos) { return new FootnoteView(node, view, getPos) }
-              }
+              },
+            handleClickOn
         });
 
         //최초 init 콜 패치
@@ -987,8 +1046,40 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           }
         ))
         , "paragraph block*", "block")
-        ,
+        .append({
+            todo_item: todoItemSpec,
+            todo_list: todoListSpec
+        }),
         marks: schema.spec.marks
+    })
+
+    const todoItemKeymap = {
+      'Enter': splitListItem(buptleSchema.nodes.todo_item),
+      // 'Tab': sinkListItem(mySchema.nodes.todo_item), // use this if you want to nest todos
+      'Shift-Tab': liftListItem(buptleSchema.nodes.todo_item)
+    }
+
+    const wrapTodoList = wrapListItem(buptleSchema.nodes.todo_list, {
+      title: "체크박스 만들기",
+      label: "체크박스",
+      //icon: icons.bulletList,
+      attrs: {
+        "data-type": "todo_list"
+      }
+    })
+
+    function createLiftListItemMenu(nodeType, options) {
+      return cmdItem(liftListItem(nodeType), options)
+    }
+
+    const liftListItemMenu = cmdItem(liftListItem(buptleSchema.nodes.list_item), {
+      title: "리스트와 함께 삭제",
+      icon: icons.lift
+    })
+
+    const liftTodoItemMenu = cmdItem(liftListItem(buptleSchema.nodes.todo_item), {
+      title: "체크박스 삭제",
+      icon: icons.lift
     })
 
     function getFontSize(element) {
@@ -1500,11 +1591,12 @@ function markItem(markType, options) {
         // }
 
         //let pluginsArray = exampleSetup({schema, history: false, menuContent: menu.fullMenu}).concat([history({preserveItems: true})]).concat(content_paste_plugin);
-        let pluginsArray = exampleSetup(
+        let pluginsArray = [keymap(todoItemKeymap)]
+        let pluginsArray_2 = exampleSetup(
             {schema, history: false, menuContent: menu.fullMenu}
             ).concat([history({preserveItems: true})]
             ).concat(content_paste_plugin);
-
+        pluginsArray = pluginsArray.concat(pluginsArray_2)
         //console.log(buptle_menu);
 
         // pluginsArray = pluginsArray.concat([keymap({
@@ -1627,22 +1719,28 @@ function markItem(markType, options) {
              <label></label>
          </span>
          */
-        menu.blockMenu[0].push(new MenuItem({
-          title: "체크박스 만들기",
-          run: function run(state, dispatch) {
+        menu.blockMenu[0].push(wrapTodoList);
+        menu.blockMenu[0].push(liftListItemMenu);
+        menu.blockMenu[0].push(liftTodoItemMenu);
 
-              var _tmpl_checkbox = $('<p>&nbsp;&nbsp;&nbsp;<span class="tmpl_checkbox"><input type="checkbox"><label></label>&nbsp;&nbsp;</p>').get(0);
+        if(false){
+            menu.blockMenu[0].push(new MenuItem({
+              title: "체크박스 만들기",
+              run: function run(state, dispatch) {
 
-              // console.log(_tmpl_checkbox)
-              //DOMParser.fromSchema(buptleSchema);
-              let _temp = DOMParser.fromSchema(buptleSchema).parse(_tmpl_checkbox, {preserveWhitespace: true})
-              // console.log("체크박스 파싱 결과==========")
-              // console.log(_temp)
-              dispatch( state.tr.replaceSelectionWith( _temp ) )
-          },
-          class : "btpm_add_checkbox_menu",
-            label:"체크박스"
-        }))
+                  var _tmpl_checkbox = $('<p>&nbsp;&nbsp;&nbsp;<span class="tmpl_checkbox"><input type="checkbox"><label></label>&nbsp;&nbsp;</p>').get(0);
+
+                  // console.log(_tmpl_checkbox)
+                  //DOMParser.fromSchema(buptleSchema);
+                  let _temp = DOMParser.fromSchema(buptleSchema).parse(_tmpl_checkbox, {preserveWhitespace: true})
+                  // console.log("체크박스 파싱 결과==========")
+                  // console.log(_temp)
+                  dispatch( state.tr.replaceSelectionWith( _temp ) )
+              },
+              class : "btpm_add_checkbox_menu",
+                label:"체크박스"
+            }))
+        }
 
 
 
