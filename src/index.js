@@ -661,7 +661,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         priority: 51, // must be higher than the default image spec
         tag: "img[src][width]",
         getAttrs(dom) {
-            // console.log(dom);
+            console.log("parseDom");
+            console.log(dom);
           return {
             src: dom.getAttribute("src"),
             title: dom.getAttribute("title"),
@@ -671,6 +672,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
       }],
       toDOM(node) {
+          console.log("toDom");
+          console.log(node);
         const attrs = {style: 'width: '+node.attrs.width}
         // const attrs = {style: `width: ${node.attrs.width}`}
         // console.log("리사이저블===============");
@@ -1032,6 +1035,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           const startWidth = parseFloat(node.attrs.width.match(/(.+)em/)[1])
 
           const onMouseMove = (e) => {
+              // console.log('onMouseMove');
             const currentX = e.pageX;
             const currentY = e.pageY;
 
@@ -1042,12 +1046,14 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           }
 
           const onMouseUp = (e) => {
+              // console.log('onMouseUp');
             e.preventDefault()
 
             document.removeEventListener("mousemove", onMouseMove)
             document.removeEventListener("mouseup", onMouseUp)
 
-            const transaction = view.state.tr.setNodeMarkup(getPos(), null, {src: node.attrs.src, width: outer.style.width} ).setSelection(view.state.selection);
+            // const transaction = view.state.tr.setNodeMarkup(getPos(), null, {src: node.attrs.src, width: outer.style.width} ).setSelection(view.state.selection);
+            const transaction = view.state.tr.setNodeMarkup(getPos(), null, {src: node.attrs.src, width: outer.style.width} );
 
             view.dispatch(transaction)
           }
@@ -1345,7 +1351,7 @@ function markItem(markType, options) {
             r.toggleStrong = markItem(type, {
                 title: "굵게",
                 // icon: icons.strong
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_01.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_01.svg'})  }
                 //icon: {data:BTPM_BASE_ICONS_PATH+'editor_01.svg'}
             });
         }
@@ -1353,7 +1359,8 @@ function markItem(markType, options) {
             r.toggleEm = markItem(type, {
                 title: "기울이기",
                 //icon: icons.em
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_02.svg'})}
+                //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_02.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_02.svg'})  }
             });
         }
         if (type = schema.marks.code) {
@@ -1373,28 +1380,32 @@ function markItem(markType, options) {
             r.wrapBulletList = wrapListItem(type, {
                 title: "리스트",
                 //icon: icons.bulletList
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_20.svg'})}
+                //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_20.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_20.svg'})  }
             });
         }
         if (type = schema.nodes.ordered_list) {
             r.wrapOrderedList = wrapListItem(type, {
                 title: "순서있는 리스트",
                 //icon: icons.orderedList
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_21.svg'})}
+                //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_21.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_21.svg'})  }
             });
         }
         if (type = schema.nodes.blockquote) {
             r.wrapBlockQuote = wrapItem(type, {
                 title: "인용구",
                 //icon: icons.blockquote
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_17.svg'})}
+                //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_17.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_17.svg'})  }
             });
         }
         if (type = schema.nodes.paragraph) {
             r.makeParagraph = blockTypeItem(type, {
                 title: "기본블럭지정",
                 label: "기본",
-                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_14.svg'})}
+                //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_14.svg'})}
+                icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH+'editor_14.svg'})  }
             });
         }
         if (type = schema.nodes.code_block) {
@@ -1413,7 +1424,8 @@ function markItem(markType, options) {
                 r["makeHead" + i] = blockTypeItem(type, {
                     title: "헤더" + i,
                     // label: "헤더 " + i,
-                    icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_'+_tmp[i]+'.svg'})},
+                    //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_'+_tmp[i]+'.svg'})},
+                    icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_'+_tmp[i]+'.svg'})  },
                     attrs: {
                         level: i
                     }
@@ -1460,12 +1472,6 @@ function markItem(markType, options) {
             liftItem, selectParentNodeItem
         ])];
 
-
-        undoItem.label = '';
-        undoItem.icon =
-            {
-                dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_'+_tmp[i]+'.svg'})
-            }
 
 
         r.fullMenu = r.inlineMenu.concat([
@@ -1526,7 +1532,8 @@ function markItem(markType, options) {
           },
           class : "btpm_add_alignment_menu",
             //label:"(좌)정렬",
-            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_04.svg'}) }
+            //icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_04.svg'}) }
+            icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_04.svg'})  },
         }))
 
         menu.blockMenu[0].push(new MenuItem({
@@ -1538,7 +1545,8 @@ function markItem(markType, options) {
           },
           class : "btpm_add_alignment_menu",
             label:"중앙정렬",
-            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_05.svg'}) }
+            //icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_05.svg'}) }
+            icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_05.svg'})  },
         }))
 
         menu.blockMenu[0].push(new MenuItem({
@@ -1550,7 +1558,8 @@ function markItem(markType, options) {
           },
           class : "btpm_add_alignment_menu",
             label:"(우)정렬",
-            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_06.svg'}) }
+            //icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_06.svg'}) }
+            icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_06.svg'})  },
         }))
 
         menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블 편집', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
@@ -1575,7 +1584,8 @@ function markItem(markType, options) {
           },
           class : "btpm_add_img_upload_menu",
           label:"이미지업로드",
-          icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_07.svg'})}
+          //icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_07.svg'})}
+          icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_07.svg'})  },
         }))
 
         menu.blockMenu[0].push(new MenuItem({
@@ -1605,7 +1615,8 @@ function markItem(markType, options) {
           class : "btpm_add_add_table_menu",
             //label:"테이블",
           icon : {
-              dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_16.svg'})
+              //dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_16.svg'})
+              dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_16.svg'})  ,
           }
         }))
 
@@ -1620,7 +1631,7 @@ function markItem(markType, options) {
           title: "체크박스 만들기",
           run: function run(state, dispatch) {
 
-              var _tmpl_checkbox = $('<p><span>&nbsp;&nbsp;&nbsp;</span><span class="tmpl_checkbox"><input type="checkbox"><label></label></span>&nbsp;&nbsp;(체크박스)</p>').get(0);
+              var _tmpl_checkbox = $('<p>&nbsp;&nbsp;&nbsp;<span class="tmpl_checkbox"><input type="checkbox"><label></label>&nbsp;&nbsp;</p>').get(0);
 
               // console.log(_tmpl_checkbox)
               //DOMParser.fromSchema(buptleSchema);
