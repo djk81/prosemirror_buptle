@@ -667,7 +667,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
       }],
       toDOM(node) {
-        // const attrs = {style: 'width: '+node.attrs.width}
+        const attrs = {style: 'width: '+node.attrs.width}
         // const attrs = {style: `width: ${node.attrs.width}`}
         // console.log("리사이저블===============");
         // console.log(attrs)
