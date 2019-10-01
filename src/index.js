@@ -25,6 +25,8 @@ import {schema} from "./schema-basic-btpm.js"
 
 var prefix = "ProseMirror-prompt";
 
+let BTPM_BASE_ICONS_PATH = null;
+
 
 /** 이미지업로드 */
 let placeholderPlugin = new Plugin({
@@ -565,6 +567,8 @@ var _editorView = null;
 
 export function editorInitBySpec(editorSpec, init_function){
     _editorSpec = editorSpec;
+
+    BTPM_BASE_ICONS_PATH = _editorSpec.icons_base_path;
     var document_html = editorSpec.get_document_html_handler();
     var comments = null;
     if(editorSpec.is_memo_activate){
@@ -1110,7 +1114,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
     // ===============================================================
 
-    const makeImage = makeImageMenuItem({ label: "이미지조정" });
+    const makeImage = makeImageMenuItem(
+        {
+            label: "이미지조정"
+        }
+    );
 
 
 /** 메뉴 */
@@ -1178,7 +1186,8 @@ function table_menu_1(level) {
     //menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
   return {
     command: setBlockType(buptleSchema.nodes.heading, {level}),
-    dom: icon("표", "테이블")
+    //dom: icon("표", "테이블")
+    dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_16.svg'})
   }
 }
 
@@ -1329,18 +1338,22 @@ function markItem(markType, options) {
 }
 
     function buildMenuItems_btpm(schema) {
+    //alert(BTPM_BASE_ICONS_PATH);
         var r = {},
             type;
         if (type = schema.marks.strong) {
             r.toggleStrong = markItem(type, {
                 title: "굵게",
-                icon: icons.strong
+                // icon: icons.strong
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_01.svg'})}
+                //icon: {data:BTPM_BASE_ICONS_PATH+'editor_01.svg'}
             });
         }
         if (type = schema.marks.em) {
             r.toggleEm = markItem(type, {
                 title: "기울이기",
-                icon: icons.em
+                //icon: icons.em
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_02.svg'})}
             });
         }
         if (type = schema.marks.code) {
@@ -1354,30 +1367,34 @@ function markItem(markType, options) {
         }
 
         if (type = schema.nodes.image) {
-            r.insertImage = insertImageItem(type);
+            //r.insertImage = insertImageItem(type);
         }
         if (type = schema.nodes.bullet_list) {
             r.wrapBulletList = wrapListItem(type, {
                 title: "리스트",
-                icon: icons.bulletList
+                //icon: icons.bulletList
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_20.svg'})}
             });
         }
         if (type = schema.nodes.ordered_list) {
             r.wrapOrderedList = wrapListItem(type, {
                 title: "순서있는 리스트",
-                icon: icons.orderedList
+                //icon: icons.orderedList
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_21.svg'})}
             });
         }
         if (type = schema.nodes.blockquote) {
             r.wrapBlockQuote = wrapItem(type, {
                 title: "인용구",
-                icon: icons.blockquote
+                //icon: icons.blockquote
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_17.svg'})}
             });
         }
         if (type = schema.nodes.paragraph) {
             r.makeParagraph = blockTypeItem(type, {
-                title: "기본으로 돌아가기",
-                label: "기본"
+                title: "기본블럭지정",
+                label: "기본",
+                icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_14.svg'})}
             });
         }
         if (type = schema.nodes.code_block) {
@@ -1387,10 +1404,16 @@ function markItem(markType, options) {
             // });
         }
         if (type = schema.nodes.heading) {
-            for (var i = 1; i <= 10; i++) {
+            for (var i = 1; i <= 3; i++) {
+                var _tmp = {
+                    1 : '09',
+                    2 : '10',
+                    3 : '11',
+                }
                 r["makeHead" + i] = blockTypeItem(type, {
-                    title: "제목으로변경 " + i,
-                    label: "헤더 " + i,
+                    title: "헤더" + i,
+                    // label: "헤더 " + i,
+                    icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_'+_tmp[i]+'.svg'})},
                     attrs: {
                         level: i
                     }
@@ -1421,22 +1444,33 @@ function markItem(markType, options) {
             label: "Insert"
         });
          */
-        r.typeMenu = new Dropdown(cut([r.makeParagraph, r.makeCodeBlock, r.makeHead1 && new DropdownSubmenu(cut([
-            r.makeHead1, r.makeHead2, r.makeHead3, r.makeHead4, r.makeHead5, r.makeHead6
-        ]), {
-            label: "제목"
-        })]), {
-            label: "문단타입..."
-        });
+
+        // r.typeMenu = new Dropdown(cut([r.makeParagraph, r.makeCodeBlock, r.makeHead1 && new DropdownSubmenu(cut([
+        //     r.makeHead1, r.makeHead2, r.makeHead3, r.makeHead4, r.makeHead5, r.makeHead6
+        // ]), {
+        //     label: "제목"
+        // })]), {
+        //     label: "문단타입..."
+        // });
 
         selectParentNodeItem.title = "블럭선택"
-        r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
+        // r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
+        r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink, r.makeParagraph, r.makeHead1, r.makeHead2, r.makeHead3])];
         r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
             liftItem, selectParentNodeItem
         ])];
 
+
+        undoItem.label = '';
+        undoItem.icon =
+            {
+                dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_'+_tmp[i]+'.svg'})
+            }
+
+
         r.fullMenu = r.inlineMenu.concat([
-            [r.typeMenu]
+            //[r.typeMenu]
+            []
         ], [
             [undoItem, redoItem]
         ], r.blockMenu);
@@ -1482,6 +1516,43 @@ function markItem(markType, options) {
 
         //<img src='https://www.google.com/imgres?imgurl=https%3A%2F%2Fcdn.icon-icons.com%2Ficons2%2F776%2FPNG%2F512%2Ftable_icon-icons.com_64652.png&imgrefurl=https%3A%2F%2Ficon-icons.com%2Fko%2F%25EC%2595%2584%25EC%259D%25B4%25EC%25BD%2598%2F%25ED%2585%258C%25EC%259D%25B4%25EB%25B8%2594%2F64652&docid=1G6Umk6SrUKiJM&tbnid=YDDgfkBk7ocvrM%3A&vet=10ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA..i&w=512&h=512&bih=888&biw=1920&q=%ED%85%8C%EC%9D%B4%EB%B8%94%20%EC%95%84%EC%9D%B4%EC%BD%98&ved=0ahUKEwiR3oXn0bvkAhXEZt4KHclbCYUQMwhWKAwwDA&iact=mrc&uact=8'>"
         //     menu.fullMenu.splice(2, 0, [new Dropdown(tableMenu, {label:'표', title:'표 제어하기', icon:table_top_menu_icon_attr})]);
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "좌측정렬",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "letf")
+          },
+          class : "btpm_add_alignment_menu",
+            //label:"(좌)정렬",
+            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_04.svg'}) }
+        }))
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "중앙",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "center")
+          },
+          class : "btpm_add_alignment_menu",
+            label:"중앙정렬",
+            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_05.svg'}) }
+        }))
+
+        menu.blockMenu[0].push(new MenuItem({
+          title: "우측정렬",
+          run: function run(state, dispatch) {
+
+              let pos = selectParentNode(state, dispatch)
+              setAlignment(pos, dispatch, "right")
+          },
+          class : "btpm_add_alignment_menu",
+            label:"(우)정렬",
+            icon : { dom:crel('object', {type:'image/svg+xml', data:BTPM_BASE_ICONS_PATH + 'editor_06.svg'}) }
+        }))
+
         menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블 편집', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
         menu.blockMenu[0].push(new MenuItem({
           title: "이미지업로드",
@@ -1503,10 +1574,9 @@ function markItem(markType, options) {
 
           },
           class : "btpm_add_img_upload_menu",
-            label:"이미지업로드"
+          label:"이미지업로드",
+          icon: {dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_07.svg'})}
         }))
-
-        menu.blockMenu[0].push(makeImage)
 
         menu.blockMenu[0].push(new MenuItem({
           title: "테이블 만들기",
@@ -1533,9 +1603,13 @@ function markItem(markType, options) {
               // )) );
           },
           class : "btpm_add_add_table_menu",
-            label:"테이블"
+            //label:"테이블",
+          icon : {
+              dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_16.svg'})
+          }
         }))
 
+        menu.blockMenu[0].push(makeImage)
         /**
          <span class="tmpl_checkbox">
              <input type="checkbox">
@@ -1559,39 +1633,7 @@ function markItem(markType, options) {
             label:"체크박스"
         }))
 
-        menu.blockMenu[0].push(new MenuItem({
-          title: "좌측정렬",
-          run: function run(state, dispatch) {
 
-              let pos = selectParentNode(state, dispatch)
-              setAlignment(pos, dispatch, "letf")
-          },
-          class : "btpm_add_alignment_menu",
-            label:"(좌)정렬"
-        }))
-
-        menu.blockMenu[0].push(new MenuItem({
-          title: "중앙",
-          run: function run(state, dispatch) {
-
-              let pos = selectParentNode(state, dispatch)
-              setAlignment(pos, dispatch, "center")
-          },
-          class : "btpm_add_alignment_menu",
-            label:"중앙정렬",
-            // icon: { dom:crel('object', {type:'image/svg+xml', data:'/static/adele/imgs/editor_03.svg'}) }
-        }))
-
-        menu.blockMenu[0].push(new MenuItem({
-          title: "우측정렬",
-          run: function run(state, dispatch) {
-
-              let pos = selectParentNode(state, dispatch)
-              setAlignment(pos, dispatch, "right")
-          },
-          class : "btpm_add_alignment_menu",
-            label:"(우)정렬"
-        }))
 
 
 

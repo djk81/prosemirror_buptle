@@ -430,8 +430,9 @@ text-align:center;line-height:150%">확 인 서</p>
 		    var activate_plugins = true
 			var pm = ProseMirror;
 		    var _editorSpec = new pm.EditorSpec();
-
+			// svg 아이콘 위치
 		    if(activate_plugins){
+		        _editorSpec.icons_base_path =  'http://test1.buptledev.com/static/adele/imgs/';
 				_editorSpec.div_target_id = 'editor';
 				_editorSpec.is_memo_activate = true
 				_editorSpec.is_track_changes_activate = true
