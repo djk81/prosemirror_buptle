@@ -751,6 +751,13 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
      *                 data-param-required : 0
     *****************************************************/
 
+    const buptleDivSpec ={
+        group: "inline",
+        content:"(inline* | text*)",
+        toDOM(node) { return ["div", 0] },
+        parseDOM: [{tag: "div"}],
+    }
+
     const buptleSpanSpec = {
         attrs : {
             id:{default:'tmp_span_id_' + randomID()},
@@ -768,7 +775,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "(inline* | text* | buptle_extra* )",
+        content: "(inline* | text*)",
         inline: true,
         group: "inline",
         atom:true,
@@ -809,7 +816,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 0]
         },
         parseDOM: [{
-            tag: "span",
+            tag: "span[data-param-id]",
             getAttrs(dom){
                 //console.log(dom);
                  return {
@@ -834,9 +841,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "(inline | text*)",
+        content: "(inline* | text*)",
         inline: true,
-        group: "buptle_extra",
+        group: "inline",
         atom:true,
         toDOM(node){
             return ['label', {for:node.attrs.for, class:node.attrs.class},0]
@@ -1022,9 +1029,10 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         .remove('image').addBefore('hard_break', 'image',buptleImgSpec)
         .addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
-        .addBefore("span", "buptleInputsSpec", buptleInputsSpec)
+        //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
         .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
+        //.addBefore("buptleInputsSpec", "div", buptleDivSpec)
 
 
     // 테이블
