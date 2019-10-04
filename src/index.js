@@ -1075,14 +1075,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
       'Shift-Tab': liftListItem(buptleSchema.nodes.todo_item)
     }
 
-    const wrapTodoList = wrapListItem(buptleSchema.nodes.todo_list, {
-      title: "체크박스 만들기",
-      label: "체크박스",
-      //icon: icons.bulletList,
-      attrs: {
-        "data-type": "todo_list"
-      }
-    })
+    //const wrapTodoList = null
 
     function createLiftListItemMenu(nodeType, options) {
       return cmdItem(liftListItem(nodeType), options)
@@ -1676,7 +1669,9 @@ function markItem(markType, options) {
             icon: {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_06.svg'})  },
         }))
 
-        menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블 편집', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
+        //label:'테이블 편집'
+        //let table_icon = {dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_23.svg'}) }
+        menu.fullMenu.push( [new Dropdown(tableMenu, {title:'표 제어하기', class:'ProseMirror-tableSet'})] );
         menu.blockMenu[0].push(new MenuItem({
           title: "이미지업로드",
           run: function(){
@@ -1741,7 +1736,16 @@ function markItem(markType, options) {
              <label></label>
          </span>
          */
-        menu.blockMenu[0].push(wrapTodoList);
+        menu.blockMenu[0].push(wrapListItem(buptleSchema.nodes.todo_list, {
+      title: "체크박스 만들기",
+      label: "체크박스",
+      icon:{
+          dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
+      },
+      attrs: {
+        "data-type": "todo_list"
+      }
+    }));
         menu.blockMenu[0].push(liftListItemMenu);
         menu.blockMenu[0].push(liftTodoItemMenu);
 
