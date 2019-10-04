@@ -1062,7 +1062,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     })
 
     const todoItemKeymap = {
-      'Enter': splitListItem(buptleSchema.nodes.todo_item),
+      'Enter' : chainCommands(splitListItem(buptleSchema.nodes.list_item), splitListItem(buptleSchema.nodes.todo_item), newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks,
+          ),
+      //'Enter': splitListItem(buptleSchema.nodes.todo_item),
       // 'Tab': sinkListItem(mySchema.nodes.todo_item), // use this if you want to nest todos
       'Shift-Tab': liftListItem(buptleSchema.nodes.todo_item)
     }
@@ -1564,11 +1566,13 @@ function markItem(markType, options) {
         //     label: "문단타입..."
         // });
 
-        selectParentNodeItem.title = "블럭선택"
+        //selectParentNodeItem.title = "블럭선택"
+
         // r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
         r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink, r.makeParagraph, r.makeHead1, r.makeHead2, r.makeHead3])];
         r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
-            liftItem, selectParentNodeItem
+            liftItem,
+            //liftItem, selectParentNodeItem
         ])];
 
 
