@@ -701,7 +701,14 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         const nodeName = _new_state.selection && _new_state.selection.node && _new_state.selection.node.type.name;
         if("image" ===  nodeName){
             window.console.log(nodeName + "<< 이미지 리사이저블 자동변환");
-            const tr = _new_state.tr.replaceSelectionWith(buptleSchema.nodes.resizableImage.create({src: _new_state.selection.node.attrs.src}))
+            // window.console.log(_new_state.selection.node);
+            // window.console.log(_new_state.selection.node.attrs);
+            // window.console.log(_new_state.selection.node.attrs.style);
+            const tr = _new_state.tr.replaceSelectionWith(
+                buptleSchema.nodes.resizableImage.create(
+                    {src: _new_state.selection.node.attrs.src,
+                    style:_new_state.selection.node.attrs.style})
+            )
             _editorView.dispatch(tr)
         }
 
@@ -716,9 +723,10 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
       inline: true,
       attrs: {
         src: {},
-        width: {default: "10em"},
+        width: {default: "10.00em"},
         alt: {default: null},
-        title: {default: null}
+        title: {default: null},
+        style: {default: null},
       },
       group: "inline",
       draggable: true,
@@ -726,25 +734,23 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         priority: 51, // must be higher than the default image spec
         tag: "img[src][width]",
         getAttrs(dom) {
-            console.log("parseDom");
-            console.log(dom);
           return {
             src: dom.getAttribute("src"),
             title: dom.getAttribute("title"),
             alt: dom.getAttribute("alt"),
-            width: dom.getAttribute("width")
+            width: dom.getAttribute("width"),
+            style: dom.getAttribute("style")
           }
         }
       }],
       toDOM(node) {
-          console.log("toDom");
-          console.log(node);
         const attrs = {style: 'width: '+node.attrs.width}
         // const attrs = {style: `width: ${node.attrs.width}`}
-        // console.log("리사이저블===============");
-        // console.log(attrs)
-        // console.log(node);
-        return ["img", {style : attrs.style, alt:node.attrs.alt, title:node.attrs.title, src:node.attrs.src}]
+        //console.log("리사이저블===============");
+        //console.log(node);
+        //console.log(node.attrs);
+        //console.log(attrs)
+        return ["img", {style : attrs.style, width: node.attrs.width, alt:node.attrs.alt, title:node.attrs.title, src:node.attrs.src}]
       }
     }
 
@@ -1099,7 +1105,19 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
       constructor(node, view, getPos) {
         const outer = document.createElement("span")
         outer.style.position = "relative"
-        outer.style.width = node.attrs.width
+          //alert(node.attrs.style + " :: " + node.attrs.width);
+
+        try{
+            let _target_width = node.attrs.width=== '10.00em' ? node.attrs.style.split('width:')[1].split(';')[0]
+                : node.attrs.width
+            //alert(_target_width + " : " + node.attrs.width);
+            outer.style.width = _target_width
+        }catch(e){
+            console.log("Resizable Width 계산 에러 : " + e);
+            outer.style.width = '10em;'
+        }
+
+        //outer.style.width = node.attrs.width
         //outer.style.border = "1px solid blue"
         outer.style.display = "inline-block"
         //outer.style.paddingRight = "0.25em"
@@ -1131,7 +1149,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           const startY = e.pageY;
 
           const fontSize = getFontSize(outer)
-
+console.log(node.attrs.width);
           const startWidth = parseFloat(node.attrs.width.match(/(.+)em/)[1])
 
           const onMouseMove = (e) => {
@@ -1200,6 +1218,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
               //일단전부 resizableImage 로 활성화되게끔한다.
               nodeType = buptleSchema.nodes.resizableImage
+            //let _style = state.selection.node.attrs.style
+            //alert("_style >> " + _style);
             const tr = state.tr.replaceSelectionWith(nodeType.create({src: state.selection.node.attrs.src}))
 
             dispatch(tr)
