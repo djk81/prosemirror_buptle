@@ -697,7 +697,13 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }else{
             btpmDispatchPostProcessor(_editorView, _new_state,  action);
         }
-        
+
+        const nodeName = _new_state.selection && _new_state.selection.node && _new_state.selection.node.type.name;
+        if("image" ===  nodeName){
+            window.console.log(nodeName + "<< 이미지 리사이저블 자동변환");
+            const tr = _new_state.tr.replaceSelectionWith(buptleSchema.nodes.resizableImage.create({src: _new_state.selection.node.attrs.src}))
+            _editorView.dispatch(tr)
+        }
 
         return _new_state
     }
@@ -1190,10 +1196,12 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         if (nodeName === "image" || nodeName === "resizableImage") {
           if (dispatch) {
-            const nodeType = nodeName === "image"
+            let nodeType = nodeName === "image"
               ? buptleSchema.nodes.resizableImage
               : buptleSchema.nodes.image
 
+              //일단전부 resizableImage 로 활성화되게끔한다.
+              nodeType = buptleSchema.nodes.resizableImage
             const tr = state.tr.replaceSelectionWith(nodeType.create({src: state.selection.node.attrs.src}))
 
             dispatch(tr)
@@ -1214,6 +1222,12 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         }
       }
 
+      options =
+          {
+              icon:{
+                  dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_22.svg'})  ,
+              }
+          }
       for (let prop in options) passedOptions[prop] = options[prop]
 
       return new MenuItem(passedOptions)
@@ -1221,11 +1235,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
     // ===============================================================
 
-    const makeImage = makeImageMenuItem(
-        {
-            label: "이미지조정"
-        }
-    );
+
 
 
 /** 메뉴 */
@@ -1724,7 +1734,7 @@ function markItem(markType, options) {
           }
         }))
 
-        menu.blockMenu[0].push(makeImage)
+        menu.blockMenu[0].push(makeImageMenuItem())
         /**
          <span class="tmpl_checkbox">
              <input type="checkbox">
