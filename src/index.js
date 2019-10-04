@@ -1431,11 +1431,14 @@ function linkItem(markType) {
   })
 }
 
+export var btpm_checkbox_cmd_function = null
 function cmdItem(cmd, options) {
   var passedOptions = {
     label: options.title,
     run: cmd
   };
+  btpm_checkbox_cmd_function = cmd;
+
   for (var prop in options) { passedOptions[prop] = options[prop]; }
   if ((!options.enable || options.enable === true) && !options.select)
     { passedOptions[options.enable ? "enable" : "select"] = function (state) { return cmd(state); }; }
@@ -1726,7 +1729,7 @@ function markItem(markType, options) {
               //   }
               // )) );
           },
-          class : "btpm_add_add_table_menu",
+          class : "btpm_add_table_menu",
             //label:"테이블",
           icon : {
               //dom:crel('object', {type:'image/svg+xml',  data: BTPM_BASE_ICONS_PATH+'editor_16.svg'})
@@ -1742,17 +1745,20 @@ function markItem(markType, options) {
          </span>
          */
         menu.blockMenu[0].push(wrapListItem(buptleSchema.nodes.todo_list, {
-      title: "체크박스 만들기",
-      label: "체크박스",
-      icon:{
-          dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
-      },
-      attrs: {
-        "data-type": "todo_list"
-      }
-    }));
-        menu.blockMenu[0].push(liftListItemMenu);
-        menu.blockMenu[0].push(liftTodoItemMenu);
+          title: "체크박스 만들기",
+          label: "체크박스",
+          class : "btpm_add_checkbox_menu",
+          id : "btpm_add_checkbox_menu",
+          icon:{
+              dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
+          },
+          attrs: {
+            "data-type": "todo_list"
+          }
+        }));
+        /** 체크박스삭제/리스트삭제 */
+        // menu.blockMenu[0].push(liftListItemMenu);
+        // menu.blockMenu[0].push(liftTodoItemMenu);
 
         if(false){
             menu.blockMenu[0].push(new MenuItem({
