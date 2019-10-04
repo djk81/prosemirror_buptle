@@ -1336,11 +1336,11 @@ let tableMenu = [
   item("테이블삭제", deleteTable),
   item("병합하기", mergeCells),
   item("병합해제", splitCell),
-  item("헤더컬럼", toggleHeaderColumn),
-  item("헤더로우", toggleHeaderRow),
-  item("헤더셀", toggleHeaderCell),
-  item("컬럼강조", setCellAttr("background", "#C5D0DE")),
-  item("컬럼강조(해제)", setCellAttr("background", null))
+  // item("헤더컬럼", toggleHeaderColumn),
+  // item("헤더로우", toggleHeaderRow),
+  // item("헤더셀", toggleHeaderCell),
+  // item("컬럼강조", setCellAttr("background", "#C5D0DE")),
+  // item("컬럼강조(해제)", setCellAttr("background", null))
 ]
 
 
@@ -1710,8 +1710,8 @@ function markItem(markType, options) {
                   crel("table", {style: "min-width:150px;"},
                       crel("colgroup"),
                       crel("tbody",
-                          crel('tr', crel('th', crel('p', 'HEADER 1')), crel('th', crel('p', 'HEADER 2')) ),
-                          crel('tr', crel('td', crel('p', '상단의 (테이블편집)을 클릭하십시오.')), crel('td', crel('p', '')) ),
+                          crel('tr', crel('td', crel('p', '상단의 (테이블편집 아이콘)을 클릭하십시오.')), crel('td', crel('p', '(외곽선을 선택하여 넓이를 조정할 수 있습니다.)')) ),
+                          crel('tr', crel('td', crel('p', '')), crel('td', crel('p', ''))),
                           crel('tr', crel('td', crel('p', '')), crel('td', crel('p', '')))
                       )
                   )
