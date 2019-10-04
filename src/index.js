@@ -1189,6 +1189,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         if (nodeName === "image" || nodeName === "resizableImage") {
           if (dispatch) {
+              //무조건 자동선택이므로. 여기서 resizable로 바꿀필요없다.
+              //모든 이미지는 기본적으로 이제 resizable
+              if(1==1)
+                return true
+
             let nodeType = nodeName === "image"
               ? buptleSchema.nodes.resizableImage
               : buptleSchema.nodes.image
