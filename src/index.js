@@ -853,8 +853,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-        content: "(inline* | text*)",
+       content: "(inline* | text*)",
         inline: true,
+      contentEditable : false,
         group: "inline",
         atom:true,
         toDOM(node){
@@ -869,6 +870,31 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             }
         }]
     };
+
+    const buptleCheckbox = {
+        attrs : { class:{default:'bptm_checkbox'}},
+        // content: "text*",
+        // marks: "",
+        // group: "block",
+        // defining: true,
+        inline: true,
+      contentEditable : false,
+      selectable : false,
+        group: "inline",
+        atom:true,
+        toDOM(node){
+            return ['bptm_checkbox', {for:node.attrs.for, class:node.attrs.class},0]
+        },
+        parseDOM: [{
+            tag: "bptm_checkbox",
+            getAttrs(dom){
+                // console.log(dom);
+                // alert('getAttrs :' + dom.className );
+                return { class:dom.className }
+            }
+        }]
+    };
+
 
     const buptleInputsSpec = {
         attrs : {
@@ -969,7 +995,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 {src, alt, title, align, width, height, style, float}
                 ]
         }
-    }
+    };
 
     const buptleHeadingSpec = {
         attrs: {level: {default: 1}, align: {default:'left'}},
@@ -1034,13 +1060,30 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
                    ],
         toDOM(node) { return ["h" + node.attrs.level, {align : node.attrs.align}, 0] }
-    }
+    };
+
+
+
+    /** 체크박스/스펙 */
+    const checkboxSpec = {
+       note: {
+        content: "text*",
+        toDOM() { return ["note", 0] },
+        parseDOM: [{tag: "note"}]
+      },
+      notegroup: {
+        content: "note+",
+        toDOM() { return ["notegroup", 0] },
+        parseDOM: [{tag: "notegroup"}]
+      },
+    };
 
 
     const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'heading',buptleHeadingSpec)
         .remove('image').addBefore('hard_break', 'image',buptleImgSpec)
         .addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
+           .addBefore("span", "bptm_checkbox", buptleCheckbox)
         //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
         .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
@@ -1764,18 +1807,22 @@ function markItem(markType, options) {
              <label></label>
          </span>
          */
-        menu.blockMenu[0].push(wrapListItem(buptleSchema.nodes.todo_list, {
-          title: "체크박스 만들기",
-          label: "체크박스",
-          class : "btpm_add_checkbox_menu",
-          id : "btpm_add_checkbox_menu",
-          icon:{
-              dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
-          },
-          attrs: {
-            "data-type": "todo_list"
-          }
-        }));
+
+        /** ======= 기존 리스트형 체크박스 START 메뉴 붙이기 시작 **
+        // menu.blockMenu[0].push(wrapListItem(buptleSchema.nodes.todo_list, {
+        //   title: "체크박스 만들기",
+        //   label: "체크박스",
+        //   class : "btpm_add_checkbox_menu",
+        //   id : "btpm_add_checkbox_menu",
+        //   icon:{
+        //       dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
+        //   },
+        //   attrs: {
+        //     "data-type": "todo_list"
+        //   }
+        // }));
+        /** ======= 기존 리스트형 체크박스 END 메뉴 붙이기 끝 */
+
         /** 체크박스삭제/리스트삭제 */
         // menu.blockMenu[0].push(liftListItemMenu);
         // menu.blockMenu[0].push(liftTodoItemMenu);

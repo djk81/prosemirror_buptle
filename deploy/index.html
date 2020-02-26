@@ -325,6 +325,48 @@
   /*}*/
   /*!** end of todolist*!*/
 
+	.bptm_checkbox{
+		 position: relative;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    vertical-align: top;
+    border: solid 1px #000000;
+    background-color: #ffffff;
+		display:inline-block;
+    z-index: 1;
+	}
+
+	.bp_checked::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 11px;
+    margin-top: -7px;
+    margin-left: -3px;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    -moz-transform: rotate(48deg);
+    -webkit-transform: rotate(48deg);
+    transform: rotate(48deg);
+    z-index: 1;
+}
+.bptm_checkbox::after {
+    display: none
+}
+
+	/*#checkboxes input[type=checkbox]{*/
+	/*    display: none;*/
+	/*}*/
+
+	/*#checkboxes input[type=checkbox]:checked + .whatever{*/
+	/*    background-color: green;*/
+	/*}*/
+
 	</style>
 </header>
 
@@ -420,10 +462,29 @@
 	<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="" style="width: 19.25em; vertical-align: bottom !important;">
 </span>
 		</p>
+
+<style>
+
+
+</style>
+
+
+
+		<p align="left" style="" class="buptle_editor_default_p_class">
+	   <bptm_checkbox data-done="true" class="bptm_checkbox bp_checked" >
+	</bptm_checkbox>
+
+
+    <bptm_checkbox class="bptm_checkbox" ></bptm_checkbox>
+	<bptm_checkbox class="bptm_checkbox"></bptm_checkbox>
+</p>
+
+
+
 		<li data-type="todo_item" data-done="false"><span class="todo-checkbox todo-checkbox-unchecked" contenteditable="false"></span><span class="todo-checkbox todo-checkbox-checked" contenteditable="false"></span><div class="todo-content"><p align="left" style="" class="buptle_editor_default_p_class">asdfasdf</p></div></li>
 
 
-		<p><span>&nbsp;&nbsp;&nbsp;</span><span class="tmpl_checkbox"><input type="checkbox"><label></label></span>&nbsp;&nbsp;(체크박스원래있던거)</p>
+		<p><span>&nbsp;&nbsp;&nbsp;</span><span class="bptm_checkbox bp_checked"><input type="checkbox"><label></label></span>&nbsp;rrrr&nbsp;(체크박스원래있던거)</p>
 		<p class="MsoNormal" align="center" style="margin-bottom:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:150%">확 인 서</p>
 		<p>
@@ -741,6 +802,22 @@ text-align:center;line-height:150%">확 인 서</p>
 	    ProseMirror.startImageUpload(_editorView, e.target.files[0])
 	    _editorView.focus()
 	})
+
+	document.querySelectorAll(".bptm_checkbox").forEach(e => {
+        e.addEventListener('click', function(event) {
+          var _cname = this.className;
+          console.log("[냠냠] ======================= : " + _cname);
+          if( _cname.indexOf('bp_checked')!=-1 ){
+            //리무브
+            this.classList.remove("bp_checked");
+          }else{
+            //다시체크상태로
+            this.classList.add("bp_checked");
+          }
+
+        });
+    });
+
 
 	</script>
 
