@@ -325,39 +325,43 @@
   /*}*/
   /*!** end of todolist*!*/
 
-	.bptm_checkbox{
-		 position: relative;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    vertical-align: top;
-    border: solid 1px #000000;
-    background-color: #ffffff;
+	.btpm_checkbox{
+		position: relative;
+	    padding: 0;
+	    width: 20px;
+	    height: 20px;
+	    line-height: 20px;
+	    vertical-align: top;
+	    border: solid 1px #000000;
+	    background-color: #ffffff;
 		display:inline-block;
-    z-index: 1;
+        z-index: 1;
 	}
 
-	.bp_checked::before {
-    content: "";
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 7px;
-    height: 11px;
-    margin-top: -7px;
-    margin-left: -3px;
-    border-bottom: 2px solid #000;
-    border-right: 2px solid #000;
-    -moz-transform: rotate(48deg);
-    -webkit-transform: rotate(48deg);
-    transform: rotate(48deg);
-    z-index: 1;
-}
-.bptm_checkbox::after {
-    display: none
-}
+	.btpm_checked::before {
+	    content: "";
+	    display: block;
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    width: 7px;
+	    height: 11px;
+	    margin-top: -7px;
+	    margin-left: -3px;
+	    border-bottom: 2px solid #000;
+	    border-right: 2px solid #000;
+	    -moz-transform: rotate(48deg);
+	    -webkit-transform: rotate(48deg);
+	    transform: rotate(48deg);
+	    z-index: 1;
+	}
+	.btpm_checkbox::after {
+	    display: none
+	}
+
+	.btpm_checkbox:hover{
+		cursor: pointer;
+	}
 
 	/*#checkboxes input[type=checkbox]{*/
 	/*    display: none;*/
@@ -471,12 +475,12 @@
 
 
 		<p align="left" style="" class="buptle_editor_default_p_class">
-	   <bptm_checkbox data-done="true" class="bptm_checkbox bp_checked" >
-	</bptm_checkbox>
+	   <btpm_checkbox data-done="true" class="btpm_checkbox btpm_checked" >
+	</btpm_checkbox>
 
 
-    <bptm_checkbox class="bptm_checkbox" ></bptm_checkbox>
-	<bptm_checkbox class="bptm_checkbox"></bptm_checkbox>
+    <btpm_checkbox class="btpm_checkbox" ></btpm_checkbox>
+	<btpm_checkbox class="btpm_checkbox"></btpm_checkbox>
 </p>
 
 
@@ -484,7 +488,7 @@
 		<li data-type="todo_item" data-done="false"><span class="todo-checkbox todo-checkbox-unchecked" contenteditable="false"></span><span class="todo-checkbox todo-checkbox-checked" contenteditable="false"></span><div class="todo-content"><p align="left" style="" class="buptle_editor_default_p_class">asdfasdf</p></div></li>
 
 
-		<p><span>&nbsp;&nbsp;&nbsp;</span><span class="bptm_checkbox bp_checked"><input type="checkbox"><label></label></span>&nbsp;rrrr&nbsp;(체크박스원래있던거)</p>
+		<p><span>&nbsp;&nbsp;&nbsp;</span><span class="btpm_checkbox btpm_checked"><input type="checkbox"><label></label></span>&nbsp;rrrr&nbsp;(체크박스원래있던거)</p>
 		<p class="MsoNormal" align="center" style="margin-bottom:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:150%">확 인 서</p>
 		<p>
@@ -803,16 +807,16 @@ text-align:center;line-height:150%">확 인 서</p>
 	    _editorView.focus()
 	})
 
-	document.querySelectorAll(".bptm_checkbox").forEach(e => {
+	document.querySelectorAll(".btpm_checkbox").forEach(e => {
         e.addEventListener('click', function(event) {
           var _cname = this.className;
           console.log("[냠냠] ======================= : " + _cname);
-          if( _cname.indexOf('bp_checked')!=-1 ){
+          if( _cname.indexOf('btpm_checked')!=-1 ){
             //리무브
-            this.classList.remove("bp_checked");
+            this.classList.remove("btpm_checked");
           }else{
             //다시체크상태로
-            this.classList.add("bp_checked");
+            this.classList.add("btpm_checked");
           }
 
         });

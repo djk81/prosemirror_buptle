@@ -853,9 +853,9 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         // marks: "",
         // group: "block",
         // defining: true,
-       content: "(inline* | text*)",
+        content: "(inline* | text*)",
         inline: true,
-      contentEditable : false,
+        //contentEditable : true,
         group: "inline",
         atom:true,
         toDOM(node){
@@ -872,21 +872,21 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     };
 
     const buptleCheckbox = {
-        attrs : { class:{default:'bptm_checkbox'}},
+        attrs : { class:{default:'btpm_checkbox'}},
         // content: "text*",
         // marks: "",
         // group: "block",
         // defining: true,
         inline: true,
-      contentEditable : false,
-      selectable : false,
+        contentEditable : false,
+        selectable : false,
         group: "inline",
         atom:true,
         toDOM(node){
-            return ['bptm_checkbox', {for:node.attrs.for, class:node.attrs.class},0]
+            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class},0]
         },
         parseDOM: [{
-            tag: "bptm_checkbox",
+            tag: "btpm_checkbox",
             getAttrs(dom){
                 // console.log(dom);
                 // alert('getAttrs :' + dom.className );
@@ -1063,27 +1063,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     };
 
 
-
-    /** 체크박스/스펙 */
-    const checkboxSpec = {
-       note: {
-        content: "text*",
-        toDOM() { return ["note", 0] },
-        parseDOM: [{tag: "note"}]
-      },
-      notegroup: {
-        content: "note+",
-        toDOM() { return ["notegroup", 0] },
-        parseDOM: [{tag: "notegroup"}]
-      },
-    };
-
-
     const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'heading',buptleHeadingSpec)
         .remove('image').addBefore('hard_break', 'image',buptleImgSpec)
         .addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
-           .addBefore("span", "bptm_checkbox", buptleCheckbox)
+           .addBefore("span", "btpm_checkbox", buptleCheckbox)
         //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
         .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
