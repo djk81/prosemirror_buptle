@@ -413,6 +413,7 @@
 		<label></label>
 	</span>
 		<div onclick="javaScript:{ProseMirror.btpm_checkbox_cmd_function(_editorView.state, _editorView.dispatch);};">체크박스1</div>
+		<div onclick="javaScript:{checkbox_btn_clicked()};">체크박스-새버전</div>
 
 	<br/>
 
@@ -566,7 +567,7 @@ text-align:center;line-height:150%">확 인 서</p>
 					        comments : []
 					    };
 
-					    var memos = [1]
+					    var memos = []
 
 	                    for(var indx in memos){
 					        comments.comments.push({
@@ -751,6 +752,15 @@ text-align:center;line-height:150%">확 인 서</p>
         }
     }
 
+    /** 체크박스클릭 */
+    function checkbox_btn_clicked(){
+	    var node = ProseMirror.buptleSchema.nodes.btpm_checkbox.createAndFill({});
+
+	    _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
+	}
+
     function required_field_btn_clicked(){
 
         <!--let {$from} = state.selection, index = $from.index()-->
@@ -807,20 +817,23 @@ text-align:center;line-height:150%">확 인 서</p>
 	    _editorView.focus()
 	})
 
-	document.querySelectorAll(".btpm_checkbox").forEach(e => {
-        e.addEventListener('click', function(event) {
-          var _cname = this.className;
-          console.log("[냠냠] ======================= : " + _cname);
-          if( _cname.indexOf('btpm_checked')!=-1 ){
-            //리무브
-            this.classList.remove("btpm_checked");
-          }else{
-            //다시체크상태로
-            this.classList.add("btpm_checked");
-          }
+	/** 체크박스 이벤트 붙이기 */
+	function attachClickEvtBtpmCheckbox(){
+		document.querySelectorAll(".btpm_checkbox").forEach(e => {
+	        e.addEventListener('click', function(event) {
+	          var _cname = this.className;
+	          console.log("[냠냠] ======================= : " + _cname);
+	          if( _cname.indexOf('btpm_checked')!=-1 ){
+	            //리무브
+	            this.classList.remove("btpm_checked");
+	          }else{
+	            //다시체크상태로
+	            this.classList.add("btpm_checked");
+	          }
 
-        });
-    });
+	        });
+	    });
+	}
 
 
 	</script>
