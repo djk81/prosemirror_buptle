@@ -752,15 +752,6 @@ text-align:center;line-height:150%">확 인 서</p>
         }
     }
 
-    /** 체크박스클릭 */
-    function checkbox_btn_clicked(){
-	    var node = ProseMirror.buptleSchema.nodes.btpm_checkbox.createAndFill({});
-
-	    _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
-        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
-        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
-	}
-
     function required_field_btn_clicked(){
 
         <!--let {$from} = state.selection, index = $from.index()-->
@@ -833,6 +824,15 @@ text-align:center;line-height:150%">확 인 서</p>
 
 	        });
 	    });
+	}
+
+	/** 체크박스 생성 클릭 */
+    function checkbox_btn_clicked(){
+	    var node = ProseMirror.buptleSchema.nodes.btpm_checkbox.createAndFill({});
+
+	    _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
 	}
 
 
