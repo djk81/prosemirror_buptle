@@ -883,7 +883,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom: true,
         toDOM(node){
-            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class},0]
+            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class}]
         },
         parseDOM: [{
             tag: "btpm_checkbox",
