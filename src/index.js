@@ -75,10 +75,24 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
     editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
     return true
   }
+
+  if(event.target.classList.contains('btpm_checkbox')){
+    editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, node))
+    return true
+  }
+
 }
 
 function toggleTodoItemAction(state, pos, todoItemNode) {
   return state.tr.setNodeMarkup(pos, null, {done: !todoItemNode.attrs.done})
+}
+
+function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
+  if(checkboxItemNode.attrs.class.indexOf('btpm_checked')!==-1){
+    return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox'})
+  }else{
+    return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox btpm_checked'})
+  }
 }
 
 

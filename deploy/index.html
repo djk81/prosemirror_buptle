@@ -462,7 +462,7 @@
 			</li>
 		</ul>
 
-		<p align=""> <btpm_checkbox class="btpm_checkbox"></btpm_checkbox> (선택)</p>
+		<p align=""> <btpm_checkbox class="btpm_checkbox btpm_checked"></btpm_checkbox> (선택)</p>
 
 		<p>
 <span contenteditable="false" draggable="true" style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;"><span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
@@ -812,6 +812,7 @@ text-align:center;line-height:150%">확 인 서</p>
 
 	/** 체크박스 이벤트 붙이기 */
 	function attachClickEvtBtpmCheckbox(){
+	  /**
 		document.querySelectorAll(".btpm_checkbox").forEach(e => {
 	        e.addEventListener('click', function(event) {
 	          var _cname = this.className;
@@ -826,6 +827,7 @@ text-align:center;line-height:150%">확 인 서</p>
 
 	        });
 	    });
+	   */
 	}
 
 	/** 체크박스 생성 클릭 */
@@ -835,6 +837,8 @@ text-align:center;line-height:150%">확 인 서</p>
 	    _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
         _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
         _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" (선택)")));
+
+        attachClickEvtBtpmCheckbox();
 	}
 
 
