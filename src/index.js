@@ -826,37 +826,95 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
             }
 
-            return ['span',
-                {
-                    id:node.attrs.id,
-                    class:node.attrs.class,
-                    style: node.attrs.style,
-                    'data-param-id':node.attrs['data-param-id'],
-                    'data-param-name':node.attrs['data-param-name'],
-                    'data-param-content':node.attrs['data-param-content'],
-                    'data-param-desc':node.attrs['data-param-desc'],
-                    'data-param-required':node.attrs['data-param-required'],
-                    'data-param-kind':node.attrs['data-param-kind'],
-                    'data-param-display-name':node.attrs['data-param-display-name'],
-                },
-                0]
+            var rtn = {};
+
+            if(node.attrs.id){
+              rtn.id = node.attrs.id
+            }
+            if(node.attrs.class){
+              rtn.class = node.attrs.class
+            }
+            if(node.attrs.style){
+              rtn.style = node.attrs.style
+            }
+            if(node.attrs['data-param-id']){
+              rtn['data-param-id'] = node.attrs['data-param-id']
+            }
+            if(node.attrs['data-param-name']){
+              rtn['data-param-name'] = node.attrs['data-param-name']
+            }
+            if(node.attrs['data-param-content']){
+              rtn['data-param-content'] = node.attrs['data-param-content']
+            }
+            if(node.attrs['data-param-desc']){
+              rtn['data-param-desc'] = node.attrs['data-param-desc']
+            }
+            if(node.attrs['data-param-required']){
+              rtn['data-param-required'] = node.attrs['data-param-required']
+            }
+            if(node.attrs['data-param-kind']){
+              rtn['data-param-kind'] = node.attrs['data-param-kind']
+            }
+            if(node.attrs['data-param-display-name']){
+              rtn['data-param-display-name'] = node.attrs['data-param-display-name']
+            }
+
+            return ['span', rtn, 0];
         },
         parseDOM: [{
             tag: "span[data-param-id]",
             getAttrs(dom){
                 //console.log(dom);
-                 return {
-                 id: dom.id,
-                 class:dom.className,
-                 style: dom.getAttribute("style"),
-                 'data-param-id':dom.getAttribute('data-param-id'),
-                 'data-param-name':dom.getAttribute('data-param-name'),
-                 'data-param-content':dom.getAttribute('data-param-content'),
-                 'data-param-desc':dom.getAttribute('data-param-desc'),
-                 'data-param-required':dom.getAttribute('data-param-required'),
-                 'data-param-kind':dom.getAttribute('data-param-kind'),
-                 'data-param-display-name':dom.getAttribute('data-param-display-name'),
-                 }
+
+             if(1==1){
+              return {
+               id: dom.id,
+               class:dom.className,
+               style: dom.getAttribute("style"),
+               'data-param-id':dom.getAttribute('data-param-id'),
+               'data-param-name':dom.getAttribute('data-param-name'),
+               'data-param-content':dom.getAttribute('data-param-content'),
+               'data-param-desc':dom.getAttribute('data-param-desc'),
+               'data-param-required':dom.getAttribute('data-param-required'),
+               'data-param-kind':dom.getAttribute('data-param-kind'),
+               'data-param-display-name':dom.getAttribute('data-param-display-name'),
+              }
+             }
+
+              var rtn = {};
+              if(dom.id){
+                rtn.id = dom.id
+              }
+              if(dom.class){
+                rtn.class = dom.class
+              }
+              if(dom.style){
+                rtn.style = dom.getAttribute('style')
+              }
+              if(dom.getAttribute('data-param-id')){
+              rtn['data-param-id'] = dom.getAttribute('data-param-id')
+              }
+              if(dom.getAttribute('data-param-name')){
+                rtn['data-param-name'] = dom.getAttribute('data-param-name')
+              }
+              if(dom.getAttribute('data-param-content')){
+                rtn['data-param-content'] = dom.getAttribute('data-param-content')
+              }
+              if(dom.getAttribute('data-param-desc')){
+                rtn['data-param-desc'] = dom.getAttribute('data-param-desc')
+              }
+              if(dom.getAttribute('data-param-required')){
+                rtn['data-param-required'] = dom.getAttribute('data-param-required')
+              }
+              if(dom.getAttribute('data-param-kind')){
+                rtn['data-param-kind'] = dom.getAttribute('data-param-kind')
+              }
+              if(dom.getAttribute('data-param-display-name')){
+                rtn['data-param-display-name'] = dom.getAttribute('data-param-display-name')
+              }
+              return rtn;
+
+
             }
         }]
     };
@@ -873,14 +931,37 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom:true,
         toDOM(node){
-            return ['label', {for:node.attrs.for, class:node.attrs.class},0]
+          var rtn = {
+          };
+
+          if(node.attrs.for){
+            rtn.for = node.attrs.for;
+          }
+
+          if(node.attrs.class){
+            rtn.class = node.attrs.class;
+          }
+
+          return ['label', rtn,0]
         },
         parseDOM: [{
             tag: "label",
             getAttrs(dom){
-                // console.log(dom);
-                // alert('getAttrs :' + dom.className );
-                return { class:dom.className, for:dom.getAttribute('for') }
+              // console.log(dom);
+              // alert('getAttrs :' + dom.className );
+              /**
+               * class:dom.className,
+                for:dom.getAttribute('for')
+               * */
+              var rtn = {};
+
+              if(dom.className){
+                rtn.class = dom.className
+              }
+              if(dom.getAttribute('for')){
+                rtn.for = dom.getAttribute('for')
+              }
+              return rtn;
             }
         }]
     };
@@ -956,23 +1037,43 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         content: "inline*",
         group: "block",
           toDOM(node){
-                return ['p',
-                    {
-                        align:node.attrs.align,
-                        style:node.attrs.style,
-                        class:node.attrs.class
-                    },
-                    0]
+                console.log("toDOM=====================");
+                console.log(node);
+                var rtn = {};
+
+                if(node.attrs.align){
+                  rtn.align=node.attrs.align
+                }
+                if(node.attrs.style){
+                  rtn.style=node.attrs.style
+                }
+                if(node.attrs.class){
+                  rtn.class=node.attrs.class
+                }
+
+                return ['p', rtn, 0];
             },
             parseDOM: [{
                 tag: "p",
                 getAttrs(dom){
                     // console.log(dom);
-                     return {
-                         align:dom.align,
-                         style:dom.getAttribute('style'),
-                         class:dom.getAttribute("class"),
-                     }
+                  console.log("parseDOM=====================");
+                  var _align = dom.align;
+                  var _style = dom.getAttribute('style');
+                  var _class = dom.getAttribute("class");
+                  var rtn = {};
+
+                  if(_align){
+                    rtn.align=_align
+                  }
+                  if(_style){
+                    rtn.style=_style
+                  }
+                  if(_class){
+                    rtn.class=_class
+                  }
+
+                  return rtn;
                 }
             }]
     };
