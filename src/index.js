@@ -849,7 +849,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             if(node.attrs['data-param-desc']){
               rtn['data-param-desc'] = node.attrs['data-param-desc']
             }
-            if(node.attrs['data-param-required']){
+            if((node.attrs['data-param-required']+"").length!==0){
               rtn['data-param-required'] = node.attrs['data-param-required']
             }
             if(node.attrs['data-param-kind']){
@@ -903,7 +903,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
               if(dom.getAttribute('data-param-desc')){
                 rtn['data-param-desc'] = dom.getAttribute('data-param-desc')
               }
-              if(dom.getAttribute('data-param-required')){
+              if((dom.getAttribute('data-param-required')+"").length!==0 ){
                 rtn['data-param-required'] = dom.getAttribute('data-param-required')
               }
               if(dom.getAttribute('data-param-kind')){
