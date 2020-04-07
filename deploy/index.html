@@ -580,6 +580,10 @@ text-align:center;line-height:150%">확 인 서</p>
 					return document.querySelector("#content")
 				};
 				_editorSpec.functions = {
+					  getCheckboxEditable : function(){
+					    alert('못만짐');
+					    return false;
+					  },
 					get_comments : function(){
 					    var comments = {
 					        comments : []

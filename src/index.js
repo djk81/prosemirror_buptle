@@ -70,6 +70,11 @@ const todoListSpec = {
   }],
 }
 
+
+function getCheckboxEditable(){
+  return true;
+}
+
 function handleClickOn(editorView, pos, node, nodePos, event) {
   if (event.target.classList.contains('todo-checkbox')) {
     editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
@@ -77,7 +82,9 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
   }
 
   if(event.target.classList.contains('btpm_checkbox')){
-    editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, node))
+    if(getCheckboxEditable()){
+      editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, node))
+    }
     return true
   }
 
@@ -660,6 +667,9 @@ export function editorInitBySpec(editorSpec, init_function){
             btpmRenderCommentsHandler = editorSpec.functions.btpmRenderCommentsHandler.bind(this);
         }
 
+        if(editorSpec.functions.getCheckboxEditable){
+            getCheckboxEditable = editorSpec.functions.getCheckboxEditable.bind(this);
+        }
 
     }
 
