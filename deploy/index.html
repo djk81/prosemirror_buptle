@@ -820,15 +820,21 @@ text-align:center;line-height:150%">확 인 서</p>
 
     }
 
-    document.querySelector("#click_upload_btn").addEventListener("click", e => {
+	$("#click_upload_btn").click(function(){
 		document.querySelector("#image-upload").click();
-	})
+	});
 
-    document.querySelector("#image-upload").addEventListener("change", e => {
-	  if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+	$("#image-upload").change(function(){
+		if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
 	    ProseMirror.startImageUpload(_editorView, e.target.files[0])
 	    _editorView.focus()
-	})
+	});
+
+    // document.querySelector("#image-upload").addEventListener("change", e => {
+	//   if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+	//     ProseMirror.startImageUpload(_editorView, e.target.files[0])
+	//     _editorView.focus()
+	// })
 
 	/** 체크박스 이벤트 붙이기 */
 	function attachClickEvtBtpmCheckbox(){

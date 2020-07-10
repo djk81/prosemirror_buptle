@@ -503,7 +503,7 @@ export
         console.log('=============== btpmMyHistoryDispatch ===================')
         console.log(tr)
         let _new_state = btpmMyDispatch({type: "transaction", transaction:tr})
-        
+
     }
 
     function setDisabled(state) {
@@ -2377,10 +2377,13 @@ export
 
     export
     let getPMContentString = () => {
+      if(_editorView && _editorView.state){
         let fragment = DOMSerializer.fromSchema(buptleSchema).serializeFragment(_editorView.state.doc.content);
         let tmp = document.createElement("div");
         tmp.appendChild(fragment);
         return tmp.innerHTML;
+      }
+      return '';
     };
 
 
