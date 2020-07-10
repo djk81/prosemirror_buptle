@@ -255,9 +255,10 @@ export let buptleSchema = null;
                 console.log(action)
                 console.log(tr)
                 window.console.log('코멘트 변경이 아님 그대로 return this : ' + actionType);
-                return this
+                console.log('================== 1 =============================== 리턴디스')
+                return this;
             }
-            let base = this
+            let base = this;
             if (actionType == "receive") {
                 base = base.receive(action, tr.doc)
             }

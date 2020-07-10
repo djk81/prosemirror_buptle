@@ -19,6 +19,7 @@ node src/collab/server/start.js
 
 # 다운그레이드 한글 fix 버전
 npm install prosemirror-view@1.8.0
+->     "prosemirror-view": "^1.15.2", 다시 업그레이드 진행 함. 20200710
 
 
 
