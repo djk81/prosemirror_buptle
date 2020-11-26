@@ -1267,7 +1267,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             outer.style.width = _target_width
         }catch(e){
             console.log("Resizable Width 계산 에러 : " + e);
-            outer.style.width = node.attrs.width;
+            outer.style.width = node.attrs.width; // 기본값 패치
             //outer.style.width = '10em;'
         }
 
