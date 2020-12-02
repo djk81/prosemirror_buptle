@@ -1276,10 +1276,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           //alert(node.attrs.style + " :: " + node.attrs.width);
 
         try{
-            let _target_width = node.attrs.width=== '10.00em' ? node.attrs.style.split('width:')[1].split(';')[0]
-                : node.attrs.width
+            //let _target_width = node.attrs.width=== '10.00em' ? node.attrs.style.split('width:')[1].split(';')[0]
+//                : node.attrs.width
             //alert(_target_width + " : " + node.attrs.width);
-            outer.style.width = _target_width
+            //outer.style.width = _target_width
+            outer.style.width = _FR_IMG_WIDTH+'px'; // 글로벌 패치
         }catch(e){
             console.log("Resizable Width 계산 에러 : " + e);
             //outer.style.width = node.attrs.width; // 기본값 패치
@@ -1300,7 +1301,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         const img = document.createElement("img")
         img.setAttribute("src", node.attrs.src)
-        img.style.width = "100%"
+        img.style.width = _FR_IMG_WIDTH+'px';
         img.style.setProperty('vertical-align', 'bottom', 'important');
         //img.style.border = "1px solid red"
 
