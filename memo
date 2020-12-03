@@ -21,5 +21,19 @@ node src/collab/server/start.js
 npm install prosemirror-view@1.8.0
 ->     "prosemirror-view": "^1.15.2", 다시 업그레이드 진행 함. 20200710
 
+######################################################################################################
+# 최초설치 시
+npm install
+npm build
+
+# 실행시 필요한 두개 명령어
+(터미널1)
+rollup -c -w
+
+(터미널2)
+node src/collab/server/start.js
+(=>http://localhost:8000/deploy/index.html)
+
+
 
 
