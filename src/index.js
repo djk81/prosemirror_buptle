@@ -138,9 +138,8 @@ function findPlaceholder(state, id) {
   return found.length ? found[0].from : null
 }
 
-var _FR_IMG_WIDTH=null;
+
 export function startImageUpload(view, file) {
-  _FR_IMG_WIDTH = null;
   // A fresh object to act as the ID for this upload
   let id = {}
 
@@ -152,7 +151,6 @@ export function startImageUpload(view, file) {
 
     if ( file ) {
         var FR= new FileReader();
-        //var FR= new Image();
         FR.onload = function(e) {
             let url = e.target.result
 
@@ -165,10 +163,13 @@ export function startImageUpload(view, file) {
             const _img = new Image();
             _img.src = url;
             _img.onload = function() {
-                const imgWidth = _img.naturalWidth;
+                let imgWidth = _img.naturalWidth;
                 const imgHeight = _img.naturalHeight;
-                _FR_IMG_WIDTH = imgWidth;
-                let img = buptleSchema.nodes.resizableImage.create({src: url})
+                // width:imgWidth
+                if(imgWidth && imgWidth>788){
+                  imgWidth=788;
+                }
+                let img = buptleSchema.nodes.resizableImage.create({src: url, style: 'width: '+imgWidth+'px'})
                 view.dispatch(view.state.tr
                               .replaceWith(pos, pos, img)
                               .setMeta(placeholderPlugin, {remove: {id}}))
@@ -180,7 +181,6 @@ export function startImageUpload(view, file) {
 
 
         FR.readAsDataURL( file );
-        //FR.src = file;
     }
 
     return;
@@ -1276,21 +1276,16 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           //alert(node.attrs.style + " :: " + node.attrs.width);
 
         try{
-            //let _target_width = node.attrs.width=== '10.00em' ? node.attrs.style.split('width:')[1].split(';')[0]
-//                : node.attrs.width
+            let _target_width = node.attrs.width=== '10.00em' ? node.attrs.style.split('width:')[1].split(';')[0]
+                : node.attrs.width
             //alert(_target_width + " : " + node.attrs.width);
-            //outer.style.width = _target_width
-            outer.style.width = _FR_IMG_WIDTH+'px'; // 글로벌 패치
+            outer.style.width = _target_width
         }catch(e){
             console.log("Resizable Width 계산 에러 : " + e);
-            //outer.style.width = node.attrs.width; // 기본값 패치
-            if(788 < _FR_IMG_WIDTH){
-                _FR_IMG_WIDTH = 788;
-            }
-            outer.style.width = _FR_IMG_WIDTH+'px'; // 글로벌 패치
-            outer.style.maxWidth = _FR_IMG_WIDTH+'px';
-            //outer.style.width = '10em;'
+            outer.style.width = '10em;'
         }
+
+        outer.style.maxWidth = '788px';
 
         //outer.style.width = node.attrs.width
         //outer.style.border = "1px solid blue"
@@ -1301,7 +1296,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
         const img = document.createElement("img")
         img.setAttribute("src", node.attrs.src)
-        img.style.width = _FR_IMG_WIDTH+'px';
+        img.style.width = "100%"
         img.style.setProperty('vertical-align', 'bottom', 'important');
         //img.style.border = "1px solid red"
 
