@@ -94,6 +94,7 @@ function toggleTodoItemAction(state, pos, todoItemNode) {
   return state.tr.setNodeMarkup(pos, null, {done: !todoItemNode.attrs.done})
 }
 
+/**
 function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
   if(checkboxItemNode.attrs.class.indexOf('btpm_checked')!==-1){
     return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox'})
@@ -101,8 +102,18 @@ function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
     return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox btpm_checked'})
   }
 }
-
-
+*/
+function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
+  if (checkboxItemNode.attrs.class.indexOf('btpm_checked') !== -1) {
+    return state.tr.setNodeMarkup(pos, null, {
+      class: 'btpm_checkbox'
+    });
+  } else if (checkboxItemNode.attrs.class.indexOf('btpm_check') === 0) { // 210817 체크박스 오작동으로 수정
+    return state.tr.setNodeMarkup(pos, null, {
+      class: 'btpm_checkbox btpm_checked'
+    });
+  }
+}
 
 
 
