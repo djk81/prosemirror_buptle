@@ -81,9 +81,9 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
     return true
   }
 
-  if(event.target.classList.contains('btpm_checkbox')){
+  if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
     if(getCheckboxEditable()){
-      editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, node))
+      editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, event))
     }
     return true
   }
@@ -103,18 +103,37 @@ function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
   }
 }
 */
-function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
-  if (checkboxItemNode.attrs.class.indexOf('btpm_checked') !== -1) {
+// function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
+//   if (checkboxItemNode.attrs.classList.contains('btpm_checked')) {
+//     return state.tr.setNodeMarkup(pos, null, {
+//       class: 'btpm_checkbox'
+//     });
+//   } else if (checkboxItemNode.attrs.class.indexOf('btpm_check') === 0) { // 210817 체크박스 오작동으로 수정
+//     return state.tr.setNodeMarkup(pos, null, {
+//       class: 'btpm_checkbox btpm_checked'
+//     });
+//   }
+// }
+function toggleCheckboxItemAction(state, pos, event) {
+  let target = event.target.classList
+  if (target.contains('btpm_checked') && target.contains("btpm_checkbox") ) {
     return state.tr.setNodeMarkup(pos, null, {
       class: 'btpm_checkbox'
     });
-  } else if (checkboxItemNode.attrs.class.indexOf('btpm_check') === 0) { // 210817 체크박스 오작동으로 수정
+  } else if (!target.contains("btpm_checked") && target.contains("btpm_checkbox")) { // 210817 체크박스 오작동으로 수정
     return state.tr.setNodeMarkup(pos, null, {
       class: 'btpm_checkbox btpm_checked'
     });
+  } else if(target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required") ) {
+      return state.tr.setNodeMarkup(pos, null, {
+        class: 'btpm_checkbox_required'
+      });
+  } else if(!target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required") ) {
+      return state.tr.setNodeMarkup(pos, null, {
+        class: 'btpm_checkbox_required btpm_checked_required'
+      });
   }
 }
-
 
 
 
@@ -1004,7 +1023,11 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     };
 
     const buptleCheckbox = {
-        attrs : { class:{default:'btpm_checkbox'}},
+        attrs : {
+            class:{default:'btpm_checkbox'},
+            "data-type" :{default:""},
+            "data-group-id" : {default : randomID()}
+        },
         // content: "text*",
         // marks: "",
         // group: "block",
@@ -1015,14 +1038,12 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom: true,
         toDOM(node){
-            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class}]
+            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class, "data-group-id":node.attrs["data-group-id"], "data-type" :node.attrs["data-type"]}]
         },
         parseDOM: [{
             tag: "btpm_checkbox",
             getAttrs(dom){
-                // console.log(dom);
-                // alert('getAttrs :' + dom.className );
-                return { class:dom.className }
+                return { class:dom.className, "data-group-id":dom.getAttribute(["data-group-id"]) ,"data-type" : dom.getAttribute("data-type") }
             }
         }]
     };
