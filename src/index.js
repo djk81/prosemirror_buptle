@@ -81,7 +81,10 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
     return true
   }
 
-  if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
+  if (node.type.name === 'btpm_checkbox') {
+  // if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
+    // BT-1701. 2021.08.23. 체크박스 가장 밑 하단 클릭 시 p태그 class명이 btpm_checkbox태그 class명으로 덮어씌워지는 문제.
+    // -> node는 p태그로 들어오나 event는 btpm_checkbox태그로 들어와서 발생하는 문제.
     if(getCheckboxEditable()){
       editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, event))
     }
