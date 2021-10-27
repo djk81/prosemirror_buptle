@@ -6,23 +6,21 @@ import commonJS from 'rollup-plugin-commonjs'
 
 
 export default {
-  input: './src/index.js',
-  output: {
-    format: 'umd',
-    file: 'dist/buptle_editor.js',
-    name: 'ProseMirror'
-  },
-  plugins: [
-      babel(),
-      resolve({
-          jsnext: true,
-          browser: true
-      }),
-
-      buble(),
-      commonJS({
-        include: 'node_modules/**'
-      }),
-
+    input: './src/index.js',
+    output: {
+        format: 'umd',
+        file: 'dist/buptle_editor.js',
+        name: 'ProseMirror'
+    },
+    plugins: [
+        babel(),
+        resolve({
+            jsnext: true,
+            browser: true
+        }),
+        buble(),
+        commonJS({
+            include: 'node_modules/**'
+        }),
     ],
 };

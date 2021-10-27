@@ -14,13 +14,8 @@ import {chainCommands, toggleMark, setBlockType, wrapIn, newlineInCode, createPa
 import {addColumnAfter, addColumnBefore, deleteColumn, addRowAfter, addRowBefore, deleteRow,
         mergeCells, splitCell, setCellAttr, toggleHeaderRow, toggleHeaderColumn, toggleHeaderCell,
         goToNextCell, deleteTable}  from "./table/commands"
-
 import {tableEditing, columnResizing, tableNodes, fixTables} from "./table"
 
-
-
-
-// import {schema} from "prosemirror-schema-basic"
 import {schema} from "./schema-basic-btpm.js"
 
 var prefix = "ProseMirror-prompt";
@@ -730,7 +725,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     ptpm_comment_list_target_element_id = _comment_target_id;
     return __btpmInitView(div_target_id, _tmp_doc, _tmp_comments);
 }
-
+    // 여기다
     function __btpmInitView(target_id, document_html, comments){
         let _editorState = btpmGetState(document_html, comments);
         _editorView = new EditorView(document.querySelector("#" + target_id), {
@@ -751,8 +746,88 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             btpmHandleCommentDraw(comments, null);
         }
 
+        // 필요한 엘리먼트 셋팅
+        setElements();
 
-        //btpm_attach_drop_evt();
+        pdf_preview_switchEl.addEventListener('change', function() {
+            pdf_preview_switch_toggle(this);
+        });
+
+        // PDF 미리보기 기능 그려주기
+        pdf.addEventListener('keyup', delay(function (e) {
+            if (!pdfPreviewState) return;
+            console.log(html2canvas);
+            canvasState = drawCanvas(this);
+        }, 500));
+
+        // PDF 미리보기 기능 스크롤 이동
+        pdf.addEventListener('click', function (e) {
+            if (!canvasState || !pdfPreviewState) return;
+            
+            let targetYOffset = 0; // target 의 위치 값
+            let target = e.target; // 선택한 element 객체
+            
+            // 어떤 객체를 선택했냐에 따라 위치값을 다르게 계산
+            
+            if (target.parentElement.nodeName === 'TD' || target.nodeName === 'TD') {
+                // td 선택시
+                while (target) {
+                    target = target.parentElement;
+
+                    if (target.classList.contains('tableWrapper')) {
+                        // 테이블 태그는 tableWrapper 이 한번 더 감싸져 있어서 클래스로 체크
+                        targetYOffset = target.offsetTop;
+                        break;
+                    }
+                    
+                    if (target.nodeName === 'BODY') break;
+                }
+            } else if (target.nodeName === 'DIV') {
+                // div 선택시
+                targetYOffset = target.offsetTop;
+            } else if (target.nodeName === 'IMG') {
+                // img 선택시
+                while (target) {
+                    target = target.parentElement;
+
+                    if (target.nodeName === 'P') {
+                        targetYOffset = target.offsetTop;
+                        break;
+                    }
+
+                    if (target.nodeName === 'BODY') break;
+                }
+            } else {
+                // 그외 전체
+                targetYOffset = e.layerY;
+            }
+            
+            const totalHeight = editorHeight + ((pageCount + 1) * guideLineMargin );
+
+            for (let i = 1; i < pageCount; i++) {    
+                if (pageCount === 1) break;
+
+                if (targetYOffset >= pageHeight * i) {
+                    targetYOffset += guideLineMargin;
+                }
+            }
+
+            const scrollToValue = canvasContainer.offsetHeight * (targetYOffset / totalHeight);
+            delayMoveYOffset(guideContainer, scrollToValue);
+        });
+
+        // 캔버스 sticky 기능
+        window.addEventListener('scroll', function () {
+            if (!canvasState || !pdfPreviewState) return;
+
+            if (window.pageYOffset >= guideContainerPosY) {
+                guideContainer.classList.add('fixed');
+            } else {
+                guideContainer.classList.remove('fixed');
+            };
+        });
+
+        pdf_preview_down_btn.addEventListener('click', savePDF);
 
         return _editorView;
     }
@@ -2694,4 +2769,216 @@ function setAlignment(pos, dispatch, align){
     //buptleSchema.spec.nodes.paragraph
     var _tr = _editorView.state.tr.setNodeMarkup($pos, null, {align:align})
     dispatch( _tr )
+}
+
+let pdfPreviewState = false; // PDF 미리보기 true = 활성화 false = 비활성화
+let pageHeight = 0; // a4 비율에 따른 높이 값
+let canvasState = false; // 캔버스 생성되면 boolean 할당
+let dpiValue = 1; // 이미지 해상도 1 = 96dpi
+let delayedYOffset = 0; // 미리보기 스크롤 값
+let guideLineMargin = 30; // 여백
+let pageCount = 1; // 몇개의 drawImage 를 할지 count ( draw 후 canvas 높이를 변경 못함 )
+let acc = 0.1; // requestAnimationFrame 속도 조절
+let rafId; // requestAnimationFrame id 값
+let rafState; // requestAnimationFrame true = 실행 false = 종료
+let guideContainer; // 미리보기 뷰 container
+let canvasContainer; // 미리보기 캔버스 container
+let pdf; // 변환할 객체
+let editorWidth; // 원본 객체 width
+let editorHeight;// 원본 객체 height
+let guideContainerPosY; // guideContainer 절대 좌표 값
+let pdf_preview_switchEl; // pdf preview on off 토글 버튼
+let pdf_preview_down_btn; // pdf preview down 버튼
+// 필요한 엘리먼트 객체 셋팅 및 수치 계산
+function setElements() {
+    guideContainer = document.querySelector('.guideContainer') || undefined; // 미리보기 뷰 container
+    canvasContainer = document.querySelector('.canvasContainer') || undefined; // 미리보기 캔버스 container
+    pdf_preview_switchEl = document.querySelector('#pdf_preview_switch') || undefined; // pdf preview on off 토글 버튼
+    pdf = document.querySelector('.ProseMirror') || undefined; // 변환할 객체
+    pdf_preview_down_btn = document.querySelector('#pdf_preview_down') || undefined; // pdf preview down 버튼
+    editorWidth = (pdf) ? pdf.offsetWidth : 0; // 원본 객체 width
+    editorHeight = (pdf) ? pdf.offsetHeight : 0;// 원본 객체 height
+    guideContainerPosY = (guideContainer) ? getPosY(guideContainer) : 0; // guideContainer 절대 좌표 값
+}
+
+// number -> dpi 변환기
+function getDPIConverter(value) {
+    return value * 96;
+}
+
+// px -> mm 변환기
+function getMMConverter({ px, dpi }) {
+    return px * 25.4 / dpi;
+}
+
+// mm -> px 변환기
+function getPIXELConverter({ mm, dpi }) {
+    return dpi * mm / 25.4;
+}
+
+// 요소의 절대 좌표 계산 함수
+function getPosY (el) {
+    const clientRect = el.getBoundingClientRect(); // 각종 좌표값이 들어있는 객체
+    const relativeTop = clientRect.top; // Viewport의 시작지점을 기준으로한 상대좌표 Y 값.
+    const scrolledTopLength = window.pageYOffset; // 스크롤된 길이
+
+    return scrolledTopLength + relativeTop; // 절대좌표
+}
+
+// keyup delay 함수
+function delay(callback, ms) {
+    var timer = 0;
+    return function() {
+        var context = this, args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+        callback.apply(context, args);
+        }, ms || 0);
+    };
+}
+
+// 스크롤 이동 함수
+function delayMoveYOffset (target, yOffset) {
+    if (!rafState) {
+        rafId = requestAnimationFrame(loop);
+        rafState = true;
+    }
+
+    function loop() {
+        delayedYOffset = delayedYOffset + (yOffset - delayedYOffset) * acc;
+        
+        target.scrollTop = delayedYOffset;
+
+        rafId = requestAnimationFrame(loop);
+
+        if (Math.abs(yOffset - delayedYOffset) < 1) {
+            cancelAnimationFrame(rafId);
+            rafState = false;
+        }
+    }
+}
+
+// PDF 미리보기 삭제
+function pdf_preview_remove() {
+    canvasContainer.innerHTML = '';
+}
+
+// PDF 미리보기 토글 함수
+function pdf_preview_switch_toggle(e) {
+    pdfPreviewState = e.checked;
+
+    if (pdfPreviewState) {
+        canvasState = drawCanvas(pdf);
+    } else {
+        pdf_preview_remove()
+    }
+}
+
+// 캔버스 그리는 함수
+function drawCanvas(target) {
+    // html2canvas(element, options);
+    // 외부 이미지는 지원 불가
+    // options: https://html2canvas.hertzen.com/configuration
+    html2canvas(target, {
+        //logging : true,		// 디버그 목적 로그
+        allowTaint: true, // cross-origin allow
+        useCORS: true, // CORS 사용한 서버로부터 이미지 로드할 것인지 여부
+        scale: dpiValue, // 해상도 조절(기본 96dpi)
+        windowWidth: window.innerWidth - 17 // 스크롤바 width 제외
+    })
+    .then(function (canvas) {
+        // 셋팅
+        const mmWidth = getMMConverter({ px: editorWidth, dpi: getDPIConverter(dpiValue) }); // 원본 객체 가로 / 세로 px -> mm 변환
+        const mmRatioHeight = mmWidth * 1.414; // 원본 객체 가로 / 세로 px -> mm 변환
+        const pxHeight = getPIXELConverter({ mm: mmRatioHeight, dpi: getDPIConverter(dpiValue) }); // 원본 객체 세로 mm -> px 변환
+        pageHeight = pxHeight || canvas.height; // 원본 객체 높이 값 없을 경우 캔버스1 의 높이 값
+        const imgHeight = canvas.height; // 캔버스1 높이 값
+        let restHeight = imgHeight; // 남은 높이 값
+        let posY = 0; // 캔버스1 y 위치 값
+        let drawPosY = guideLineMargin; // 캔버스2 y 위치 값
+        pageCount = 1;
+        
+        // 1 페이지 이상 있는지 체크 해서 반복문 실행
+        restHeight -= pageHeight;
+        while (restHeight >= 0) {
+            restHeight -= pageHeight;
+            pageCount++;
+        }
+
+        // canvas2 생성 및 셋팅
+        const canvas2 = document.createElement('canvas');
+        canvas2.width = canvas.width + (guideLineMargin * 2);
+        canvas2.height = canvas.height + drawPosY + (pageCount * guideLineMargin);
+        canvas2.style.width = `100%`;
+        const conText = canvas2.getContext("2d");
+
+        // guide line 색상
+        conText.fillStyle = '#626262';
+        conText.fillRect(0, 0, canvas2.width, canvas2.height);
+
+        // 첫 페이지 출력
+        conText.drawImage(canvas, 0, posY, canvas.width, pageHeight, guideLineMargin, drawPosY, canvas.width, pageHeight);
+
+        // 페이지 갯수에 따라 반복하여 그려주기
+        for (let i = 1; i < pageCount; i++) {    
+            if (pageCount === 1) break;
+
+            posY += pageHeight;
+            drawPosY += pageHeight + guideLineMargin;
+
+            conText.drawImage(canvas, 0, posY, canvas.width, pageHeight, guideLineMargin, drawPosY, canvas.width, pageHeight);
+        }
+
+        // 미리보기 캔버스 객체 삽입
+        pdf_preview_remove();
+        canvasContainer.appendChild(canvas2);
+
+        // 이전 스크롤 값이 존재하면 guide 스크롤 이동
+        guideContainer.scrollTop = delayedYOffset;
+
+        return;
+    });
+    return true;
+}
+
+function savePDF() {
+    // html2canvas(element, options);
+    // 외부 이미지는 지원 불가
+    // options: https://html2canvas.hertzen.com/configuration
+    html2canvas(pdf, {
+        //logging : true,		// 디버그 목적 로그
+        allowTaint: true, // cross-origin allow 
+        useCORS: true, // CORS 사용한 서버로부터 이미지 로드할 것인지 여부
+        scale: dpiValue, // 해상도 조절(기본 96dpi)
+        windowWidth: window.innerWidth - 17 // 스크롤바 width 제외
+    })
+    .then(function (canvas) {
+        // 캔버스를 이미지로 변환
+        // 210mm / 297mm
+        // Ratio: 0.707 / 1.414
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210; // PDF width (A4 210mm 기준)
+        pageHeight = imgWidth * 1.414; // PDF height (A4 비율 기준)
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let heightLeft = imgHeight;
+        let pdfMargin = 0; // PDF 여백 설정
+        const PDF = new jsPDF('p', 'mm');
+        let position = 0;
+        
+        // 첫 페이지 출력
+        PDF.addImage(imgData, 'jpeg', pdfMargin, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        // 한 페이지 이상일 경우 루프 돌면서 출력
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+
+            PDF.addPage();
+            PDF.addImage(imgData, 'jpeg', pdfMargin, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        // 파일 저장
+        PDF.save('filename.pdf');
+    });
 }

@@ -1,42 +1,874 @@
-<!DOCTYPE html> <meta charset="utf8" />
-<html>
-<head>
-    <link rel="stylesheet" href="https://prosemirror.net/css/editor.css" />
-</head>
+<!DOCTYPE html>
+<meta charset="utf8" />
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<header>
+
+
+<link href="http://test2.buptledev.com/static/adele/css/application.css" rel="stylesheet" type="text/css">
+<link href="http://test2.buptledev.com/static/adele/css/style.css" rel="stylesheet" type="text/css">
+<link href="http://test2.buptledev.com/static/adele/css/reset.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="http://test2.buptledev.com/static/adele/scripts/buptle_editor.css">
+
+<link href="http://test2.buptledev.com/static/adele/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+<link href="http://test2.buptledev.com/static/adele/css/jquery-ui.structure.min.css" rel="stylesheet" type="text/css">
+<link href="http://test2.buptledev.com/static/adele/css/jquery-ui.theme.min.css" rel="stylesheet" type="text/css">
+
+
+<!-- SCRIPT -->
+<script src="http://test2.buptledev.com/static/tenant/js/jquery-3.3.1.min.js"></script>
+
+<script src="http://test2.buptledev.com/static/adele/scripts/jquery-ui.min.js"></script>
+<!--<script src="/static/adele/scripts/main.js"></script>-->
+
+
+	<script src="https://unpkg.com/konva@3.3.3/konva.min.js"></script>
+
+
+	<style>
+
+  /*placeholder {*/
+    /*display: inline;*/
+    /*border: 1px solid #ccc;*/
+    /*color: #ccc;*/
+  /*}*/
+  /*placeholder:after {*/
+    /*content: "☁";*/
+    /*font-size: 200%;*/
+    /*line-height: 0.1;*/
+    /*font-weight: bold;*/
+  /*}*/
+  /*.ProseMirror img { max-width: 100px }*/
+
+
+		/* template checkbox */
+.tmpl_checkbox {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: top;
+}
+.tmpl_checkbox input[type=checkbox] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: visible;
+    vertical-align: top;
+    cursor: pointer;
+    z-index: 2;
+}
+.tmpl_checkbox input[type=checkbox]+label {
+    position: relative;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    vertical-align: top;
+    border: solid 1px #000000;
+    background-color: #ffffff;
+    z-index: 1;
+}
+.tmpl_checkbox input[type=checkbox]:checked+label::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 11px;
+    margin-top: -7px;
+    margin-left: -3px;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    -moz-transform: rotate(48deg);
+    -webkit-transform: rotate(48deg);
+    transform: rotate(48deg);
+    z-index: 1;
+}
+.tmpl_checkbox input[type=checkbox]+label::after {
+    display: none
+}
+
+		body{
+			margin-left: 20px;
+		}
+
+		span.buptleparam_content_required_none{
+			color:red;
+			background-color:black;
+		}
+
+		span.default_buptle_required{
+			color:white;
+			background-color:black;
+		}
+
+		.btpm_add_comment_menu{
+			background-color: lightcyan;
+			color: black;
+			border-radius: 3px;
+		}
+
+		/** 여기가 본문에서 노랗게 변하는 애들 */
+		.blame-marker {
+		    /*background-color: #ff8;*/
+		    background-color: lightgreen;
+			/*border: 2px dashed black;*/
+			padding : 3px 3px 3px 3px;
+			opacity: 0.9;
+			/*box-shadow: 2px 2px 1px 1px grey;*/
+		  }
+		.commit:hover {
+		    background: #ff8;
+		  }
+		  .commit-revert {
+		    color: #a22;
+		  }
+
+		.comment {
+		    background-color: lightpink;
+		}
+		.subtle { color: #777 }
+
+		/*.comment { background-color: #ff8 }*/
+		.currentComment { background-color: #fe0 }
+
+		.commentList, .commentText {
+		  display: block;
+		  padding: 0;
+		  margin: 0;
+			box-shadow: 2px 2px 1px 1px grey;
+		}
+
+		.tooltip-wrapper {
+		  display: inline-block;
+		  position: relative;
+		  width: 0;
+		  overflow: visible;
+		  vertical-align: bottom;
+		}
+
+		.ProseMirror ul.commentList {
+		  font-family: "Source Sans Pro";
+		  font-size: 16px;
+		  width: 15em;
+		  position: absolute;
+		  top: calc(100% + 8px);
+		  left: -2em;
+		  font-size: 1rem;
+		  color: black;
+		  background: white;
+		  font-weight: normal;
+		  border: 1px solid #888;
+		  border-radius: 5px;
+		  z-index: 10;
+		  padding: 0;
+		}
+
+		ul.commentList::before {
+		  border: 5px solid black;
+		  border-top-width: 0px;
+		  border-left-color: transparent;
+		  border-right-color: transparent;
+		  position: absolute;
+		  top: -5px;
+		  left: calc(2em - 6px);
+		  content: " ";
+		  height: 0;
+		  width: 0;
+		}
+
+		li.commentText {
+		  padding: 20px 10px 20px 10px;
+		   position:  relative;
+		  pointer-events: auto;
+		  margin: 0;
+			background-color: red;
+			opacity: 0.8;
+			color:white;
+			border: 1px solid black;
+			border-radius: 5px;
+		}
+
+		li.commentText + li.commentText {
+		  border-top: 1px solid black;
+		}
+
+		.commentDelete {
+		  position: relative;
+			top:10px;
+		  left: 0;
+		  left-margin: 0;
+		  left-padding: 0;
+		  border: 0;
+		  font: inherit;
+		  display: block;
+		  color: inherit;
+		  background: transparent;
+		  cursor: pointer;
+			font-size: small;
+			text-decoration: underline;
+		}
+
+		.commentDelete:hover {
+		  color: #f88;
+		}
+
+		.doclist {
+		  z-index: 20;
+		  display: block;
+		  padding: 2px 2px;
+		  margin: 0;
+		  border: 1px solid silver;
+		  position: absolute;
+		  background: white;
+		  font-size: 90%;
+		  box-sizing: border-box;
+		  -moz-box-sizing: border-box;
+		  max-height: 15em;
+		  overflow-y: auto;
+		}
+
+		.doclist li {
+		  display: block;
+		  padding: 1px 3px;
+		  margin: 0;
+		  cursor: pointer;
+		}
+
+		.doclist li:hover {
+		  background: #5ae;
+		  color: white;
+		}
+
+		.docinfo {
+		  position: relative;
+		  color: #555;
+		}
+
+		.ProseMirror-report {
+		  position: fixed;
+		  top: 0; right: 0; left: 0;
+		  border-width: 0;
+		  border-style: solid;
+		  border-bottom-width: 1px;
+		  padding: 3px 27px 5px;
+		  white-space: pre;
+		  z-index: 1000;
+		}
+
+		.ProseMirror-report-fail {
+		  background: rgb(255, 230, 230);
+		  border-color: rgb(200, 150, 150);
+		}
+
+		.ProseMirror-report-delay {
+		  background: rgb(255, 255, 200);
+		  border-color: rgb(200, 200, 120);
+		}
+
+	/** table */
+
+  /*!** todolist *!*/
+  /*li[data-type="todo_item"] {*/
+    /*display: flex;*/
+    /*flex-direction: row;*/
+  /*}*/
+
+  /*.todo-checkbox {*/
+    /*border: 1px solid;*/
+    /*height: 0.7em;*/
+    /*width: 0.7em;*/
+    /*box-sizing: border-box;*/
+    /*margin-right: 10px;*/
+    /*margin-top: 14px;*/
+    /*user-select: none;*/
+    /*-webkit-user-select: none;*/
+    /*cursor: pointer;*/
+    /*border-radius: 0.2em;*/
+  /*}*/
+
+  /*.todo-checkbox-checked {*/
+    /*background-color: black;*/
+  /*}*/
+
+  /*.todo-content {*/
+    /*flex: 1;*/
+  /*}*/
+
+  /*li[data-done="true"] {*/
+    /*!** text-decoration: line-through;*!*/
+	  /*font-weight: bold;*/
+  /*}*/
+
+  /*li[data-done="true"] .todo-checkbox-unchecked {*/
+    /*display: none;*/
+  /*}*/
+
+  /*li[data-done="false"] .todo-checkbox-checked {*/
+    /*display: none;*/
+  /*}*/
+
+  /*li[data-done="true"] li[data-done="false"] .todo-checkbox-checked {*/
+    /*display: inline-block;*/
+  /*}*/
+
+  /*li[data-done="false"] li[data-done="true"] .todo-checkbox-checked {*/
+    /*display: inline-block;*/
+  /*}*/
+
+  /*li[data-done="false"] {*/
+    /*text-decoration: none;*/
+  /*}*/
+  /*!** end of todolist*!*/
+
+	.btpm_checkbox{
+		position: relative;
+	    padding: 0;
+	    width: 20px;
+	    height: 20px;
+	    line-height: 20px;
+	    vertical-align: top;
+	    border: solid 1px #000000;
+	    background-color: #ffffff;
+		display:inline-block;
+        z-index: 1;
+	}
+
+	.btpm_checked::before {
+	    content: "";
+	    display: block;
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    width: 7px;
+	    height: 11px;
+	    margin-top: -7px;
+	    margin-left: -3px;
+	    border-bottom: 2px solid #000;
+	    border-right: 2px solid #000;
+	    -moz-transform: rotate(48deg);
+	    -webkit-transform: rotate(48deg);
+	    transform: rotate(48deg);
+	    z-index: 1;
+	}
+	.btpm_checkbox::after {
+	    display: none
+	}
+
+	.btpm_checkbox:hover{
+		cursor: pointer;
+	}
+
+	/*#checkboxes input[type=checkbox]{*/
+	/*    display: none;*/
+	/*}*/
+
+	/*#checkboxes input[type=checkbox]:checked + .whatever{*/
+	/*    background-color: green;*/
+	/*}*/
+
+	</style>
+</header>
+
 <body>
 	<br/>
 	<div>
-		<h2>BUPTLE - Prosemirror</h2>
+		<h2>BUPTLE - Prosemirror (IE 버전은 빌드 수정 작업중. 크롬에서만 사용가능)</h2>
+	<!--<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" alt="샘플" title="sample" contenteditable="false" draggable="true" class="ProseMirror-selectednode">-->
 	</div>
 	<br/>
-	<br/>
-	<div id="editor" style="margin-bottom: 23px;"></div>
-	<div id="content" style="display: none;">
-		<h4 style="text-align: center;"><strong>Mutual Non-Disclosure Agreement</strong></h4>
-		<p style="text-align: justify;"><strong>RECITALS</strong></p>
-		<p style="text-align: justify;">
-		    <br />본 상호비밀유지계약서(이하 &ldquo;본 계약&rdquo;이라고 함)는 만도헬라일렉트로닉스(이하 &ldquo;MHE&rdquo;라고 함)와 이하에 명기된 자연인, 법인, 회사 또는 기타 단체 사이에서 <span data-param-id="796" data-param-name="계약의 발효일 기재 (YYYY/MM/DD)" data-param-content="" data-param-desc="계약 효력 기산일을 기재하여 주시면 됩니다. e.g. 2019-06-11" data-param-required="1" class="buptleparam_content_required_none" contenteditable="false" draggable="false" onclick="parent.viewModal(this)" data-param-kind="text" data-param-display-name=" [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] "><label> [ 입력필요 : 계약의 발효일 기재 (YYYY/MM/DD) ] </label></span>&nbsp; ("효력발생일")에 작성되고 효력을 발한다. 이하에서는 때때로 본 계약의 당사자들을 합쳐서는 &ldquo;당사자들&rdquo;로, 개별적으로는 &ldquo;당사자&rdquo;로 칭한다. 양 당사자들은 본 계약에 따라 비밀정보(이하 정의 됨)를 공개하거나 수령 한다. 비밀정보를 공개하는 당사자는 "공개 당사자"로, 비밀정보를 수령하는 당사자는 "수령 당사자"로 칭한다. 이에, 당사자들은 다음과 같이 합의한다.</p>
-
-	</div>
-
 
 	<form id="commit">
-        Commit message: <input type=text id=message name=message> <button id=commitbutton type="submit">commit</button>
-        <div class=blame-wrap><button type=button id=blame>blame at cursor</button></div>
+        저장 커밋메시지 <input type=text id=message name=message> <button id=commitbutton type="button" onclick="">버전저장</button>
+        <div class=blame-wrap>
+	        <button type="button" id="blame" style="display:none;">blame at cursor</button>
+        </div>
 	</form>
 
-    <div id="commits" style="margin-bottom: 23px">
+	<button id="click_upload_btn">이미지업로드</button>  <input type="file" id="image-upload"/>
+
+    <div id="commits" style="margin-bottom: 23px;">
 	    <!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
     </div>
-	<script src="../dist/buptle_ProseMirror.js"></script>
+	<div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
+	<div id="docname" style="position: relative; float:left; display: none; ">문서명</div>
+	<div id="users" onclick="alert( ' >> ' +  ProseMirror.getPMContentString() );">유저수</div>
+    <button type="button" onclick="required_field_btn_clicked();">필수입력필드</button>
+    <button type="button" onclick="content_field_btn_clicked();">일반입력필드</button>
+    <button type="button">체크박스</button>
+    <button type="button" onclick="ProseMirror.getAllNode()">노드</button>
 	<script>
+		function fn_test(){
+			document.getElementsByClassName('temp_text')[0].innerHTML = '<span class="temp_text default_buptle_required">가나다라마바사아차카타타파하</span>';
+		}
+	</script>
+
+
+	<span class="tmpl_checkbox">
+		<input type="checkbox">
+		<label></label>
+	</span>
+		<div onclick="javaScript:{ProseMirror.btpm_checkbox_cmd_function(_editorView.state, _editorView.dispatch);};">체크박스1</div>
+		<div onclick="javaScript:{checkbox_btn_clicked()};">체크박스-새버전</div>
+
+	<br/>
+
+
+	<div style="width:800px; margin-bottom: 23px; position: absolute; max-height:900px; float:left; ">
+		<!--style="overflow-y:scroll; max-height:700px;"-->
+		<div id="editor" >
+
+		</div>
+	</div>
+
+	<div style="background-color: mintcream; left: 800px; width:300px; position: fixed; float:left; top:60px; border: 2px solid #55aaee; margin-left:20px; border-radius: 5px;">
+		<!---->
+		<div>
+			<button type="button" id="add_comment_to_doc" style="margin: 2px 0px 6px 6px;" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
+		</div>
+		<div id="indexhtml_comment_list_wrapper" style="overflow-y:scroll; max-height: 600px; ">
+		</div>
+		<button type="button" onclick="javaScript:fn_test();">테스트</button>
+
+	</div>
+
+
+	<div style="background-color: white; color:black; left: 800px; min-width:300px; position: fixed; float:left; top:715px;
+	border: 2px solid black; margin-left:20px; border-radius: 5px; opacity: 0.7;">
+		<!---->
+		<div>
+			<!--<button type="button" id="version_btn" style="margin: 2px 0px 6px 6px;" onclick=""></button>-->
+		</div>
+		<div id="_version_list_wrapper" style="padding-left:5px; overflow-y:scroll; min-height: 200px; max-height: 200px; ">
+			버전 History 가 표시됩니다.
+			<!--<div class="commit"><span class="commit-time">11:18</span>&nbsp; Initial commit&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:18</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div><div class="commit"><span class="commit-time">11:19</span>&nbsp; Unnamed&nbsp; <button class="commit-revert">revert</button></div>-->
+		</div>
+	</div>
+
+
+	<div id="content" style="display: none;">
+        <p>없어</p>
+		<p align="" style="font-color:red;" class="redred">빨강</p>
+		<p align="left" style="" class="buptle_editor_default_p_class extra"></p>
+
+		<p align="">일반입력사항</p><p align="">
+		<span id="" class="buptleparam_content_required_none" data-param-id="828"
+		      data-param-name="필수입력사항1" data-param-content="" data-param-desc="" data-param-required="0" data-param-kind="text" data-param-display-name=" [ 입력필요 : 일반입력사항1 ] ">
+			<label class=""> [ 입력필요 : 일반입력사항1 ] </label></span>&nbsp;</p><p align="">송부누르면 밸리데이션 팝업 뜨는 증상.
+	</p>
+
+		<p align="">필수입력사항</p><p align="">
+		<span id="" class="buptleparam_content_required_none" data-param-id="827"
+		      data-param-name="필수입력사항1" data-param-content="" data-param-desc="" data-param-required="1" data-param-kind="text" data-param-display-name=" [ 입력필요 : 필수입력사항1 ] ">
+			<label class=""> [ 입력필요 : 필수입력사항1 ] </label></span>&nbsp;</p><p align="">송부누르면 밸리데이션 팝업 뜨는 증상.
+	</p>
+
+<!---->
+		<ul data-type="todo_list">
+			<li data-type="todo_item" data-done="false">
+				<span class="todo-checkbox todo-checkbox-unchecked" contenteditable="false"></span>
+				<span class="todo-checkbox todo-checkbox-checked" contenteditable="false"></span>
+				<div class="todo-content">
+					<p align="left" style="" class="buptle_editor_default_p_class">ABC</p>
+				</div>
+			</li>
+		</ul>
+		<p align=""> <btpm_checkbox class="btpm_checkbox btpm_checked"></btpm_checkbox> (선택)</p>
+
+		<p>
+<span contenteditable="false" draggable="true" style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;"><span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
+	<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="" style="width: 19.25em; vertical-align: bottom !important;">
+</span>
+		</p>
+
+<style>
+
+
+</style>
+
+
+
+		<p align="left" style="" class="buptle_editor_default_p_class">
+	   <btpm_checkbox data-done="true" class="btpm_checkbox btpm_checked" >
+	</btpm_checkbox>
+
+
+    <btpm_checkbox class="btpm_checkbox" ></btpm_checkbox>
+	<btpm_checkbox class="btpm_checkbox"></btpm_checkbox>
+</p>
+
+
+
+		<li data-type="todo_item" data-done="false"><span class="todo-checkbox todo-checkbox-unchecked" contenteditable="false"></span><span class="todo-checkbox todo-checkbox-checked" contenteditable="false"></span><div class="todo-content"><p align="left" style="" class="buptle_editor_default_p_class">asdfasdf</p></div></li>
+
+
+		<p><span>&nbsp;&nbsp;&nbsp;</span><span class="btpm_checkbox btpm_checked"><input type="checkbox"><label></label></span>&nbsp;rrrr&nbsp;(체크박스원래있던거)</p>
+		<p class="MsoNormal" align="center" style="margin-bottom:0cm;margin-bottom:.0001pt;
+text-align:center;line-height:150%">확 인 서</p>
+		<p>
+			<span id="tmp_span_id" class="buptleparam_content_required_none content_field ProseMirror-selectednode" data-param-id="684" data-param-name="세부업무" data-param-content="" data-param-desc="" data-param-required="1" data-param-kind="text" data-param-display-name="[ 입력필요 : 세부업무 ]" draggable="true"><label for="" class="btpm_label_class">[ 입력필요 : 세부업무 ]</label></span>
+		</p>
+		<p><span class="buptleparam_content_required_none" data-param-id>123456789</span></p>
+		<p>
+			<span>
+				바로 span
+			</span>
+			<span class="tmpl_checkbox">
+	             <input type="checkbox">
+	             <label></label>
+	         </span> 체크박스1
+		</p>
+		<p>
+			<span class="tmpl_checkbox">
+	             <input type="checkbox">
+	             <label></label>
+	         </span> 체크박스2
+		</p>
+		<p align=""> 			<span contenteditable="false" draggable="true" style="position: relative; width: 7.75em; display: inline-block; padding-left: 0.25em;"><span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="ProseMirror-selectednode" style="width: 5em; vertical-align: bottom !important;"></span> 		</p>
+		<p style="padding-left: 30px;">
+			<strong>
+				<span data-id-key-now="1563968555469_7817" data-checkbox-id="bt_tinymce_add_checkbox_1563968555469_7817" class="checkbox-ed-wrapper" contenteditable="false"
+				      draggable="false" onclick="parent.fn_checkbox_clicked(this);">
+					<input id="bt_tinymce_add_checkbox_1563968555469_7817" class="checkbox-ed" name="bt_tinymce_checkbox_1563968555469_7817" type="checkbox" value="1">
+					<label class="checkbox-ed-label" for="bt_tinymce_add_checkbox_1563968555469_7817"></label>
+				</span>&nbsp;
+			</strong>설계 자료(도면, 규격, 설계검토서 및 시험보고서 등) 및 그 수정안 등
+		</p>
+		<p style="padding-left: 30px;">
+			<span class="tmpl_checkbox">
+				<input type="checkbox">
+				<label></label>
+			</span>
+			품질 인증 등 수급사업자의 인증관련 자료
+		</p>
+		<table>
+		    <tr>
+			    <td colspan=3 data-colwidth="100,0,0">헤더</td>
+		    </tr>
+		    <tr>
+			    <td>하나둘셋</td><td>둘둘</td><td>셋셋</td>
+		    </tr>
+		    <tr>
+			    <td>넷넷넷</td><td>다섯다섯</td><td>여섯여섯</td>
+		    </tr>
+		</table>
+<!---->
+	</div>
+
+
+
+	<script src="../dist/buptle_editor.js"></script>
+	<script>
+	var _editorView = null;
+
+		try{
+		    var activate_plugins = true
+			var pm = ProseMirror;
+		    var _editorSpec = new pm.EditorSpec();
+			// svg 아이콘 위치
+		    if(activate_plugins){
+		        _editorSpec.icons_base_path =  'http://test1.buptledev.com/static/adele/imgs/';
+				_editorSpec.div_target_id = 'editor';
+				_editorSpec.is_memo_activate = true;
+				_editorSpec.is_track_changes_activate = true;
+				_editorSpec.div_comments_target_id = 'indexhtml_comment_list_wrapper';
+				_editorSpec.get_document_html_handler = function(){
+					return document.querySelector("#content")
+				};
+				_editorSpec.functions = {
+					  getCheckboxEditable : function(){
+					    alert('못만짐');
+					    return false;
+					  },
+					get_comments : function(){
+					    var comments = {
+					        comments : []
+					    };
+
+					    var memos = []
+
+	                    for(var indx in memos){
+					        comments.comments.push({
+						        from : 3,
+						        to : 4,
+						        text : '메모',
+						        id : '1',
+						        extra : {
+						            user_name : '유저네임',
+						            user_id : '100'
+						        }
+					        });
+					    }
+
+					    return comments;
+					},
+					btpmHandleCommentDraw : function(_comments, action){
+						fn_draw_memo_handle(_comments, action);
+					},
+					addAnnotation : function(commentPlugin, state, dispatch, _Comment, _randomId_fnc){
+					    // console.log(' >>>>>> ' + state);
+					    // console.log(' >>>>>> ' + dispatch);
+					    let sel = state.selection
+				        if (sel.empty) {
+				            return false
+				        }
+				        if (dispatch) {
+				            let text = prompt("진짜진짜진짜", "");
+				            if (text)
+				              dispatch(state.tr.setMeta(commentPlugin, {type: "newComment", from: sel.from, to: sel.to, comment: new _Comment(text, _randomId_fnc(), {111:'2222'})}))
+				        }
+				        return true
+
+					},
+					btpmRenderCommentHandler : function(comment, dispatch, state){
+					    return fn_handle_comment_in_editor(comment, dispatch, state);
+					}
+				};
+
+		    }else{
+				_editorSpec.div_target_id = 'editor';
+				_editorSpec.get_document_html_handler = function(){
+					return document.querySelector("#content")
+				};
+		    }
+		}catch(e){
+		    window.console.log(e);
+		}
+
+
+
+
+		_editorView = ProseMirror.editorInitBySpec(_editorSpec, function(){
+
+		});
+		 ProseMirror.setPMContentFromHTML();
+		// ProseMirror.EditorInit("editor", "content");
+
+		//setTimeout(function(){
+//		    $('img, #tmp_resizable_img, .buptle_editor_default_img_class').resizable().draggable();
+//		}, 3*1000);
+
+		//$('img').draggable();
 
 		window.addEventListener('DOMContentLoaded', function(){
-		    //실행될 코드
-			ProseMirror.EditorInit('editor', 'content');
+		    var _rs_fields = document.querySelectorAll('.buptleparam_content_required_none');
+		    for(var i=0; i<_rs_fields.length; i++){
+			    _rs_fields[i].addEventListener("click", function(){
+	                alert(this.innerText);
+	                this.innerText = '입력했음';
+	            }, false)
+
+		    }
 		})
+
+		function fn_handle_comment_in_editor(comment, dispatch, state){
+		    console.log('render comment outer !! -> ' + comment.id);
+	        // let btn = crel("button", {class: "commentDelete", title: "delete하기"}, "삭제")
+	        let btn = $('<button></button>').addClass('commentDelete').attr('title', 'del하자').text('delete');
+
+	        try {
+	             var test_function = function(id){
+                    alert(id + "를 삭제합니다.");
+                }
+
+	            btn.bind('click', function(){
+	                dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {type: "deleteComment", comment: comment, ext_func:test_function}))
+	            });
+	            // btn.addEventListener("click", () =>
+	            //
+	            // )
+	        }catch(e){
+	            console.log(e);
+	        }
+
+	        // 선택된 코멘트 강조
+	        // btpmMakeFocusToSelectedComment(comment.id);
+	        // return crel("li", {class: "commentText"}, comment.text, btn)
+			var rtn = $('<li></li>').addClass('commentText').text(comment.text).append(btn.get(0)).get(0);
+			console.log(rtn);
+	        return rtn
+		}
+
+		//콘바다음에
+      // var width = window.innerWidth;
+      // var height = window.innerHeight;
+      //
+      // var stage = new Konva.Stage({
+      //   container: '_comments_panel_id_1783625414',
+      //   width: width,
+      //   height: height
+      // });
+      //
+      // var layer = new Konva.Layer();
+      //
+      // var arrow = new Konva.Arrow({
+      //   x: stage.width() / 4,
+      //   y: stage.height() / 4,
+      //   points: [0, 0, width / 2, height / 2],
+      //   pointerLength: 20,
+      //   pointerWidth: 20,
+      //   fill: 'black',
+      //   stroke: 'black',
+      //   strokeWidth: 0.5
+      // });
+      //
+      // arrow.setAttr('points', [0, 0, 100, 100]);
+      //
+      // // add the shape to the layer
+      // layer.add(arrow);
+      //
+      // // add the layer to the stage
+      // stage.add(layer);
+
+			// 메모관련
+    function fn_draw_memo_handle(_comments, action){
+	    var _memo_html_text = "<li class='_comments_panel' id='_comments_panel_id_{id}'>";
+	    _memo_html_text += '<div class="cont_memo_box">';
+        _memo_html_text += '  <div class="cont_memo_hd clearfix">';
+        _memo_html_text += '  <p class="sm_p">{user_name}</p>';
+        _memo_html_text += '  <p class="sm_pb4">{time}</p>';
+        _memo_html_text += '  </div>';
+        _memo_html_text += '  <div class="cont_memo_text">';
+        _memo_html_text += '    <p class="sm_p58"><pre>{comment}</pre>';
+        _memo_html_text += '   </p>';
+        _memo_html_text += '  </div>';
+
+        _memo_html_text += '  <div class="cont_memo_btn clearfix"><div class="fl reply_btn_wrap">';
+        _memo_html_text += '  <p class="btn_replay_s">수정</p><p class="btn_replay_s">삭제</p></div>';
+        _memo_html_text += '  <div class="fr reply_btn_wrap"><p class="btn_replay_s">회신</p><p class="btn_replay_s resolve">해결</p></div>';
+        _memo_html_text += '  </div>';
+		_memo_html_text += '</li>';
+
+
+        var _htmlText = '';
+        for(indx in _comments){
+
+            var _oneComment = _comments[indx];
+            var _ex = _oneComment.spec.comment.extra
+            // _htmlText += '<div class="_comments_panel" id="_comments_panel_id_'+id+'" style="background-color: white; border-radius: 5px; margin: 2px 5px 5px 5px; padding: 15px 10px 15px 10px; border: 1px solid black; border-left: 6px solid darkred;">';
+
+            _htmlText += _memo_html_text.replace( '{user_name}', _ex.user_name )
+                        .replace( '{id}', _oneComment.spec.comment.id )
+                        .replace( '{time}', _ex.time )
+                        .replace( '{comment}', _oneComment.spec.comment.text );
+        }
+
+        document.querySelector("#indexhtml_comment_list_wrapper").innerHTML = _htmlText;
+        // $("#").html(_htmlText);
+
+        let _comments_panels = document.querySelectorAll("._comments_panel");
+        for(var i=0; i<_comments_panels.length; i++){
+            let _tmp_id = _comments_panels[i].id.split('_comments_panel_id_')[1];
+            try{
+                _comments_panels[i].addEventListener("click", function(){
+                    // alert('tmp_id' + _tmp_id);
+	                ProseMirror.btpmOnCommentBtClicked(_tmp_id);
+                }, false)
+            }catch(e){
+                console.log(e);
+            }
+        }
+    }
+
+    function required_field_btn_clicked(){
+
+        <!--let {$from} = state.selection, index = $from.index()-->
+        <!--if (!$from.parent.canReplaceWith(index, index, dinoType))-->
+            <!--return false-->
+        <!--if (dispatch)-->
+            <!--dispatch(state.tr.replaceSelectionWith(dinoType.create({type})))-->
+        <!--return true-->
+
+        var curr_state = _editorView.state;
+        // var {$from} = curr_state.selection;
+        <!--alert($from + " : " + $from.empty + " : " + $from.index());-->
+
+        var buptle_span = ProseMirror.buptleSchema.nodes.span;
+        var created = buptle_span.create();
+        <!--alert(created + ' <<< ');-->
+
+        var state = _editorView.state;
+	    var dispatch =  _editorView.dispatch;
+
+        node_2 = ProseMirror.buptleSchema.nodes.label.createAndFill({
+            class: '알수가없어',
+        }, ProseMirror.buptleSchema.text("some text"));
+
+        node = ProseMirror.buptleSchema.nodes.span.createAndFill({
+                class: '알수강벗어',
+                'data-param-display-name': '야야야ㅑ',
+            }, node_2 );
+//ProseMirror.buptleSchema.text("some text")
+
+        dispatch(state.tr.replaceSelectionWith(node));
+        alert('끝');
+
+        <!--var _new_state = curr_state.tr.replaceSelectionWith(created);-->
+	    <!--_editorView.updateState(_new_state);-->
+
+        <!--ProseMirror.btpmMyHistoryDispatch(_newState.tr)-->
+
+
+
+    }
+
+    function content_field_btn_clicked(){
+
+    }
+
+	$("#click_upload_btn").click(function(){
+		document.querySelector("#image-upload").click();
+	});
+
+	$("#image-upload").change(function(){
+		if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+	    ProseMirror.startImageUpload(_editorView, e.target.files[0])
+	    _editorView.focus()
+	});
+
+    // document.querySelector("#image-upload").addEventListener("change", e => {
+	//   if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
+	//     ProseMirror.startImageUpload(_editorView, e.target.files[0])
+	//     _editorView.focus()
+	// })
+
+	/** 체크박스 이벤트 붙이기 */
+	function attachClickEvtBtpmCheckbox(){
+	  /**
+		document.querySelectorAll(".btpm_checkbox").forEach(e => {
+	        e.addEventListener('click', function(event) {
+	          var _cname = this.className;
+	          console.log("[냠냠] ======================= : " + _cname);
+	          if( _cname.indexOf('btpm_checked')!=-1 ){
+	            //리무브
+	            this.classList.remove("btpm_checked");
+	          }else{
+	            //다시체크상태로
+	            this.classList.add("btpm_checked");
+	          }
+
+	        });
+	    });
+	   */
+	}
+
+	/** 체크박스 생성 클릭 */
+    function checkbox_btn_clicked(){
+	    var node = ProseMirror.buptleSchema.nodes.btpm_checkbox.createAndFill({});
+
+	    _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
+        _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" (선택)")));
+
+        attachClickEvtBtpmCheckbox();
+	}
 
 
 	</script>
+
 </body>
 </html>

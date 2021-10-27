@@ -2,7 +2,7 @@
   "name": "setup-prosemirror",
   "dependencies": {
     "cors": "^2.8.5",
-    "npm": "^6.14.6",
+    "npm": "^8.1.1",
     "prosemirror-collab": "^1.1.2",
     "prosemirror-example-setup": "^1.0.1",
     "prosemirror-model": "^1.7.2",
@@ -16,7 +16,7 @@
     "@babel/core": "^7.6.2",
     "@babel/preset-env": "^7.6.2",
     "babel-loader": "^8.0.5",
-    "concurrently": "^4.1.2",
+    "concurrently": "^6.3.0",
     "http-server": "^0.12.3",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
