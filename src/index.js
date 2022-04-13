@@ -92,45 +92,55 @@ function toggleTodoItemAction(state, pos, todoItemNode) {
   return state.tr.setNodeMarkup(pos, null, {done: !todoItemNode.attrs.done})
 }
 
-/**
-function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
-  if(checkboxItemNode.attrs.class.indexOf('btpm_checked')!==-1){
-    return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox'})
-  }else{
-    return state.tr.setNodeMarkup(pos, null, {class: 'btpm_checkbox btpm_checked'})
-  }
-}
-*/
-// function toggleCheckboxItemAction(state, pos, checkboxItemNode) {
-//   if (checkboxItemNode.attrs.classList.contains('btpm_checked')) {
-//     return state.tr.setNodeMarkup(pos, null, {
-//       class: 'btpm_checkbox'
-//     });
-//   } else if (checkboxItemNode.attrs.class.indexOf('btpm_check') === 0) { // 210817 체크박스 오작동으로 수정
-//     return state.tr.setNodeMarkup(pos, null, {
-//       class: 'btpm_checkbox btpm_checked'
-//     });
-//   }
-// }
 function toggleCheckboxItemAction(state, pos, event) {
-  let target = event.target.classList
-  if (target.contains('btpm_checked') && target.contains("btpm_checkbox") ) {
-    return state.tr.setNodeMarkup(pos, null, {
-      class: 'btpm_checkbox'
-    });
-  } else if (!target.contains("btpm_checked") && target.contains("btpm_checkbox")) { // 210817 체크박스 오작동으로 수정
-    return state.tr.setNodeMarkup(pos, null, {
-      class: 'btpm_checkbox btpm_checked'
-    });
-  } else if(target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required") ) {
-      return state.tr.setNodeMarkup(pos, null, {
-        class: 'btpm_checkbox_required'
-      });
-  } else if(!target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required") ) {
-      return state.tr.setNodeMarkup(pos, null, {
-        class: 'btpm_checkbox_required btpm_checked_required'
-      });
-  }
+    let target = event.target.classList;
+
+    if (target.contains('btpm_checked') && target.contains("btpm_checkbox")) {
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_checkbox',
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+        });
+    } else if (!target.contains("btpm_checked") && target.contains("btpm_checkbox")) {
+        // 210817 체크박스 오작동으로 수정
+        if (event.target.dataset.alertMessage.length > 0) {
+			gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function() {
+				const el = document.querySelector('.modal_section');
+				const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+									'<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+									'<div class="active_btn_wrap tc">' +
+										'<a class="btn__active btn_m modal_off">확인</a>' +
+									'</div>';
+				el.innerHTML = _htmlText;
+			}, 'modal1');
+	    }
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_checkbox btpm_checked',
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+        });
+    } else if (target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_checkbox_required',
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+        });
+    } else if (!target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
+        if (event.target.dataset.alertMessage.length > 0) {
+			gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function() {
+				const el = document.querySelector('.modal_section');
+				const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+									'<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+									'<div class="active_btn_wrap tc">' +
+										'<a class="btn__active btn_m modal_off">확인</a>' +
+									'</div>';
+				el.innerHTML = _htmlText;
+			}, 'modal1');
+	    }
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_checkbox_required btpm_checked_required',
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+        });
+    }
+
+    
 }
 
 
@@ -745,90 +755,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             // alert('코멘트 초기화 내부. plugin에서 가져옴 : ' + comments.length);
             btpmHandleCommentDraw(comments, null);
         }
-
-        // 필요한 엘리먼트 셋팅
-        setElements();
-
-        pdf_preview_switchEl.addEventListener('change', function() {
-            pdf_preview_switch_toggle(this);
-        });
-
-        // PDF 미리보기 기능 그려주기
-        pdf.addEventListener('keyup', delay(function (e) {
-            if (!pdfPreviewState) return;
-            console.log(html2canvas);
-            canvasState = drawCanvas(this);
-        }, 500));
-
-        // PDF 미리보기 기능 스크롤 이동
-        pdf.addEventListener('click', function (e) {
-            if (!canvasState || !pdfPreviewState) return;
-            
-            let targetYOffset = 0; // target 의 위치 값
-            let target = e.target; // 선택한 element 객체
-            
-            // 어떤 객체를 선택했냐에 따라 위치값을 다르게 계산
-            
-            if (target.parentElement.nodeName === 'TD' || target.nodeName === 'TD') {
-                // td 선택시
-                while (target) {
-                    target = target.parentElement;
-
-                    if (target.classList.contains('tableWrapper')) {
-                        // 테이블 태그는 tableWrapper 이 한번 더 감싸져 있어서 클래스로 체크
-                        targetYOffset = target.offsetTop;
-                        break;
-                    }
-                    
-                    if (target.nodeName === 'BODY') break;
-                }
-            } else if (target.nodeName === 'DIV') {
-                // div 선택시
-                targetYOffset = target.offsetTop;
-            } else if (target.nodeName === 'IMG') {
-                // img 선택시
-                while (target) {
-                    target = target.parentElement;
-
-                    if (target.nodeName === 'P') {
-                        targetYOffset = target.offsetTop;
-                        break;
-                    }
-
-                    if (target.nodeName === 'BODY') break;
-                }
-            } else {
-                // 그외 전체
-                targetYOffset = e.layerY;
-            }
-            
-            const totalHeight = editorHeight + ((pageCount + 1) * guideLineMargin );
-
-            for (let i = 1; i < pageCount; i++) {    
-                if (pageCount === 1) break;
-
-                if (targetYOffset >= pageHeight * i) {
-                    targetYOffset += guideLineMargin;
-                }
-            }
-
-            const scrollToValue = canvasContainer.offsetHeight * (targetYOffset / totalHeight);
-            delayMoveYOffset(guideContainer, scrollToValue);
-        });
-
-        // 캔버스 sticky 기능
-        window.addEventListener('scroll', function () {
-            if (!canvasState || !pdfPreviewState) return;
-
-            if (window.pageYOffset >= guideContainerPosY) {
-                guideContainer.classList.add('fixed');
-            } else {
-                guideContainer.classList.remove('fixed');
-            };
-        });
-
-        pdf_preview_down_btn.addEventListener('click', savePDF);
-
+        
         return _editorView;
     }
 
@@ -919,17 +846,19 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     }
 
     const buptleSpanSpec = {
-        attrs : {
-            id:{default:'tmp_span_id_' + randomID()},
-            class:{default:'btpm_default_class'},
-            style:{default:''},
-            'data-param-id':{default:''},
-            'data-param-name':{default:''},
-            'data-param-content':{default:''},
-            'data-param-desc':{default:''},
-            'data-param-required':{default:''},
-            'data-param-kind':{default:''},
-            'data-param-display-name':{default:''},
+        attrs: {
+            id: { default: 'tmp_span_id_' + randomID() },
+            class: { default: 'btpm_default_class' },
+            style: { default: '' },
+            'data-param-id': { default: '' },
+            'data-param-name': { default: '' },
+            'data-param-content': { default: '' },
+            'data-param-desc': { default: '' },
+            'data-param-required': { default: '' },
+            'data-param-kind': { default: '' },
+            'data-param-display-name': { default: '' },
+            'data-param-select-type': { default: '' },
+            'data-param-select-value': { default: '' },
         },
         // content: "text*",
         // marks: "",
@@ -938,10 +867,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         content: "(inline* | text*)",
         inline: true,
         group: "inline",
-        atom:true,
-        toDOM(node){
-
-            // alert(node.attrs.id + " : " + node.attrs.class + " : " + node.type.spec.atom)
+        atom: true,
+        toDOM(node) {
             // 프로스미러 hack 제작자는 절대로 하지 말라고 했으나 현재 두개이상의 다른 spec 을 동일한 html 태그로 변환해야하는 방법은 현재 존재하지 않는다...
             if(node.attrs.id && node.attrs.id.indexOf('tmp_span_id')!==-1){
                 //필수입력필드같은애들은 atom true
@@ -963,92 +890,103 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             var rtn = {};
 
             if(node.attrs.id){
-              rtn.id = node.attrs.id
+                rtn.id = node.attrs.id
             }
             if(node.attrs.class){
-              rtn.class = node.attrs.class
+                rtn.class = node.attrs.class
             }
             if(node.attrs.style){
-              rtn.style = node.attrs.style
+                rtn.style = node.attrs.style
             }
             if(node.attrs['data-param-id']){
-              rtn['data-param-id'] = node.attrs['data-param-id']
+                rtn['data-param-id'] = node.attrs['data-param-id']
             }
             if(node.attrs['data-param-name']){
-              rtn['data-param-name'] = node.attrs['data-param-name']
+                rtn['data-param-name'] = node.attrs['data-param-name']
             }
             if(node.attrs['data-param-content']){
-              rtn['data-param-content'] = node.attrs['data-param-content']
+                rtn['data-param-content'] = node.attrs['data-param-content']
             }
             if(node.attrs['data-param-desc']){
-              rtn['data-param-desc'] = node.attrs['data-param-desc']
+                rtn['data-param-desc'] = node.attrs['data-param-desc']
             }
             if((node.attrs['data-param-required']+"").length!==0){
-              rtn['data-param-required'] = node.attrs['data-param-required']
+                rtn['data-param-required'] = node.attrs['data-param-required']
             }
             if(node.attrs['data-param-kind']){
-              rtn['data-param-kind'] = node.attrs['data-param-kind']
+                rtn['data-param-kind'] = node.attrs['data-param-kind']
             }
             if(node.attrs['data-param-display-name']){
-              rtn['data-param-display-name'] = node.attrs['data-param-display-name']
+                rtn['data-param-display-name'] = node.attrs['data-param-display-name']
             }
-
+            if(node.attrs['data-param-select-type']){
+                rtn['data-param-select-type'] = node.attrs['data-param-select-type']
+            }
+            if(node.attrs['data-param-select-value']){
+                rtn['data-param-select-value'] = node.attrs['data-param-select-value']
+            }
             return ['span', rtn, 0];
         },
         parseDOM: [{
             tag: "span[data-param-id]",
-            getAttrs(dom){
-                //console.log(dom);
+            getAttrs(dom) {
+            //console.log(dom);
+                if(1==1){
+                    return {
+                        id: dom.id,
+                        class:dom.className,
+                        style: dom.getAttribute("style"),
+                        'data-param-id': dom.getAttribute('data-param-id'),
+                        'data-param-name': dom.getAttribute('data-param-name'),
+                        'data-param-content': dom.getAttribute('data-param-content'),
+                        'data-param-desc': dom.getAttribute('data-param-desc'),
+                        'data-param-required':dom.getAttribute('data-param-required'),
+                        'data-param-kind': dom.getAttribute('data-param-kind'),
+                        'data-param-display-name': dom.getAttribute('data-param-display-name'),
+                        'data-param-select-type': dom.getAttribute('data-param-select-type'),
+                        'data-param-select-value': dom.getAttribute('data-param-select-value'),
+                    };
+                }
 
-             if(1==1){
-              return {
-               id: dom.id,
-               class:dom.className,
-               style: dom.getAttribute("style"),
-               'data-param-id':dom.getAttribute('data-param-id'),
-               'data-param-name':dom.getAttribute('data-param-name'),
-               'data-param-content':dom.getAttribute('data-param-content'),
-               'data-param-desc':dom.getAttribute('data-param-desc'),
-               'data-param-required':dom.getAttribute('data-param-required'),
-               'data-param-kind':dom.getAttribute('data-param-kind'),
-               'data-param-display-name':dom.getAttribute('data-param-display-name'),
-              }
-             }
+                var rtn = {};
+                if(dom.id){
+                    rtn.id = dom.id;
+                }
+                if(dom.class){
+                    rtn.class = dom.class;
+                }
+                if(dom.style){
+                    rtn.style = dom.getAttribute('style');
+                }
+                if(dom.getAttribute('data-param-id')){
+                    rtn['data-param-id'] = dom.getAttribute('data-param-id');
+                }
+                if(dom.getAttribute('data-param-name')){
+                    rtn['data-param-name'] = dom.getAttribute('data-param-name');
+                }
+                if(dom.getAttribute('data-param-content')){
+                    rtn['data-param-content'] = dom.getAttribute('data-param-content');
+                }
+                if(dom.getAttribute('data-param-desc')){
+                    rtn['data-param-desc'] = dom.getAttribute('data-param-desc');
+                }
+                if((dom.getAttribute('data-param-required')+"").length!==0 ){
+                    rtn['data-param-required'] = dom.getAttribute('data-param-required');
+                }
+                if(dom.getAttribute('data-param-kind')){
+                    rtn['data-param-kind'] = dom.getAttribute('data-param-kind');
+                }
+                if(dom.getAttribute('data-param-display-name')){
+                    rtn['data-param-display-name'] = dom.getAttribute('data-param-display-name');
+                }
+                if(dom.getAttribute('data-param-select-type')){
+                    rtn['data-param-select-type'] = dom.getAttribute('data-param-select-type');
+                }
+                if(dom.getAttribute('data-param-select-value')){
+                    rtn['data-param-select-value'] = dom.getAttribute('data-param-select-value');
+                }
 
-              var rtn = {};
-              if(dom.id){
-                rtn.id = dom.id
-              }
-              if(dom.class){
-                rtn.class = dom.class
-              }
-              if(dom.style){
-                rtn.style = dom.getAttribute('style')
-              }
-              if(dom.getAttribute('data-param-id')){
-              rtn['data-param-id'] = dom.getAttribute('data-param-id')
-              }
-              if(dom.getAttribute('data-param-name')){
-                rtn['data-param-name'] = dom.getAttribute('data-param-name')
-              }
-              if(dom.getAttribute('data-param-content')){
-                rtn['data-param-content'] = dom.getAttribute('data-param-content')
-              }
-              if(dom.getAttribute('data-param-desc')){
-                rtn['data-param-desc'] = dom.getAttribute('data-param-desc')
-              }
-              if((dom.getAttribute('data-param-required')+"").length!==0 ){
-                rtn['data-param-required'] = dom.getAttribute('data-param-required')
-              }
-              if(dom.getAttribute('data-param-kind')){
-                rtn['data-param-kind'] = dom.getAttribute('data-param-kind')
-              }
-              if(dom.getAttribute('data-param-display-name')){
-                rtn['data-param-display-name'] = dom.getAttribute('data-param-display-name')
-              }
-              return rtn;
-
-
+                return rtn;
             }
         }]
     };
@@ -1102,9 +1040,10 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
 
     const buptleCheckbox = {
         attrs : {
-            class:{default:'btpm_checkbox'},
-            "data-type" :{default:""},
-            "data-group-id" : {default : randomID()}
+            class: {default: 'btpm_checkbox'},
+            "data-alert-message": {default: ""},
+            "data-type": {default: ""},
+            "data-group-id": {default: randomID()}
         },
         // content: "text*",
         // marks: "",
@@ -1116,12 +1055,12 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom: true,
         toDOM(node){
-            return ['btpm_checkbox', {for:node.attrs.for, class:node.attrs.class, "data-group-id":node.attrs["data-group-id"], "data-type" :node.attrs["data-type"]}]
+            return ['btpm_checkbox', {for: node.attrs.for, class: node.attrs.class, "data-alert-message": node.attrs["data-alert-message"], "data-group-id": node.attrs["data-group-id"], "data-type": node.attrs["data-type"]}]
         },
         parseDOM: [{
             tag: "btpm_checkbox",
             getAttrs(dom){
-                return { class:dom.className, "data-group-id":dom.getAttribute(["data-group-id"]) ,"data-type" : dom.getAttribute("data-type") }
+                return { class: dom.className, "data-alert-message": dom.getAttribute(["data-alert-message"]), "data-group-id": dom.getAttribute(["data-group-id"]), "data-type": dom.getAttribute("data-type") }
             }
         }]
     };
@@ -1173,8 +1112,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         content: "inline*",
         group: "block",
           toDOM(node){
-                console.log("toDOM=====================");
-                console.log(node);
+                // console.log("toDOM=====================");
+                // console.log(node);
                 var rtn = {};
 
                 if(node.attrs.align){
@@ -1318,7 +1257,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         .remove('image').addBefore('hard_break', 'image',buptleImgSpec)
         .addBefore("image", "span", buptleSpanSpec)
         .addBefore("span", "label", buptleLabelSpec)
-           .addBefore("span", "btpm_checkbox", buptleCheckbox)
+        .addBefore("span", "btpm_checkbox", buptleCheckbox)
         //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
         .remove('paragraph').addBefore('blockquote', 'paragraph',buptleParagraphSpec)
         .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
@@ -1429,7 +1368,6 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
           const startY = e.pageY;
 
           const fontSize = getFontSize(outer)
-console.log(node.attrs.width);
           const startWidth = parseFloat(node.attrs.width.match(/(.+)em/)[1])
 
           const onMouseMove = (e) => {
@@ -2769,216 +2707,4 @@ function setAlignment(pos, dispatch, align){
     //buptleSchema.spec.nodes.paragraph
     var _tr = _editorView.state.tr.setNodeMarkup($pos, null, {align:align})
     dispatch( _tr )
-}
-
-let pdfPreviewState = false; // PDF 미리보기 true = 활성화 false = 비활성화
-let pageHeight = 0; // a4 비율에 따른 높이 값
-let canvasState = false; // 캔버스 생성되면 boolean 할당
-let dpiValue = 1; // 이미지 해상도 1 = 96dpi
-let delayedYOffset = 0; // 미리보기 스크롤 값
-let guideLineMargin = 30; // 여백
-let pageCount = 1; // 몇개의 drawImage 를 할지 count ( draw 후 canvas 높이를 변경 못함 )
-let acc = 0.1; // requestAnimationFrame 속도 조절
-let rafId; // requestAnimationFrame id 값
-let rafState; // requestAnimationFrame true = 실행 false = 종료
-let guideContainer; // 미리보기 뷰 container
-let canvasContainer; // 미리보기 캔버스 container
-let pdf; // 변환할 객체
-let editorWidth; // 원본 객체 width
-let editorHeight;// 원본 객체 height
-let guideContainerPosY; // guideContainer 절대 좌표 값
-let pdf_preview_switchEl; // pdf preview on off 토글 버튼
-let pdf_preview_down_btn; // pdf preview down 버튼
-// 필요한 엘리먼트 객체 셋팅 및 수치 계산
-function setElements() {
-    guideContainer = document.querySelector('.guideContainer') || undefined; // 미리보기 뷰 container
-    canvasContainer = document.querySelector('.canvasContainer') || undefined; // 미리보기 캔버스 container
-    pdf_preview_switchEl = document.querySelector('#pdf_preview_switch') || undefined; // pdf preview on off 토글 버튼
-    pdf = document.querySelector('.ProseMirror') || undefined; // 변환할 객체
-    pdf_preview_down_btn = document.querySelector('#pdf_preview_down') || undefined; // pdf preview down 버튼
-    editorWidth = (pdf) ? pdf.offsetWidth : 0; // 원본 객체 width
-    editorHeight = (pdf) ? pdf.offsetHeight : 0;// 원본 객체 height
-    guideContainerPosY = (guideContainer) ? getPosY(guideContainer) : 0; // guideContainer 절대 좌표 값
-}
-
-// number -> dpi 변환기
-function getDPIConverter(value) {
-    return value * 96;
-}
-
-// px -> mm 변환기
-function getMMConverter({ px, dpi }) {
-    return px * 25.4 / dpi;
-}
-
-// mm -> px 변환기
-function getPIXELConverter({ mm, dpi }) {
-    return dpi * mm / 25.4;
-}
-
-// 요소의 절대 좌표 계산 함수
-function getPosY (el) {
-    const clientRect = el.getBoundingClientRect(); // 각종 좌표값이 들어있는 객체
-    const relativeTop = clientRect.top; // Viewport의 시작지점을 기준으로한 상대좌표 Y 값.
-    const scrolledTopLength = window.pageYOffset; // 스크롤된 길이
-
-    return scrolledTopLength + relativeTop; // 절대좌표
-}
-
-// keyup delay 함수
-function delay(callback, ms) {
-    var timer = 0;
-    return function() {
-        var context = this, args = arguments;
-        clearTimeout(timer);
-        timer = setTimeout(function () {
-        callback.apply(context, args);
-        }, ms || 0);
-    };
-}
-
-// 스크롤 이동 함수
-function delayMoveYOffset (target, yOffset) {
-    if (!rafState) {
-        rafId = requestAnimationFrame(loop);
-        rafState = true;
-    }
-
-    function loop() {
-        delayedYOffset = delayedYOffset + (yOffset - delayedYOffset) * acc;
-        
-        target.scrollTop = delayedYOffset;
-
-        rafId = requestAnimationFrame(loop);
-
-        if (Math.abs(yOffset - delayedYOffset) < 1) {
-            cancelAnimationFrame(rafId);
-            rafState = false;
-        }
-    }
-}
-
-// PDF 미리보기 삭제
-function pdf_preview_remove() {
-    canvasContainer.innerHTML = '';
-}
-
-// PDF 미리보기 토글 함수
-function pdf_preview_switch_toggle(e) {
-    pdfPreviewState = e.checked;
-
-    if (pdfPreviewState) {
-        canvasState = drawCanvas(pdf);
-    } else {
-        pdf_preview_remove()
-    }
-}
-
-// 캔버스 그리는 함수
-function drawCanvas(target) {
-    // html2canvas(element, options);
-    // 외부 이미지는 지원 불가
-    // options: https://html2canvas.hertzen.com/configuration
-    html2canvas(target, {
-        //logging : true,		// 디버그 목적 로그
-        allowTaint: true, // cross-origin allow
-        useCORS: true, // CORS 사용한 서버로부터 이미지 로드할 것인지 여부
-        scale: dpiValue, // 해상도 조절(기본 96dpi)
-        windowWidth: window.innerWidth - 17 // 스크롤바 width 제외
-    })
-    .then(function (canvas) {
-        // 셋팅
-        const mmWidth = getMMConverter({ px: editorWidth, dpi: getDPIConverter(dpiValue) }); // 원본 객체 가로 / 세로 px -> mm 변환
-        const mmRatioHeight = mmWidth * 1.414; // 원본 객체 가로 / 세로 px -> mm 변환
-        const pxHeight = getPIXELConverter({ mm: mmRatioHeight, dpi: getDPIConverter(dpiValue) }); // 원본 객체 세로 mm -> px 변환
-        pageHeight = pxHeight || canvas.height; // 원본 객체 높이 값 없을 경우 캔버스1 의 높이 값
-        const imgHeight = canvas.height; // 캔버스1 높이 값
-        let restHeight = imgHeight; // 남은 높이 값
-        let posY = 0; // 캔버스1 y 위치 값
-        let drawPosY = guideLineMargin; // 캔버스2 y 위치 값
-        pageCount = 1;
-        
-        // 1 페이지 이상 있는지 체크 해서 반복문 실행
-        restHeight -= pageHeight;
-        while (restHeight >= 0) {
-            restHeight -= pageHeight;
-            pageCount++;
-        }
-
-        // canvas2 생성 및 셋팅
-        const canvas2 = document.createElement('canvas');
-        canvas2.width = canvas.width + (guideLineMargin * 2);
-        canvas2.height = canvas.height + drawPosY + (pageCount * guideLineMargin);
-        canvas2.style.width = `100%`;
-        const conText = canvas2.getContext("2d");
-
-        // guide line 색상
-        conText.fillStyle = '#626262';
-        conText.fillRect(0, 0, canvas2.width, canvas2.height);
-
-        // 첫 페이지 출력
-        conText.drawImage(canvas, 0, posY, canvas.width, pageHeight, guideLineMargin, drawPosY, canvas.width, pageHeight);
-
-        // 페이지 갯수에 따라 반복하여 그려주기
-        for (let i = 1; i < pageCount; i++) {    
-            if (pageCount === 1) break;
-
-            posY += pageHeight;
-            drawPosY += pageHeight + guideLineMargin;
-
-            conText.drawImage(canvas, 0, posY, canvas.width, pageHeight, guideLineMargin, drawPosY, canvas.width, pageHeight);
-        }
-
-        // 미리보기 캔버스 객체 삽입
-        pdf_preview_remove();
-        canvasContainer.appendChild(canvas2);
-
-        // 이전 스크롤 값이 존재하면 guide 스크롤 이동
-        guideContainer.scrollTop = delayedYOffset;
-
-        return;
-    });
-    return true;
-}
-
-function savePDF() {
-    // html2canvas(element, options);
-    // 외부 이미지는 지원 불가
-    // options: https://html2canvas.hertzen.com/configuration
-    html2canvas(pdf, {
-        //logging : true,		// 디버그 목적 로그
-        allowTaint: true, // cross-origin allow 
-        useCORS: true, // CORS 사용한 서버로부터 이미지 로드할 것인지 여부
-        scale: dpiValue, // 해상도 조절(기본 96dpi)
-        windowWidth: window.innerWidth - 17 // 스크롤바 width 제외
-    })
-    .then(function (canvas) {
-        // 캔버스를 이미지로 변환
-        // 210mm / 297mm
-        // Ratio: 0.707 / 1.414
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = 210; // PDF width (A4 210mm 기준)
-        pageHeight = imgWidth * 1.414; // PDF height (A4 비율 기준)
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        let heightLeft = imgHeight;
-        let pdfMargin = 0; // PDF 여백 설정
-        const PDF = new jsPDF('p', 'mm');
-        let position = 0;
-        
-        // 첫 페이지 출력
-        PDF.addImage(imgData, 'jpeg', pdfMargin, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        // 한 페이지 이상일 경우 루프 돌면서 출력
-        while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-
-            PDF.addPage();
-            PDF.addImage(imgData, 'jpeg', pdfMargin, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        // 파일 저장
-        PDF.save('filename.pdf');
-    });
 }
