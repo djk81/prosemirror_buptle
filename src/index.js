@@ -857,6 +857,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             'data-param-required': { default: '' },
             'data-param-kind': { default: '' },
             'data-param-display-name': { default: '' },
+            'data-param-field-type': { default: '' },
             'data-param-select-type': { default: '' },
             'data-param-select-value': { default: '' },
         },
@@ -919,12 +920,16 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
             if(node.attrs['data-param-display-name']){
                 rtn['data-param-display-name'] = node.attrs['data-param-display-name']
             }
+            if(node.attrs['data-param-field-type']){
+                rtn['data-param-field-type'] = node.attrs['data-param-field-type']
+            }
             if(node.attrs['data-param-select-type']){
                 rtn['data-param-select-type'] = node.attrs['data-param-select-type']
             }
             if(node.attrs['data-param-select-value']){
                 rtn['data-param-select-value'] = node.attrs['data-param-select-value']
             }
+
             return ['span', rtn, 0];
         },
         parseDOM: [{
@@ -943,6 +948,7 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                         'data-param-required':dom.getAttribute('data-param-required'),
                         'data-param-kind': dom.getAttribute('data-param-kind'),
                         'data-param-display-name': dom.getAttribute('data-param-display-name'),
+                        'data-param-field-type': dom.getAttribute('data-param-field-type'),
                         'data-param-select-type': dom.getAttribute('data-param-select-type'),
                         'data-param-select-value': dom.getAttribute('data-param-select-value'),
                     };
@@ -979,13 +985,16 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
                 if(dom.getAttribute('data-param-display-name')){
                     rtn['data-param-display-name'] = dom.getAttribute('data-param-display-name');
                 }
+                if(dom.getAttribute('data-param-field-type')){
+                    rtn['data-param-field-type'] = dom.getAttribute('data-param-field-type');
+                }
                 if(dom.getAttribute('data-param-select-type')){
                     rtn['data-param-select-type'] = dom.getAttribute('data-param-select-type');
                 }
                 if(dom.getAttribute('data-param-select-value')){
                     rtn['data-param-select-value'] = dom.getAttribute('data-param-select-value');
                 }
-
+                
                 return rtn;
             }
         }]
@@ -1041,7 +1050,8 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
     const buptleCheckbox = {
         attrs : {
             class: {default: 'btpm_checkbox'},
-            "data-alert-message": {default: ""},
+            "data-alert-message": {default: ""}, // 경고창
+            "data-checkbox-type": {default: ""}, // 동의, 비동의
             "data-type": {default: ""},
             "data-group-id": {default: randomID()}
         },
@@ -1055,12 +1065,24 @@ export function editorInit(div_target_id, content_id, _comment_target_id){
         group: "inline",
         atom: true,
         toDOM(node){
-            return ['btpm_checkbox', {for: node.attrs.for, class: node.attrs.class, "data-alert-message": node.attrs["data-alert-message"], "data-group-id": node.attrs["data-group-id"], "data-type": node.attrs["data-type"]}]
+            return ['btpm_checkbox', {
+                for: node.attrs.for,
+                class: node.attrs.class,
+                "data-alert-message": node.attrs["data-alert-message"],
+                "data-checkbox-type": node.attrs["data-checkbox-type"],
+                "data-group-id": node.attrs["data-group-id"],
+                "data-type": node.attrs["data-type"]
+            }];
         },
         parseDOM: [{
             tag: "btpm_checkbox",
             getAttrs(dom){
-                return { class: dom.className, "data-alert-message": dom.getAttribute(["data-alert-message"]), "data-group-id": dom.getAttribute(["data-group-id"]), "data-type": dom.getAttribute("data-type") }
+                return { class: dom.className,
+                    "data-alert-message": dom.getAttribute(["data-alert-message"]),
+                    "data-checkbox-type": dom.getAttribute(["data-checkbox-type"]),
+                    "data-group-id": dom.getAttribute(["data-group-id"]),
+                    "data-type": dom.getAttribute("data-type")
+                };
             }
         }]
     };
