@@ -102,7 +102,7 @@ function toggleCheckboxItemAction(state, pos, event) {
         });
     } else if (!target.contains("btpm_checked") && target.contains("btpm_checkbox")) {
         // 210817 체크박스 오작동으로 수정
-        if (event.target.dataset.alertMessage.length > 0) {
+        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
 			gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function() {
 				const el = document.querySelector('.modal_section');
 				const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
@@ -123,7 +123,7 @@ function toggleCheckboxItemAction(state, pos, event) {
             "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
         });
     } else if (!target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
-        if (event.target.dataset.alertMessage.length > 0) {
+        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
 			gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function() {
 				const el = document.querySelector('.modal_section');
 				const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
