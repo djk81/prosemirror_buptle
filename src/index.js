@@ -98,7 +98,8 @@ function toggleCheckboxItemAction(state, pos, event) {
     if (target.contains('btpm_checked') && target.contains("btpm_checkbox")) {
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox',
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     } else if (!target.contains("btpm_checked") && target.contains("btpm_checkbox")) {
         // 210817 체크박스 오작동으로 수정
@@ -115,12 +116,14 @@ function toggleCheckboxItemAction(state, pos, event) {
 	    }
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox btpm_checked',
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     } else if (target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox_required',
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     } else if (!target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
         if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
@@ -136,7 +139,8 @@ function toggleCheckboxItemAction(state, pos, event) {
 	    }
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox_required btpm_checked_required',
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : ''
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     }
 
