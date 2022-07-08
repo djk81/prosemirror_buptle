@@ -353,23 +353,7 @@ export function startImageUpload(view, file) {
     })
 }
 
-function uploadFile(files) {
-
-
-
-}
-
-/** 드래그 앤 드롭 플러그인 작성 */
-// let dom_events_plugin = new Plugin({
-//   props: {
-//     handleDOMEvents: {
-//       touchmove(view, event) { return alert("touchmove") },
-//       touchstart(view, event) { return alert("touchstart") },
-//       dragstart(view, event) { return alert("dragstart") },
-//       dragend(view, event) { return alert("dragend") },
-//     },
-//   }
-// });
+function uploadFile(files) { }
 
 
 let _editorSpec = null;
@@ -2706,7 +2690,6 @@ function btpmDispatchPostProcessor(_editorView, _new_state, action) {
 export
 
 function btpmHandleCommentDraw(_comments, action) {
-
     var indx = 0;
     var _htmlText = '';
     // alert('코멘트갯수 안에서 : ' + _comments.length + " : " + ptpm_comment_list_target_element_id);
@@ -2727,8 +2710,9 @@ function btpmHandleCommentDraw(_comments, action) {
         _htmlText += '</div>';
     }
 
-    window.console.log(document.querySelector("#" + ptpm_comment_list_target_element_id) + " << ptpm_comment_list_target_element_id : " + ptpm_comment_list_target_element_id);
-    document.querySelector("#" + ptpm_comment_list_target_element_id).innerHTML = _htmlText;
+    // 엘리먼트 없다는 조건이 없어서 추가 (계속 오류뜸)
+    const targetEl = document.querySelector("#" + ptpm_comment_list_target_element_id);
+    if (targetEl) { targetEl.innerHTML = _htmlText } else { return console.log('comment 엘리먼트가 없습니다.'); }
 
     let _comments_panels = document.querySelectorAll("._comments_panel");
     for (var i = 0; i < _comments_panels.length; i++) {

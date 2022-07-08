@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BUPTLE - Prosemirror</title>
     <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/reset.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.structure.min.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.theme.min.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/application.css">
+    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.theme.min.css"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/application.css"> -->
     <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/style.css">
     <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/scripts/buptle_editor.css">
 
@@ -18,593 +18,59 @@
     <script src="http://test1.buptlestg.com/static/tenant/js/jquery-3.3.1.min.js"></script>
     <script src="http://test1.buptlestg.com/static/adele/scripts/jquery-ui.min.js"></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/polyfills.umd.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/polyfills.umd.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.1.1/es6-promise.auto.js"></script>
-    <script type="text/javascript" src="../src/jspdf.min.js"></script>
-    <script type="text/javascript" src="../src/html2canvas.min.js"></script>
+    <!-- <script type="text/javascript" src="../src/jspdf.min.js"></script> -->
     
     <style>
-        /* template checkbox */
-        .tmpl_checkbox {
-            position: relative;
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            vertical-align: top;
+        .box {
+            padding: 2em;
         }
-
-        .tmpl_checkbox input[type=checkbox] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            visibility: visible;
-            vertical-align: top;
-            cursor: pointer;
-            z-index: 2;
-        }
-
-        .tmpl_checkbox input[type=checkbox]+label {
-            position: relative;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            vertical-align: top;
-            border: solid 1px #000000;
-            background-color: #ffffff;
-            z-index: 1;
-        }
-
-        .tmpl_checkbox input[type=checkbox]:checked+label::before {
-            content: "";
-            display: block;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 7px;
-            height: 11px;
-            margin-top: -7px;
-            margin-left: -3px;
-            border-bottom: 2px solid #000;
-            border-right: 2px solid #000;
-            -moz-transform: rotate(48deg);
-            -webkit-transform: rotate(48deg);
-            transform: rotate(48deg);
-            z-index: 1;
-        }
-
-        .tmpl_checkbox input[type=checkbox]+label::after {
-            display: none
-        }
-
-        span.buptleparam_content_required_none {
-            color: red;
-            background-color: black;
-        }
-
-        span.default_buptle_required {
-            color: white;
-            background-color: black;
-        }
-
-        .btpm_add_comment_menu {
-            background-color: lightcyan;
-            color: black;
-            border-radius: 3px;
-        }
-
-        /** 여기가 본문에서 노랗게 변하는 애들 */
-        .blame-marker {
-            /*background-color: #ff8;*/
-            background-color: lightgreen;
-            /*border: 2px dashed black;*/
-            padding: 3px 3px 3px 3px;
-            opacity: 0.9;
-            /*box-shadow: 2px 2px 1px 1px grey;*/
-        }
-
-        .commit:hover {
-            background: #ff8;
-        }
-
-        .commit-revert {
-            color: #a22;
-        }
-
-        .comment {
-            background-color: lightpink;
-        }
-
-        .subtle {
-            color: #777
-        }
-
-        /*.comment { background-color: #ff8 }*/
-        .currentComment {
-            background-color: #fe0
-        }
-
-        .commentList,
-        .commentText {
-            display: block;
-            padding: 0;
-            margin: 0;
-            box-shadow: 2px 2px 1px 1px grey;
-        }
-
-        .tooltip-wrapper {
-            display: inline-block;
-            position: relative;
-            width: 0;
-            overflow: visible;
-            vertical-align: bottom;
-        }
-
-        .ProseMirror ul.commentList {
-            font-family: "Source Sans Pro";
-            font-size: 16px;
-            width: 15em;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: -2em;
-            font-size: 1rem;
-            color: black;
-            background: white;
-            font-weight: normal;
-            border: 1px solid #888;
-            border-radius: 5px;
-            z-index: 10;
-            padding: 0;
-        }
-
-        ul.commentList::before {
-            border: 5px solid black;
-            border-top-width: 0px;
-            border-left-color: transparent;
-            border-right-color: transparent;
-            position: absolute;
-            top: -5px;
-            left: calc(2em - 6px);
-            content: " ";
-            height: 0;
-            width: 0;
-        }
-
-        li.commentText {
-            padding: 20px 10px 20px 10px;
-            position: relative;
-            pointer-events: auto;
-            margin: 0;
-            background-color: red;
-            opacity: 0.8;
-            color: white;
-            border: 1px solid black;
-            border-radius: 5px;
-        }
-
-        li.commentText+li.commentText {
-            border-top: 1px solid black;
-        }
-
-        .commentDelete {
-            position: relative;
-            top: 10px;
-            left: 0;
-            border: 0;
-            font: inherit;
-            display: block;
-            color: inherit;
-            background: transparent;
-            cursor: pointer;
-            font-size: small;
-            text-decoration: underline;
-        }
-
-        .commentDelete:hover {
-            color: #f88;
-        }
-
-        .doclist {
-            z-index: 20;
-            display: block;
-            padding: 2px 2px;
-            margin: 0;
-            border: 1px solid silver;
-            position: absolute;
-            background: white;
-            font-size: 90%;
-            box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            max-height: 15em;
-            overflow-y: auto;
-        }
-
-        .doclist li {
-            display: block;
-            padding: 1px 3px;
-            margin: 0;
-            cursor: pointer;
-        }
-
-        .doclist li:hover {
-            background: #5ae;
-            color: white;
-        }
-
-        .docinfo {
-            position: relative;
-            color: #555;
-        }
-
-        .ProseMirror-report {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: 0;
-            border-width: 0;
-            border-style: solid;
-            border-bottom-width: 1px;
-            padding: 3px 27px 5px;
-            white-space: pre;
-            z-index: 1000;
-        }
-
-        .ProseMirror-report-fail {
-            background: rgb(255, 230, 230);
-            border-color: rgb(200, 150, 150);
-        }
-
-        .ProseMirror-report-delay {
-            background: rgb(255, 255, 200);
-            border-color: rgb(200, 200, 120);
-        }
-
-        .btpm_checkbox {
-            position: relative;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            vertical-align: top;
-            border: solid 1px #000000;
-            background-color: #ffffff;
-            display: inline-block;
-            z-index: 1;
-        }
-
-        .btpm_checked::before {
-            content: "";
-            display: block;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 7px;
-            height: 11px;
-            margin-top: -7px;
-            margin-left: -3px;
-            border-bottom: 2px solid #000;
-            border-right: 2px solid #000;
-            -moz-transform: rotate(48deg);
-            -webkit-transform: rotate(48deg);
-            transform: rotate(48deg);
-            z-index: 1;
-        }
-
-        /* 여기부터 */
-        .guideContainer {
-            max-width: 450px;
-            max-height: 600px;
-            overflow-y: scroll;
-        }
-        .guideContainer.fixed {
-            position: fixed;
-            top: 0;
-        }
-        
-        .canvasContainer {            
-            font-size: 0;
-        }
-        .ProseMirror-menubar-wrapper .ProseMirror.ProseMirror-example-setup-style {
-            min-width: 0;
-            max-width: 100% !important;
-        }
-        .pdfArea.contract_area .ProseMirror {
-            position: relative;
-            margin: 0 !important;
-            padding: 30px;
-        }
-        .pdfArea.contract_area{
-            margin-top: 0;
-        }
-        .ProseMirror p:first-child, .ProseMirror h1:first-child, .ProseMirror h2:first-child,
-        .ProseMirror h3:first-child, .ProseMirror h4:first-child,
-        .ProseMirror h5:first-child, .ProseMirror h6:first-child {
-            margin-top: 0 !important;
-        }
-        .pdfArea.contract_area div,
-        .pdfArea.contract_area ul,
-        .pdfArea.contract_area li,
-        .pdfArea.contract_area ol {
-            position: static;
+        .btn {
+            border: 1px solid gray;
+            border-radius: 10px;
+            padding: .5em 1em;
         }
     </style>
 </head>
 
 <body>
-    <header style="padding: 2em; color: #fff; background: #000;">
+    <header class="box" style="color: #fff; background: #000;">
         <h2>BUPTLE - Prosemirror</h2>
     </header>
     <!-- START test 용 -->
-    <section class="clearfix" style="padding: 20px;">
-        <form id="commit" style="width: 50%;">
-            저장 커밋메시지 <input type=text id=message name=message> <button id=commitbutton type="button" onclick="">버전저장</button>
-            <div class=blame-wrap>
-                <button type="button" id="blame" style="display:none;">blame at cursor</button>
-            </div>
-        </form>
-
-        <button id="click_upload_btn">이미지업로드</button> <input type="file" id="image-upload" />
-
-        <div id="commits" style="margin-bottom: 23px;"></div>
-        <div id="changedoc" style="position: relative; float:left; display: none; ">문서종류</div>
-        <div id="docname" style="position: relative; float:left; display: none; ">문서명</div>
-        <div id="users" onclick="alert( ' >> ' +  ProseMirror.getPMContentString() );">유저수</div>
-        <button type="button">체크박스</button>
-        <button type="button" onclick="ProseMirror.getAllNode()">노드</button>
-
-        <script>
-            function fn_test() {
-                document.getElementsByClassName('temp_text')[0].innerHTML =
-                    '<span class="temp_text default_buptle_required">가나다라마바사아차카타타파하</span>';
-            }
-        </script>
-
-        <div onclick="javaScript:{ProseMirror.btpm_checkbox_cmd_function(_editorView.state, _editorView.dispatch);};">체크박스1</div>
-        <div onclick="javaScript:{checkbox_btn_clicked()};">체크박스-새버전</div>
-
-        <div style="width:300px; margin-bottom: 10px; border: 2px solid #55aaee; border-radius: 5px; background-color: mintcream;">
-            <div>
-                <button type="button" id="add_comment_to_doc" style="margin: 2px 0px 6px 6px;" onclick="ProseMirror.onCommentAddClicked();">코멘트남기기</button>
-            </div>
-            <div id="indexhtml_comment_list_wrapper" style="overflow-y:scroll; max-height: 600px; ">
-            </div>
-            <button type="button" onclick="javaScript:fn_test();">테스트</button>
-        </div>
-
-        <div id="_version_list_wrapper" style="min-height: 200px; max-height: 200px; width: 25%; padding-left:5px; border:3px solid #000; overflow-y:scroll;">
-            버전 History 가 표시됩니다.
-        </div>
-
-        <div class="alignC marginL_20">
-            <label class="sm_p58 swich_label" style="line-height: 30px; margin-right: 7px">PDF 미리보기</label>
-            <div class="swich_wrap" style="vertical-align: middle">
-                <input type="checkbox" id="pdf_preview_switch" class="swich fl">
-                <label for="pdf_preview_switch"></label>
-            </div>
-        </div>
-
-        <a id="pdf_preview_down" class="mltpl_li_btn btn_down ttp" style="widthL:32px; height: 32px; margin: 5px 5px 0 0; border: 1px solid #000;">
-            <div class="tooltip right mar_btm_10" style="right: 0">테스트용 계약 내용을 다운로드합니다.</div>
-        </a>
+    <section class="btn">
+        <h2>커스텀 기능</h2>
+        <article>
+            <form id="commit">
+                저장 커밋메시지
+                <input type="text" id="message" name="message">
+                <button class="btn" id="commitbutton" type="button" onclick="">버전저장</button>
+                <div class="blame-wrap">
+                    <button type="button" id="blame" style="display:none;">blame at cursor</button>
+                </div>
+            </form>
+        </article>
     </section>
     <!-- END test 용 -->
 
-    <section style="display: flex;">
+    <section class="box" style="display: flex;">
         <div>
             <!-- START proseMirror -->
             <section class="contract_view">
                 <div id="div-contract-content" class="contract_area pdfArea"></div>
             
                 <div id="content" style="display: none;">
-                    <span class="tmpl_checkbox">
-                        <input type="checkbox">
-                        <label></label>
-                    </span>
-
-                    <p>일반입력사항</p>
                     <p>
-                        <span class="buptleparam_content_required_none" data-param-id="828" data-param-name="필수입력사항1"
-                            data-param-content="" data-param-desc="" data-param-required="0" data-param-kind="text"
-                            data-param-display-name=" [ 입력필요 : 일반입력사항1 ] ">
-                            <label class=""> [ 입력필요 : 일반입력사항1 ] </label></span>&nbsp;</p>
-                    <p>송부누르면 밸리데이션 팝업 뜨는 증상.
-                    </p>
-                    <p>필수입력사항</p>
-                    <p>
-                        <span class="buptleparam_content_required_none" data-param-id="827" data-param-name="필수입력사항1"
-                            data-param-content="" data-param-desc="" data-param-required="1" data-param-kind="text"
-                            data-param-display-name=" [ 입력필요 : 필수입력사항1 ] ">
-                            <label class=""> [ 입력필요 : 필수입력사항1 ] </label></span>&nbsp;</p>
-                    <p>송부누르면 밸리데이션 팝업 뜨는 증상.
-                    </p>
-                    <ul data-type="todo_list">
-                        <li data-type="todo_item" data-done="false">
-                            <span class="todo-checkbox todo-checkbox-unchecked" contenteditable="false"></span>
-                            <span class="todo-checkbox todo-checkbox-checked" contenteditable="false"></span>
-                            <div class="todo-content">
-                                <p class="buptle_editor_default_p_class">ABC</p>
-                            </div>
-                        </li>
-                    </ul>
-                    <p>
-                        <btpm_checkbox class="btpm_checkbox btpm_checked"></btpm_checkbox> (선택)
-                    </p>
-                    <p>
-                        <span contenteditable="false" draggable="true"
-                            style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;"><span
-                                style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
-                            <img contenteditable="false" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91"
-                                class="" style="width: 19.25em; vertical-align: bottom !important;">
+                        <span contenteditable="false" draggable="true" style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;">
+                            <span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
+                            <img contenteditable="false" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="" style="width: 19.25em; vertical-align: bottom !important;">
                         </span>
                     </p>
-
-                    <p class="buptle_editor_default_p_class">
-                        <btpm_checkbox data-done="true" class="btpm_checkbox btpm_checked"></btpm_checkbox>
-                        <btpm_checkbox class="btpm_checkbox"></btpm_checkbox>
-                        <btpm_checkbox class="btpm_checkbox"></btpm_checkbox>
-                    </p>
-                    <li data-type="todo_item" data-done="false"><span class="todo-checkbox todo-checkbox-unchecked"
-                            contenteditable="false"></span><span class="todo-checkbox todo-checkbox-checked"
-                            contenteditable="false"></span>
-                        <div class="todo-content">
-                            <p class="buptle_editor_default_p_class">asdfasdf</p>
-                        </div>
-                    </li>
-
-                    <div class="tableWrapper">
-                        <table style="min-width: 50px;">
-                            <colgroup>
-                                <col>
-                                <col>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class">상단의 (테이블편집 아이콘)을 클릭하십시오.</p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class">(외곽선을 선택하여 넓이를 조정할 수 있습니다.)</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <p><span>&nbsp;&nbsp;&nbsp;</span><span class="btpm_checkbox btpm_checked"><input
-                                type="checkbox"><label></label></span>&nbsp;rrrr&nbsp;(체크박스원래있던거)</p>
-                    <p>
-                        <span id="tmp_span_id" class="buptleparam_content_required_none content_field ProseMirror-selectednode"
-                            data-param-id="684" data-param-name="세부업무" data-param-content="" data-param-desc=""
-                            data-param-required="1" data-param-kind="text" data-param-display-name="[ 입력필요 : 세부업무 ]"
-                            draggable="true"><label for="" class="btpm_label_class">[ 입력필요 : 세부업무 ]</label></span>
-                    </p>
-                    <p><span class="buptleparam_content_required_none" data-param-id>123456789</span></p>
-                    <p>
-                        <span>
-                            바로 span
-                        </span>
-                        <span class="tmpl_checkbox">
-                            <input type="checkbox">
-                            <label></label>
-                        </span> 체크박스1
-                    </p>
-                    <p>
-                        <span class="tmpl_checkbox">
-                            <input type="checkbox">
-                            <label></label>
-                        </span> 체크박스2
-                    </p>
-
-                    <p> <span contenteditable="false" draggable="true" style="position: relative; width: 7.75em; display: inline-block; padding-left: 0.25em;">
-                        <span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="ProseMirror-selectednode" style="width: 5em; vertical-align: bottom !important;">
-                        </span>
-                    </p>
-
-                    <p style="padding-left: 30px;">
-                        <strong>
-                            <span data-id-key-now="1563968555469_7817" data-checkbox-id="bt_tinymce_add_checkbox_1563968555469_7817"
-                                class="checkbox-ed-wrapper" contenteditable="false" draggable="false"
-                                onclick="parent.fn_checkbox_clicked(this);">
-                                <input id="bt_tinymce_add_checkbox_1563968555469_7817" class="checkbox-ed"
-                                    name="bt_tinymce_checkbox_1563968555469_7817" type="checkbox" value="1">
-                                <label class="checkbox-ed-label" for="bt_tinymce_add_checkbox_1563968555469_7817"></label>
-                            </span>&nbsp;
-                        </strong>
-                    </p>
-
-                    <p>
-                        <span class="tmpl_checkbox">
-                            <input type="checkbox">
-                            <label></label>
-                        </span>
-                    </p>
-
-                    <div class="tableWrapper">
-                        <table style="min-width: 50px;">
-                            <colgroup>
-                                <col>
-                                <col>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class">상단의 (테이블편집 아이콘)을 클릭하십시오.</p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class">(외곽선을 선택하여 넓이를 조정할 수 있습니다.)</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                    <td>
-                                        <p align="left" class="buptle_editor_default_p_class"><br></p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <p align="left" class="buptle_editor_default_p_class">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis,
-                        beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,
-                        eos enim est assumenda debitis minus maiores mollitia aliquid nam animi obcaecati qui error nisi. Laborum necessitatibus
-                        sequi vel atque, voluptatem expedita dolor dolorem non impedit adipisci ipsa ad aliquam neque facere pariatur enim vitae
-                        temporibus error! Tempore culpa nobis adipisci delectus. Voluptate, esse aliquid ab totam quo tempore illum alias animi
-                        voluptatum et libero harum, nihil nemo? Ad ipsam ea similique exercitationem veritatis amet quae voluptatem, eius cupiditate?
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis,
-                        beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,
-                        eos enim est assumenda debitis minus maiores mollitia aliquid nam animi obcaecati qui error nisi. Laborum necessitatibus
-                        sequi vel atque, voluptatem expedita dolor dolorem non impedit adipisci ipsa ad aliquam neque facere pariatur enim vitae
-                        temporibus error! Tempore culpa nobis adipisci delectus. Voluptate, esse aliquid ab totam quo tempore illum alias animi
-                        voluptatum et libero harum, nihil nemo? Ad ipsam ea similique exercitationem veritatis amet quae voluptatem, eius cupiditate?
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis,
-                        beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,
-                        eos enim est assumenda debitis minus maiores mollitia aliquid nam animi obcaecati qui error nisi. Laborum necessitatibus
-                        sequi vel atque, voluptatem expedita dolor dolorem non impedit adipisci ipsa ad aliquam neque facere pariatur enim vitae
-                        temporibus error! Tempore culpa nobis adipisci delectus. Voluptate, esse aliquid ab totam quo tempore illum alias animi
-                        voluptatum et libero harum, nihil nemo? Ad ipsam ea similique exercitationem veritatis amet quae voluptatem, eius cupiditate?
-                    </p>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
                 </div>
             </section>
             <!-- END proseMirror -->
-        </div>
-
-        <div>
-            <div class="guideContainer">
-                <div class="canvasContainer">
-        
-                </div>
-            </div>
         </div>
     </section>
 
@@ -655,9 +121,6 @@
                         }
 
                         return comments;
-                    },
-                    btpmHandleCommentDraw: function (_comments, action) {
-                        fn_draw_memo_handle(_comments, action);
                     },
                     addAnnotation: function (commentPlugin, state, dispatch, _Comment, _randomId_fnc) {
                         // console.log(' >>>>>> ' + state);
@@ -788,45 +251,6 @@
                     console.log(e);
                 }
             }
-        }
-
-        $("#click_upload_btn").click(function () {
-            document.querySelector("#image-upload").click();
-        });
-
-        $("#image-upload").change(function () {
-            if (_editorView.state.selection.$from.parent.inlineContent && e.target.files.length)
-                ProseMirror.startImageUpload(_editorView, e.target.files[0])
-            _editorView.focus()
-        });
-
-        /* 체크박스 이벤트 붙이기 */
-        function attachClickEvtBtpmCheckbox() {            
-            // document.querySelectorAll(".btpm_checkbox").forEach(e => {
-            //     e.addEventListener('click', function(event) {
-            //         var _cname = this.className;
-            //         console.log("[냠냠] ======================= : " + _cname);
-
-            //         if( _cname.indexOf('btpm_checked')!=-1 ){
-            //             //리무브
-            //             this.classList.remove("btpm_checked");
-            //         }else{
-            //             //다시체크상태로
-            //             this.classList.add("btpm_checked");
-            //         }
-            //     });
-            // });
-        }
-
-        /** 체크박스 생성 클릭 */
-        function checkbox_btn_clicked() {
-            var node = ProseMirror.buptleSchema.nodes.btpm_checkbox.createAndFill({});
-
-            _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" ")));
-            _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
-            _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(ProseMirror.buptleSchema.text(" (선택)")));
-
-            attachClickEvtBtpmCheckbox();
         }
 
         // $('.ProseMirror').attr('contenteditable', false);
