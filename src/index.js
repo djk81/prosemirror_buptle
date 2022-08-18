@@ -1051,10 +1051,19 @@ const buptleSpanSpec = {
         'data-param-field-type': {
             default: ''
         },
+        'data-param-input-type': {
+            default: ''
+        },
+        'data-param-input-auto-type': {
+            default: ''
+        },
         'data-param-select-type': {
             default: ''
         },
         'data-param-select-value': {
+            default: ''
+        },
+        'data-param-user-limit-type': {
             default: ''
         },
     },
@@ -1120,11 +1129,20 @@ const buptleSpanSpec = {
         if (node.attrs['data-param-field-type']) {
             rtn['data-param-field-type'] = node.attrs['data-param-field-type']
         }
+        if (node.attrs['data-param-input-type']) {
+            rtn['data-param-input-type'] = node.attrs['data-param-input-type']
+        }
+        if (node.attrs['data-param-input-auto-type']) {
+            rtn['data-param-input-auto-type'] = node.attrs['data-param-input-auto-type']
+        }
         if (node.attrs['data-param-select-type']) {
             rtn['data-param-select-type'] = node.attrs['data-param-select-type']
         }
         if (node.attrs['data-param-select-value']) {
             rtn['data-param-select-value'] = node.attrs['data-param-select-value']
+        }
+        if (node.attrs['data-param-user-limit-type']) {
+            rtn['data-param-user-limit-type'] = node.attrs['data-param-user-limit-type']
         }
 
         return ['span', rtn, 0];
@@ -1132,11 +1150,26 @@ const buptleSpanSpec = {
     parseDOM: [{
         tag: "span[data-param-id]",
         getAttrs(dom) {
-            //console.log(dom);
+            const _getSpanClass = function(dom) {
+                const content = dom.getAttribute('data-param-content') || '';
+                const fieldType = dom.getAttribute('data-param-field-type') || 1;
+                const required = dom.getAttribute('data-param-required') || 1;
+
+                if (fieldType !== '3') return dom.className;
+                
+                if (!content || content == '""') {
+                    return CONTENT_FIELD_SPEC[required].class_name;
+                } else {
+                    return dom.className;
+                }
+            }
+
             if (1 == 1) {
                 return {
                     id: dom.id,
-                    class: dom.className,
+                    // 자동입력 항목 추가로 인한 커스텀
+                    // class: dom.className,
+                    class: _getSpanClass(dom),
                     style: dom.getAttribute("style"),
                     'data-param-id': dom.getAttribute('data-param-id'),
                     'data-param-name': dom.getAttribute('data-param-name'),
@@ -1146,8 +1179,11 @@ const buptleSpanSpec = {
                     'data-param-kind': dom.getAttribute('data-param-kind'),
                     'data-param-display-name': dom.getAttribute('data-param-display-name'),
                     'data-param-field-type': dom.getAttribute('data-param-field-type'),
+                    'data-param-input-type': dom.getAttribute('data-param-input-type'),
+                    'data-param-input-auto-type': dom.getAttribute('data-param-input-auto-type'),
                     'data-param-select-type': dom.getAttribute('data-param-select-type'),
                     'data-param-select-value': dom.getAttribute('data-param-select-value'),
+                    'data-param-user-limit-type': dom.getAttribute('data-param-user-limit-type'),
                 };
             }
 
@@ -1185,11 +1221,20 @@ const buptleSpanSpec = {
             if (dom.getAttribute('data-param-field-type')) {
                 rtn['data-param-field-type'] = dom.getAttribute('data-param-field-type');
             }
+            if (dom.getAttribute('data-param-input-type')) {
+                rtn['data-param-input-type'] = dom.getAttribute('data-param-input-type');
+            }
+            if (dom.getAttribute('data-param-input-auto-type')) {
+                rtn['data-param-input-auto-type'] = dom.getAttribute('data-param-input-auto-type');
+            }
             if (dom.getAttribute('data-param-select-type')) {
                 rtn['data-param-select-type'] = dom.getAttribute('data-param-select-type');
             }
             if (dom.getAttribute('data-param-select-value')) {
                 rtn['data-param-select-value'] = dom.getAttribute('data-param-select-value');
+            }
+            if (dom.getAttribute('data-param-user-limit-type')) {
+                rtn['data-param-user-limit-type'] = dom.getAttribute('data-param-user-limit-type');
             }
 
             return rtn;
@@ -1264,6 +1309,9 @@ const buptleCheckbox = {
         "data-type": {
             default: ""
         },
+        "data-user-limit-type": {
+            default: false
+        }, // 유저 제한
         "data-group-id": {
             default: randomID()
         }
@@ -1284,7 +1332,8 @@ const buptleCheckbox = {
             "data-alert-message": node.attrs["data-alert-message"],
             "data-checkbox-type": node.attrs["data-checkbox-type"],
             "data-group-id": node.attrs["data-group-id"],
-            "data-type": node.attrs["data-type"]
+            "data-type": node.attrs["data-type"],
+            "data-user-limit-type": node.attrs["data-user-limit-type"],
         }];
     },
     parseDOM: [{
@@ -1295,7 +1344,8 @@ const buptleCheckbox = {
                 "data-alert-message": dom.getAttribute(["data-alert-message"]),
                 "data-checkbox-type": dom.getAttribute(["data-checkbox-type"]),
                 "data-group-id": dom.getAttribute(["data-group-id"]),
-                "data-type": dom.getAttribute("data-type")
+                "data-type": dom.getAttribute("data-type"),
+                "data-user-limit-type": dom.getAttribute("data-user-limit-type")
             };
         }
     }]
