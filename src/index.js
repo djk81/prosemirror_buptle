@@ -843,7 +843,7 @@ export class EditorSpec {
 export var ptpm_comment_list_target_element_id = null;
 var _editorView = null;
 
-export function editorInitBySpec(editorSpec, init_function) {
+export function editorInitBySpec(editorSpec, init_function, floating) {
     _editorSpec = editorSpec;
 
     BTPM_BASE_ICONS_PATH = _editorSpec.icons_base_path;
@@ -872,17 +872,17 @@ export function editorInitBySpec(editorSpec, init_function) {
 
     }
 
-    return __btpmInitView(editorSpec.div_target_id, document_html, comments);
+    return __btpmInitView(editorSpec.div_target_id, document_html, comments, floating);
 }
 
-export function editorInit(div_target_id, content_id, _comment_target_id) {
+export function editorInit(div_target_id, content_id, _comment_target_id, floating) {
     //connection = window.connection = new EditorConnection(report, "/docs/Example", target_id) // + isID[1]  <-- 이거 지네 데모에만 필요한거
     ptpm_comment_list_target_element_id = _comment_target_id;
-    return __btpmInitView(div_target_id, _tmp_doc, _tmp_comments);
+    return __btpmInitView(div_target_id, _tmp_doc, _tmp_comments, floating);
 }
 // 여기다
-function __btpmInitView(target_id, document_html, comments) {
-    let _editorState = btpmGetState(document_html, comments);
+function __btpmInitView(target_id, document_html, comments, floating) {
+    let _editorState = btpmGetState(document_html, comments, floating);
     const editor = document.querySelector("#" + target_id);
 
     _editorView = new EditorView(editor, {
@@ -1752,13 +1752,11 @@ class FootnoteView {
             }
 
             const onMouseUp = (e) => {
-                // console.log('onMouseUp');
-                e.preventDefault()
+                e.preventDefault();
 
                 document.removeEventListener("mousemove", onMouseMove)
                 document.removeEventListener("mouseup", onMouseUp)
 
-                // const transaction = view.state.tr.setNodeMarkup(getPos(), null, {src: node.attrs.src, width: outer.style.width} ).setSelection(view.state.selection);
                 const transaction = view.state.tr.setNodeMarkup(getPos(), null, {
                     src: node.attrs.src,
                     width: outer.style.width
@@ -2303,13 +2301,15 @@ function buildMenuItems_btpm(schema) {
 }
 
 
-function btpmGetState(_doc, comments) {
+function btpmGetState(_doc, comments, floating) {
     let menu = buildMenuItems_btpm(buptleSchema)
     let pluginsArray = [keymap(todoItemKeymap)]
     let pluginsArray_2 = exampleSetup({
         schema,
         history: false,
-        menuContent: menu.fullMenu
+        menuContent: menu.fullMenu,
+        // 메뉴 화면 따라다니는 플로팅 효과 (메뉴를 강제로 remove 해버려서 추가)
+        floatingMenu: (floating) ? true : false
     }).concat([history({
         preserveItems: true
     })]).concat(content_paste_plugin);
@@ -2666,11 +2666,6 @@ const content_paste_plugin = new Plugin({
             parseSlice: function (_dom, $context) {
                 // contenteditable="false" 일 때 복사 입력 차단
                 let domStatus = _editorView.dom.getAttribute('contenteditable');
-                if (domStatus === 'false') return console.log('복사 금지');
-
-                // console.log("BEFORE ======================================================= " + typeof (_dom));
-                // console.log(_dom.innerHTML);
-                // console.log(_dom);
                 
                 /** docx, hwp paste 시 컨텐츠 가공 */
                 $('p', _dom).each(function (indx, _p) {
@@ -2689,6 +2684,13 @@ const content_paste_plugin = new Plugin({
                 });
 
                 var parser = DOMParser.fromSchema(buptleSchema);
+
+                if (domStatus === 'false') {
+                    return parser.parseSlice(_dom, {
+                        preserveWhitespace: false,
+                        context: null
+                    });
+                }
 
                 return parser.parseSlice(_dom, {
                     preserveWhitespace: true,
