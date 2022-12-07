@@ -252,11 +252,11 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
     const state = editorView.state;
     const target = event.target.classList;
     const id = node.attrs['data-id'] || 0;
-    const order = (node.attrs['data-order'] === "1") ? 2 : 1;
+    const order = (node.attrs['data-order'] == 1) ? 2 : 1;
     
     const className = (target.contains('btpm_radio_required')) ? '.btpm_radio_required': '.btpm_radio';
     const prevRadioEl = document.querySelector(className + '[data-id="' + id + '"][data-order="' + order + '"]') || null;
-
+    
     if (prevRadioEl && prevRadioEl.classList.contains('btpm_radio_checked') || prevRadioEl.classList.contains('btpm_radio_checked_required')) {
         gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
             const el = document.querySelector('.modal_section');
@@ -271,6 +271,18 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
         return false;
     }
 
+    if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
+        gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
+            const el = document.querySelector('.modal_section');
+            const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+                '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+                '<div class="active_btn_wrap tc">' +
+                '<a class="btn__active btn_m modal_off">확인</a>' +
+                '</div>';
+            el.innerHTML = _htmlText;
+        }, 'modal1');
+    }
+
     if (target.contains('btpm_radio_checked') && target.contains("btpm_radio")) {
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_radio',
@@ -280,18 +292,6 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
             "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
         });
     } else if (!target.contains("btpm_radio_checked") && target.contains("btpm_radio")) {
-        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
-            gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
-                const el = document.querySelector('.modal_section');
-                const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
-                    '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
-                    '<div class="active_btn_wrap tc">' +
-                    '<a class="btn__active btn_m modal_off">확인</a>' +
-                    '</div>';
-                el.innerHTML = _htmlText;
-            }, 'modal1');
-        }
-
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_radio btpm_radio_checked',
             "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
@@ -308,18 +308,6 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
             "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
         });
     } else if (!target.contains('btpm_radio_checked_required') && target.contains("btpm_radio_required")) {
-        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
-            gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
-                const el = document.querySelector('.modal_section');
-                const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
-                    '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
-                    '<div class="active_btn_wrap tc">' +
-                    '<a class="btn__active btn_m modal_off">확인</a>' +
-                    '</div>';
-                el.innerHTML = _htmlText;
-            }, 'modal1');
-        }
-
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_radio_required btpm_radio_checked_required',
             "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
