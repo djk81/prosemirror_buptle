@@ -170,8 +170,8 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
 
     if (node.type.name === 'btpm_radio') {
         if (getCheckboxEditable(event)) {
-            const check = toggleRadioItemAction(editorView, pos, node, nodePos, event);
-            if (check) editorView.dispatch(check);
+            const markupNode = toggleRadioItemAction(editorView, pos, node, nodePos, event);
+            if (markupNode) editorView.dispatch(markupNode);
         }
         return true
     }
@@ -251,13 +251,16 @@ function toggleCheckboxItemAction(state, pos, event) {
 function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
     const state = editorView.state;
     const target = event.target.classList;
-    const id = node.attrs['data-id'] || 0;
-    const order = (node.attrs['data-order'] == 1) ? 2 : 1;
+    const id = node.attrs['data-id']; // 선택된 radio id
+    const order = node.attrs['data-order']; // 선택된 radio 순서
+    const docView = editorView.docView.children;
+    const nodes = docView.map(i => i.children).flat(Infinity).map(i => i.node).filter(i => i);
+    const radioNodes = nodes.filter(i => { if (i.attrs['data-id'] == id) return i; });
+    let warning = false;
     
-    const className = (target.contains('btpm_radio_required')) ? '.btpm_radio_required': '.btpm_radio';
-    const prevRadioEl = document.querySelector(className + '[data-id="' + id + '"][data-order="' + order + '"]') || null;
-    
-    if (prevRadioEl && prevRadioEl.classList.contains('btpm_radio_checked') || prevRadioEl.classList.contains('btpm_radio_checked_required')) {
+    for (let i = 0; i < radioNodes.length; i++) if (radioNodes[i].attrs["data-order"] != order) warning = (radioNodes[i].attrs["class"].indexOf("btpm_radio_checked") != -1) ? true : false;
+
+    if (warning) {
         gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
             const el = document.querySelector('.modal_section');
             const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
@@ -282,40 +285,48 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
             el.innerHTML = _htmlText;
         }, 'modal1');
     }
+    
+    let className = (target.contains("btpm_radio_required")) ? "btpm_radio_required" : "btpm_radio";
+    if (!target.contains("btpm_radio_checked")) className += " btpm_radio_checked";
 
-    if (target.contains('btpm_radio_checked') && target.contains("btpm_radio")) {
-        return state.tr.setNodeMarkup(pos, null, {
-            class: 'btpm_radio',
-            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-        });
-    } else if (!target.contains("btpm_radio_checked") && target.contains("btpm_radio")) {
-        return state.tr.setNodeMarkup(pos, null, {
-            class: 'btpm_radio btpm_radio_checked',
-            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-        });
-    } else if (target.contains('btpm_radio_checked_required') && target.contains("btpm_radio_required")) {
-        return state.tr.setNodeMarkup(pos, null, {
-            class: 'btpm_radio_required',
-            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-        });
-    } else if (!target.contains('btpm_radio_checked_required') && target.contains("btpm_radio_required")) {
-        return state.tr.setNodeMarkup(pos, null, {
-            class: 'btpm_radio_required btpm_radio_checked_required',
-            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-        });
-    }
+    let data = {
+        class: className,
+        "data-id": (event.target.dataset.id != null) ? event.target.dataset.id : 0,
+        "data-order": (event.target.dataset.order != null) ? event.target.dataset.order : 0,
+        "data-alert-message": (event.target.dataset.alertMessage != null) ? event.target.dataset.alertMessage : '',
+        "data-user-limit-type": (event.target.dataset.dataUserLimitType != null) ? event.target.dataset.dataUserLimitType : 0,
+    };
+
+    return  state.tr.setNodeMarkup(pos, null, data);
+
+    // if (target.contains('btpm_radio_checked') && target.contains("btpm_radio")) {
+    //     return state.tr.setNodeMarkup(pos, null, data);
+    // } else if (!target.contains("btpm_radio_checked") && target.contains("btpm_radio")) {
+    //     return state.tr.setNodeMarkup(pos, null, {
+    //         class: 'btpm_radio btpm_radio_checked',
+    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+    //     });
+    //     return state.tr.setNodeMarkup(pos, null, data);
+    // } else if (target.contains('btpm_radio_checked') && target.contains("btpm_radio_required")) {
+    //     return state.tr.setNodeMarkup(pos, null, {
+    //         class: 'btpm_radio_required',
+    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+    //     });
+    // } else if (!target.contains('btpm_radio_checked') && target.contains("btpm_radio_required")) {
+    //     return state.tr.setNodeMarkup(pos, null, {
+    //         class: 'btpm_radio_required btpm_radio_checked',
+    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+    //     });
+    // }
 }
 
 /** 이미지업로드 */
