@@ -153,10 +153,10 @@ function getCheckboxEditable(event) {
 }
 
 function handleClickOn(editorView, pos, node, nodePos, event) {
-    if (event.target.classList.contains('todo-checkbox')) {
-        editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
-        return true
-    }
+    // if (event.target.classList.contains('todo-checkbox')) {
+    //     editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
+    //     return true
+    // }
 
     if (node.type.name === 'btpm_checkbox') {
         // if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
@@ -164,6 +164,14 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
         // -> node는 p태그로 들어오나 event는 btpm_checkbox태그로 들어와서 발생하는 문제.
         if (getCheckboxEditable(event)) {
             editorView.dispatch(toggleCheckboxItemAction(editorView.state, nodePos, event))
+        }
+        return true
+    }
+
+    if (node.type.name === 'btpm_radio') {
+        if (getCheckboxEditable(event)) {
+            const check = toggleRadioItemAction(editorView, pos, node, nodePos, event);
+            if (check) editorView.dispatch(check);
         }
         return true
     }
@@ -181,6 +189,9 @@ function toggleCheckboxItemAction(state, pos, event) {
     if (target.contains('btpm_checked') && target.contains("btpm_checkbox")) {
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox',
+            "data-type": (event.target.dataset.dataType !== undefined) ? event.target.dataset.dataType : '',
+            "data-group-id": (event.target.dataset.groupId !== undefined) ? event.target.dataset.groupId : '',
+            "data-user-limit-type": (event.target.dataset.userLimitType !== undefined) ? event.target.dataset.userLimitType : '',
             "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
             "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
@@ -199,12 +210,18 @@ function toggleCheckboxItemAction(state, pos, event) {
         }
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox btpm_checked',
+            "data-type": (event.target.dataset.dataType !== undefined) ? event.target.dataset.dataType : '',
+            "data-group-id": (event.target.dataset.groupId !== undefined) ? event.target.dataset.groupId : '',
+            "data-user-limit-type": (event.target.dataset.userLimitType !== undefined) ? event.target.dataset.userLimitType : '',
             "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
             "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     } else if (target.contains('btpm_checked_required') && target.contains("btpm_checkbox_required")) {
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox_required',
+            "data-type": (event.target.dataset.dataType !== undefined) ? event.target.dataset.dataType : '',
+            "data-group-id": (event.target.dataset.groupId !== undefined) ? event.target.dataset.groupId : '',
+            "data-user-limit-type": (event.target.dataset.userLimitType !== undefined) ? event.target.dataset.userLimitType : '',
             "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
             "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
@@ -222,15 +239,96 @@ function toggleCheckboxItemAction(state, pos, event) {
         }
         return state.tr.setNodeMarkup(pos, null, {
             class: 'btpm_checkbox_required btpm_checked_required',
+            "data-type": (event.target.dataset.dataType !== undefined) ? event.target.dataset.dataType : '',
+            "data-group-id": (event.target.dataset.groupId !== undefined) ? event.target.dataset.groupId : '',
+            "data-user-limit-type": (event.target.dataset.userLimitType !== undefined) ? event.target.dataset.userLimitType : '',
             "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
             "data-checkbox-type": (event.target.dataset.checkboxType !== undefined) ? event.target.dataset.checkboxType : ''
         });
     }
-
-
 }
 
+function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
+    const state = editorView.state;
+    const target = event.target.classList;
+    const id = node.attrs['data-id'] || 0;
+    const order = (node.attrs['data-order'] === "1") ? 2 : 1;
+    
+    const className = (target.contains('btpm_radio_required')) ? '.btpm_radio_required': '.btpm_radio';
+    const prevRadioEl = document.querySelector(className + '[data-id="' + id + '"][data-order="' + order + '"]') || null;
 
+    if (prevRadioEl && prevRadioEl.classList.contains('btpm_radio_checked') || prevRadioEl.classList.contains('btpm_radio_checked_required')) {
+        gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
+            const el = document.querySelector('.modal_section');
+            const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+                '<p class="modal_p">한 가지 항목만 선택할 수 있습니다.</p>' +
+                '<div class="active_btn_wrap tc">' +
+                '<a class="btn__active btn_m modal_off">확인</a>' +
+                '</div>';
+            el.innerHTML = _htmlText;
+        }, 'modal1');
+
+        return false;
+    }
+
+    if (target.contains('btpm_radio_checked') && target.contains("btpm_radio")) {
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_radio',
+            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+        });
+    } else if (!target.contains("btpm_radio_checked") && target.contains("btpm_radio")) {
+        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
+            gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
+                const el = document.querySelector('.modal_section');
+                const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+                    '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+                    '<div class="active_btn_wrap tc">' +
+                    '<a class="btn__active btn_m modal_off">확인</a>' +
+                    '</div>';
+                el.innerHTML = _htmlText;
+            }, 'modal1');
+        }
+
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_radio btpm_radio_checked',
+            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+        });
+    } else if (target.contains('btpm_radio_checked_required') && target.contains("btpm_radio_required")) {
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_radio_required',
+            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+        });
+    } else if (!target.contains('btpm_radio_checked_required') && target.contains("btpm_radio_required")) {
+        if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
+            gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
+                const el = document.querySelector('.modal_section');
+                const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
+                    '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+                    '<div class="active_btn_wrap tc">' +
+                    '<a class="btn__active btn_m modal_off">확인</a>' +
+                    '</div>';
+                el.innerHTML = _htmlText;
+            }, 'modal1');
+        }
+
+        return state.tr.setNodeMarkup(pos, null, {
+            class: 'btpm_radio_required btpm_radio_checked_required',
+            "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
+            "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
+            "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
+            "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
+        });
+    }
+}
 
 /** 이미지업로드 */
 let placeholderPlugin = new Plugin({
@@ -317,43 +415,15 @@ export function startImageUpload(view, file) {
                         }
                     }))
             };
-
-
         };
-
-
 
         FR.readAsDataURL(file);
     }
 
     return;
-    uploadFile(file).then(url => {
-        let pos = findPlaceholder(view.state, id)
-        // If the content around the placeholder has been deleted, drop
-        // the image
-        if (pos == null) return
-        // Otherwise, insert it at the placeholder's position, and remove
-        // the placeholder
-        view.dispatch(view.state.tr
-            .replaceWith(pos, pos, schema.nodes.image.create({
-                src: url
-            }))
-            .setMeta(placeholderPlugin, {
-                remove: {
-                    id
-                }
-            }))
-    }, () => {
-        // On failure, just clean up the placeholder
-        view.dispatch(tr.setMeta(placeholderPlugin, {
-            remove: {
-                id
-            }
-        }))
-    })
 }
 
-function uploadFile(files) { }
+// function uploadFile(files) { }
 
 
 let _editorSpec = null;
@@ -900,7 +970,6 @@ function __btpmInitView(target_id, document_html, comments, floating) {
         },
         handleClickOn
     });
-
     //최초 init 콜 패치
     if (_editorSpec.is_memo_activate) {
         var comments = btpmGetAllComments()
@@ -1351,6 +1420,71 @@ const buptleCheckbox = {
     }]
 };
 
+const buptleRadio = {
+    attrs: {
+        class: {
+            default: 'btpm_radio'
+        },
+        "data-id": {
+            default: 0
+        },
+        "data-order": {
+            default: 0
+        },
+        "data-alert-message": {
+            default: ""
+        }, // 경고창
+        // "data-checkbox-type": {
+        //     default: ""
+        // }, // 동의, 비동의
+        "data-type": {
+            default: ""
+        },
+        "data-user-limit-type": {
+            default: false
+        }, // 유저 제한
+        "data-group-id": {
+            default: randomID()
+        }
+    },
+    // content: "text*",
+    // marks: "",
+    // group: "block",
+    // defining: true,
+    inline: true,
+    contentEditable: false,
+    selectable: false,
+    group: "inline",
+    atom: true,
+    toDOM(node) {
+        return ['btpm_radio', {
+            for: node.attrs.for,
+            class: node.attrs.class,
+            "data-id": node.attrs["data-id"],
+            "data-order": node.attrs["data-order"],
+            "data-alert-message": node.attrs["data-alert-message"],
+            // "data-checkbox-type": node.attrs["data-checkbox-type"],
+            "data-group-id": node.attrs["data-group-id"],
+            "data-type": node.attrs["data-type"],
+            "data-user-limit-type": node.attrs["data-user-limit-type"],
+        }];
+    },
+    parseDOM: [{
+        tag: "btpm_radio",
+        getAttrs(dom) {
+            return {
+                class: dom.className,
+                "data-id": dom.getAttribute(["data-id"]),
+                "data-order": dom.getAttribute(["data-order"]),
+                "data-alert-message": dom.getAttribute(["data-alert-message"]),
+                // "data-checkbox-type": dom.getAttribute(["data-checkbox-type"]),
+                "data-group-id": dom.getAttribute(["data-group-id"]),
+                "data-type": dom.getAttribute("data-type"),
+                "data-user-limit-type": dom.getAttribute("data-user-limit-type")
+            };
+        }
+    }]
+};
 
 const buptleInputsSpec = {
     attrs: {
@@ -1626,6 +1760,7 @@ const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'he
     .addBefore("image", "span", buptleSpanSpec)
     .addBefore("span", "label", buptleLabelSpec)
     .addBefore("span", "btpm_checkbox", buptleCheckbox)
+    .addBefore("span", "btpm_radio", buptleRadio)
     //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
     .remove('paragraph').addBefore('blockquote', 'paragraph', buptleParagraphSpec)
     .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
