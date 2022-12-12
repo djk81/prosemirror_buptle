@@ -153,11 +153,6 @@ function getCheckboxEditable(event) {
 }
 
 function handleClickOn(editorView, pos, node, nodePos, event) {
-    // if (event.target.classList.contains('todo-checkbox')) {
-    //     editorView.dispatch(toggleTodoItemAction(editorView.state, nodePos, node))
-    //     return true
-    // }
-
     if (node.type.name === 'btpm_checkbox') {
         // if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
         // BT-1701. 2021.08.23. 체크박스 가장 밑 하단 클릭 시 p태그 class명이 btpm_checkbox태그 class명으로 덮어씌워지는 문제.
@@ -248,17 +243,19 @@ function toggleCheckboxItemAction(state, pos, event) {
     }
 }
 
-function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
+function toggleRadioItemAction(editorView, pos, node, nodePos, e) {
     const state = editorView.state;
-    const target = event.target.classList;
+    const target = e.target;
     const id = node.attrs['data-id']; // 선택된 radio id
-    const order = node.attrs['data-order']; // 선택된 radio 순서
-    const docView = editorView.docView.children;
-    const nodes = docView.map(i => i.children).flat(Infinity).map(i => i.node).filter(i => i);
-    const radioNodes = nodes.filter(i => { if (i.attrs['data-id'] == id) return i; });
+    const radioEls = editorView.dom.querySelectorAll('btpm_radio[data-id="'+ id + '"]');
     let warning = false;
     
-    for (let i = 0; i < radioNodes.length; i++) if (radioNodes[i].attrs["data-order"] != order) warning = (radioNodes[i].attrs["class"].indexOf("btpm_radio_checked") != -1) ? true : false;
+    if (!target.classList.contains('btpm_radio_checked')) {
+        console.log(target);
+        radioEls.forEach(item => {
+            if (item.classList.contains('btpm_radio_checked')) warning = true;
+        });
+    }
 
     if (warning) {
         gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
@@ -274,11 +271,11 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
         return false;
     }
 
-    if (event.target.dataset.alertMessage !== undefined && event.target.dataset.alertMessage.length > 0) {
+    if (target.dataset.alertMessage !== undefined && target.dataset.alertMessage.length > 0) {
         gfn_open_modal_popup_by_element_id('alert_message_popup_wrapper', 'alert_message_popup', function () {
             const el = document.querySelector('.modal_section');
             const _htmlText = '<div class="modal_title bor_btm"><p class="lg_p">경고 메시지</p></div>' +
-                '<p class="modal_p">' + event.target.dataset.alertMessage + '</p>' +
+                '<p class="modal_p">' + target.dataset.alertMessage + '</p>' +
                 '<div class="active_btn_wrap tc">' +
                 '<a class="btn__active btn_m modal_off">확인</a>' +
                 '</div>';
@@ -286,47 +283,18 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, event) {
         }, 'modal1');
     }
     
-    let className = (target.contains("btpm_radio_required")) ? "btpm_radio_required" : "btpm_radio";
-    if (!target.contains("btpm_radio_checked")) className += " btpm_radio_checked";
+    let className = (target.classList.contains("btpm_radio_required")) ? "btpm_radio_required" : "btpm_radio";
+    if (!target.classList.contains("btpm_radio_checked")) className += " btpm_radio_checked";
 
     let data = {
         class: className,
-        "data-id": (event.target.dataset.id != null) ? event.target.dataset.id : 0,
-        "data-order": (event.target.dataset.order != null) ? event.target.dataset.order : 0,
-        "data-alert-message": (event.target.dataset.alertMessage != null) ? event.target.dataset.alertMessage : '',
-        "data-user-limit-type": (event.target.dataset.dataUserLimitType != null) ? event.target.dataset.dataUserLimitType : 0,
+        "data-id": (target.dataset.id != null) ? target.dataset.id : 0,
+        "data-order": (target.dataset.order != null) ? target.dataset.order : 0,
+        "data-alert-message": (target.dataset.alertMessage != null) ? target.dataset.alertMessage : '',
+        "data-user-limit-type": (target.dataset.dataUserLimitType != null) ? target.dataset.dataUserLimitType : 0,
     };
 
     return  state.tr.setNodeMarkup(pos, null, data);
-
-    // if (target.contains('btpm_radio_checked') && target.contains("btpm_radio")) {
-    //     return state.tr.setNodeMarkup(pos, null, data);
-    // } else if (!target.contains("btpm_radio_checked") && target.contains("btpm_radio")) {
-    //     return state.tr.setNodeMarkup(pos, null, {
-    //         class: 'btpm_radio btpm_radio_checked',
-    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-    //     });
-    //     return state.tr.setNodeMarkup(pos, null, data);
-    // } else if (target.contains('btpm_radio_checked') && target.contains("btpm_radio_required")) {
-    //     return state.tr.setNodeMarkup(pos, null, {
-    //         class: 'btpm_radio_required',
-    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-    //     });
-    // } else if (!target.contains('btpm_radio_checked') && target.contains("btpm_radio_required")) {
-    //     return state.tr.setNodeMarkup(pos, null, {
-    //         class: 'btpm_radio_required btpm_radio_checked',
-    //         "data-id": (event.target.dataset.id !== undefined) ? event.target.dataset.id : 0,
-    //         "data-order": (event.target.dataset.order !== undefined) ? event.target.dataset.order : 0,
-    //         "data-alert-message": (event.target.dataset.alertMessage !== undefined) ? event.target.dataset.alertMessage : '',
-    //         "data-user-limit-type": (event.target.dataset.dataUserLimitType !== undefined) ? event.target.dataset.dataUserLimitType : 0,
-    //     });
-    // }
 }
 
 /** 이미지업로드 */
