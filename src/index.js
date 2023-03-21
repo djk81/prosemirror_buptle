@@ -250,6 +250,9 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, e) {
     const radioEls = editorView.dom.querySelectorAll('btpm_radio[data-id="'+ id + '"]');
     let warning = false;
     
+    // 다른 node 는 return
+    if (target.nodeName !== 'BTPM_RADIO') return;
+
     if (!target.classList.contains('btpm_radio_checked')) {
         console.log(target);
         radioEls.forEach(item => {
