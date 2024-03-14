@@ -85,6 +85,7 @@ import {
 import {
     schema
 } from "./schema-basic-btpm.js"
+import _ from 'loadsh';
 import e from "cors"
 
 var prefix = "ProseMirror-prompt";
@@ -153,6 +154,7 @@ function getCheckboxEditable(event) {
 }
 
 function handleClickOn(editorView, pos, node, nodePos, event) {
+    // checkbox 선택
     if (node.type.name === 'btpm_checkbox') {
         // if(event.target.classList.contains('btpm_checkbox') || event.target.classList.contains('btpm_checkbox_required')){
         // BT-1701. 2021.08.23. 체크박스 가장 밑 하단 클릭 시 p태그 class명이 btpm_checkbox태그 class명으로 덮어씌워지는 문제.
@@ -163,6 +165,7 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
         return true
     }
 
+    // radio 선택
     if (node.type.name === 'btpm_radio') {
         if (getCheckboxEditable(event)) {
             const markupNode = toggleRadioItemAction(editorView, pos, node, nodePos, event);
@@ -170,12 +173,101 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
         }
         return true
     }
+
+    // radio field 선택
+    if (node.type.name === 'btpm_radio_field') {
+        const input = event.target.previousSibling;
+        // radio 의 checked 값을 상위 dataset 에 업데이트
+        if (input && input.nodeName === "INPUT") {
+            // disabled 속성 있을 경우 동작 중지
+            if (input.disabled) return;
+            const dataId = node.attrs["data-id"];
+
+            const newNode = editorView.state.tr.setNodeMarkup(nodePos, null, {
+                "data-id": dataId,
+                "data-align": node.attrs["data-align"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-label-1": node.attrs["data-input-label-1"],
+                "data-input-label-2": node.attrs["data-input-label-2"],
+                "data-input-checked": input.value,
+                "data-alert-message": node.attrs["data-alert-message"],
+            });
+
+            editorView.dispatch(newNode);
+            
+            let targetNode = null;
+            editorView.state.doc.descendants((node, pos) => {
+                if (node.attrs["data-id"] === dataId) {
+                    targetNode = node;
+                    return false;
+                }
+            });
+
+            return showAlertOnRadioField({ editorView, node: targetNode, pos: nodePos });
+        }
+    }
 }
 
-function toggleTodoItemAction(state, pos, todoItemNode) {
-    return state.tr.setNodeMarkup(pos, null, {
-        done: !todoItemNode.attrs.done
-    })
+function showAlertOnRadioField({ editorView, node, pos }) {
+    const state = editorView.state;
+    const message = node.attrs["data-alert-message"];
+    const value = Number(node.attrs["data-input-checked"]);
+    const required = node.attrs["data-required"] === 'true' || node.attrs["data-required"] === true ? true : false;
+
+    if (value === 2 && message) {
+        gfn_show_static_popup(G_POPUP_FULL_HTML, `
+            <section class="modal-body" style="padding-top: 30px;">
+                <textarea disabled style="resize: vertical; padding: 0 !important; font-size: 14px; border:none !important; background-color: #fff !important;">${message}</textarea>
+            </section>
+            <div class="active_btn_wrap tc">
+                <a class="btn__active btn_m">확인</a>
+                ${!required ? '<a class="btn__cancel btn_m modal_off">취소</a>' : '' }
+            </div>`,
+        () => {
+            $(".modal_fixed.active").addClass('dont_close_on_background_click');
+            const height = $(".modal_fixed.active textarea").prop('scrollHeight');
+            $(".modal_fixed.active textarea").height(`${height}px`);
+        }, () => {
+            // 확인 callback
+            if (!required) return;
+
+            const newNode = state.tr.setNodeMarkup(pos, null, {
+                "data-id": node.attrs["data-id"],
+                "data-align": node.attrs["data-align"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-label-1": node.attrs["data-input-label-1"],
+                "data-input-label-2": node.attrs["data-input-label-2"],
+                "data-input-checked": 0,
+                "data-alert-message": node.attrs["data-alert-message"],
+            });
+
+            editorView.dispatch(newNode);
+        },() => {
+            // 취소 callback
+
+            const newNode = state.tr.setNodeMarkup(pos, null, {
+                "data-id": node.attrs["data-id"],
+                "data-align": node.attrs["data-align"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-label-1": node.attrs["data-input-label-1"],
+                "data-input-label-2": node.attrs["data-input-label-2"],
+                "data-input-checked": 0,
+                "data-alert-message": node.attrs["data-alert-message"],
+            });
+
+            editorView.dispatch(newNode);
+        }, 'modal1');
+    }
+    return true;
 }
 
 function toggleCheckboxItemAction(state, pos, event) {
@@ -254,7 +346,6 @@ function toggleRadioItemAction(editorView, pos, node, nodePos, e) {
     if (target.nodeName !== 'BTPM_RADIO') return;
 
     if (!target.classList.contains('btpm_radio_checked')) {
-        console.log(target);
         radioEls.forEach(item => {
             if (item.classList.contains('btpm_radio_checked')) warning = true;
         });
@@ -533,8 +624,6 @@ class CommentState {
 }
 
 function deco(from, to, comment) {
-    console.log('======================================== 데코')
-    console.log(comment)
     if (comment.extra.type && 'RESOLVED' == comment.extra.type) {
         return Decoration.inline(from, to, {
             class: "comment_resolved memo_resolved _inline_comment_" + comment.id,
@@ -718,7 +807,6 @@ class TrackState {
 
 
 function doCommit(message) {
-    console.log('message ==> ' + message);
     let _tr = _editorView.state.tr.setMeta(trackPlugin, message)
     btpmMyHistoryDispatch(_tr)
 }
@@ -726,7 +814,6 @@ function doCommit(message) {
 export
 
 function btpmMyHistoryDispatch(tr) {
-    console.log('=============== btpmMyHistoryDispatch ===================')
     console.log(tr)
     let _new_state = btpmMyDispatch({
         type: "transaction",
@@ -755,9 +842,6 @@ export
 function renderCommits(state, dispatch) {
     let curState = trackPlugin.getState(state)
     if (lastRendered == curState) {
-        console.log(lastRendered);
-        console.log(curState);
-        console.log('커밋 렌더 - 리턴됨..!!');
         return
     }
     lastRendered = curState
@@ -765,7 +849,6 @@ function renderCommits(state, dispatch) {
     let out = document.querySelector("#commits")
     if (!out) {
         //이런건 나중에 정리..
-        window.console.log('#commits 없음.. ');
         return false
     }
     out.textContent = ""
@@ -1130,7 +1213,6 @@ const buptleSpanSpec = {
             //         class:node.attrs.class
             //     },
             //     0]
-
         }
 
         var rtn = {};
@@ -1401,26 +1483,21 @@ const buptleRadio = {
         "data-order": {
             default: 0
         },
+        // 경고창
         "data-alert-message": {
             default: ""
-        }, // 경고창
-        // "data-checkbox-type": {
-        //     default: ""
-        // }, // 동의, 비동의
+        },
         "data-type": {
             default: ""
         },
         "data-user-limit-type": {
             default: false
-        }, // 유저 제한
+        },
+        // 유저 제한
         "data-group-id": {
             default: randomID()
         }
     },
-    // content: "text*",
-    // marks: "",
-    // group: "block",
-    // defining: true,
     inline: true,
     contentEditable: false,
     selectable: false,
@@ -1433,7 +1510,6 @@ const buptleRadio = {
             "data-id": node.attrs["data-id"],
             "data-order": node.attrs["data-order"],
             "data-alert-message": node.attrs["data-alert-message"],
-            // "data-checkbox-type": node.attrs["data-checkbox-type"],
             "data-group-id": node.attrs["data-group-id"],
             "data-type": node.attrs["data-type"],
             "data-user-limit-type": node.attrs["data-user-limit-type"],
@@ -1447,13 +1523,177 @@ const buptleRadio = {
                 "data-id": dom.getAttribute(["data-id"]),
                 "data-order": dom.getAttribute(["data-order"]),
                 "data-alert-message": dom.getAttribute(["data-alert-message"]),
-                // "data-checkbox-type": dom.getAttribute(["data-checkbox-type"]),
                 "data-group-id": dom.getAttribute(["data-group-id"]),
                 "data-type": dom.getAttribute("data-type"),
                 "data-user-limit-type": dom.getAttribute("data-user-limit-type")
             };
         }
     }]
+};
+
+const buptleRadioField = {
+    attrs: {
+        "class": {
+            default: "field-container"
+        },
+        "style": {
+            default: "display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1;"
+        },
+        // 배치 방향
+        "data-align": {
+            default: 'left'
+        },
+        "data-id": {
+            default: ""
+        },
+        // 필수 or 선택 여부
+        "data-required": {
+            default: false
+        },
+        // 하위 radio 활성화 여부
+        "data-disabled": {
+            default: false
+        },
+        // 필수 or 선택 에 들어가는 text (다국어 때문에 분리)
+        "data-title": {
+            default: "[선택]"
+        },
+        // 내용
+        "data-description": {
+            default: ""
+        },
+        // 첫번 째 label 내용
+        "data-input-label-1": {
+            default: ""
+        },
+        // 두번 째 label 내용
+        "data-input-label-2": {
+            default: ""
+        },
+        // 선택 된 input value
+        "data-input-checked": {
+            default: 0
+        },
+        // 비동의 선택시 경고 팝업 내용
+        "data-alert-message": {
+            default: ""
+        },
+    },
+    contentEditable: false,
+    selectable: true,
+    inline: false,
+    group: "block",
+    atom: true,
+    toDOM(node) {
+        const name = node.attrs["name"] ? node.attrs["name"] : `radio-name-${Math.floor(Math.random() * 100000)}`;
+        const title = node.attrs["data-title"];
+        const disabled = node.attrs["data-disabled"] === "true" ? node.attrs["data-disabled"] : null;
+        const description = node.attrs["data-description"];
+        const checked = node.attrs["data-input-checked"];
+
+        const _createTitle = () => {
+            return [
+                "div",
+                {
+                    class: 'field-title',
+                    style: "padding: 0; margin: 0;"
+                },
+                title
+            ]
+        }
+
+        const _createDescription = () => {
+            return [
+                "div",
+                {
+                    class: "field-description",
+                    style: "padding: 0; margin: 0;"
+                },
+                description
+            ]
+        }
+
+        const _createInput = (value, label) => {
+            const id = `radio-${Math.floor(Math.random() * 100000)}`;
+
+            return [
+                "div", // input container
+                {}, // div 추가 attr
+                [
+                    "input", {
+                        type: "radio",
+                        name,
+                        id,
+                        disabled,
+                        checked: Number(checked) === Number(value) ? true : null,
+                        value,
+                    },
+                ],
+                [
+                    "label", {
+                        for: id
+                    },
+                    label
+                ],
+            ]
+        };
+
+        let align = '';
+        switch(node.attrs["data-align"]) {
+            case "right": {
+                align = 'justify-content: flex-end;';
+                break;
+            }
+            case "center": {
+                align = 'justify-content: center;';
+                break;
+            }
+            default: {
+                align = 'justify-content: flex-start;';
+            }
+        }
+        
+        return [
+            'btpm_radio_field', {
+                "class": node.attrs["class"],
+                "style": `${node.attrs["style"]} ${align}`,
+                "data-align": node.attrs["data-align"],
+                "data-id": node.attrs["data-id"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-label-1": node.attrs["data-input-label-1"],
+                "data-input-label-2": node.attrs["data-input-label-2"],
+                "data-input-checked": node.attrs["data-input-checked"],
+                "data-alert-message": convertNewLinesAndSpacesToEntities(node.attrs["data-alert-message"]),
+            },
+            _createTitle(),
+            _createDescription(),
+            _createInput(1, node.attrs["data-input-label-1"]),
+            _createInput(2, node.attrs["data-input-label-2"]),
+        ];
+    },
+    parseDOM: [
+        {
+            tag: "btpm_radio_field",
+            getAttrs(dom) {
+                return {
+                    "class": dom.getAttribute(["class"]),
+                    "data-align": dom.getAttribute(["data-align"]),
+                    "data-id": dom.getAttribute(["data-id"]),
+                    "data-required": dom.getAttribute(["data-required"]),
+                    "data-disabled": dom.getAttribute(["data-disabled"]),
+                    "data-title": dom.getAttribute(["data-title"]),
+                    "data-description": dom.getAttribute(["data-description"]),
+                    "data-input-label-1": dom.getAttribute(["data-input-label-1"]),
+                    "data-input-label-2": dom.getAttribute(["data-input-label-2"]),
+                    "data-input-checked": dom.getAttribute(["data-input-checked"]),
+                    "data-alert-message": dom.getAttribute(["data-alert-message"]),
+                };
+            },
+        },
+    ]
 };
 
 const buptleInputsSpec = {
@@ -1509,8 +1749,6 @@ const buptleInputsSpec = {
     parseDOM: [{
         tag: "input",
         getAttrs(dom) {
-            // console.log(dom);
-            // alert('getAttrs :' + dom.className );
             return {
                 width: dom.getAttribute("width"),
                 height: dom.getAttribute("height"),
@@ -1557,8 +1795,6 @@ const buptleParagraphSpec = {
     parseDOM: [{
         tag: "p",
         getAttrs(dom) {
-            // console.log(dom);
-            console.log("parseDOM=====================");
             var _align = dom.align;
             var _style = dom.getAttribute('style');
             var _class = dom.getAttribute("class");
@@ -1731,14 +1967,11 @@ const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'he
     .addBefore("span", "label", buptleLabelSpec)
     .addBefore("span", "btpm_checkbox", buptleCheckbox)
     .addBefore("span", "btpm_radio", buptleRadio)
-    //.addBefore("span", "buptleInputsSpec", buptleInputsSpec)
+    .addBefore("div", "btpm_radio_field", buptleRadioField)
     .remove('paragraph').addBefore('blockquote', 'paragraph', buptleParagraphSpec)
     .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
-//.addBefore("buptleInputsSpec", "div", buptleDivSpec)
-
 
 // 테이블
-
 buptleSchema = new Schema({
     nodes: addListNodes(
             nodeSpec.append(tableNodes({
@@ -2084,11 +2317,6 @@ let tableMenu = [
     item("테이블삭제", deleteTable),
     item("병합하기", mergeCells),
     item("병합해제", splitCell),
-    // item("헤더컬럼", toggleHeaderColumn),
-    // item("헤더로우", toggleHeaderRow),
-    // item("헤더셀", toggleHeaderCell),
-    // item("컬럼강조", setCellAttr("background", "#C5D0DE")),
-    // item("컬럼강조(해제)", setCellAttr("background", null))
 ]
 
 
@@ -2098,17 +2326,6 @@ let table_top_menu_icon_attr = {
     path: "M832 694q0-22-16-38l-118-118q-16-16-38-16-24 0-41 18 1 1 10 10t12 12 8 10 7 14 2 15q0 22-16 38t-38 16q-8 0-15-2t-14-7-10-8-12-12-10-10q-18 17-18 41 0 22 16 38l117 118q15 15 38 15 22 0 38-14l84-83q16-16 16-38zM430 292q0-22-16-38l-117-118q-16-16-38-16-22 0-38 15l-84 83q-16 16-16 38 0 22 16 38l118 118q15 15 38 15 24 0 41-17-1-1-10-10t-12-12-8-10-7-14-2-15q0-22 16-38t38-16q8 0 15 2t14 7 10 8 12 12 10 10q18-17 18-41zM941 694q0 68-48 116l-84 83q-47 47-116 47-69 0-116-48l-117-118q-47-47-47-116 0-70 50-119l-50-50q-49 50-118 50-68 0-116-48l-118-118q-48-48-48-116t48-116l84-83q47-47 116-47 69 0 116 48l117 118q47 47 47 116 0 70-50 119l50 50q49-50 118-50 68 0 116 48l118 118q48 48 48 116z"
 }
 
-/**
-const _annotationMenuItem = new MenuItem({
-      title: "코멘트입력",
-      run: addAnnotation,
-      select: state => addAnnotation(state),
-      icon: annotationIcon,
-      class : "btpm_add_comment_menu"
-    })
- */
-
-//menu.fullMenu.push( [new Dropdown(tableMenu, {label:'테이블표', title:'표 제어하기', icon:table_top_menu_icon_attr})] );
 export let buptle_menu = menuPlugin([{
         command: toggleMark(buptleSchema.marks.strong),
         dom: icon("B", "strong")
@@ -2534,17 +2751,11 @@ function btpmGetState(_doc, comments, floating) {
                     )
                 )
             )
-            console.log(_table_dom)
             let _temp = DOMParser.fromSchema(buptleSchema).parse(_table_dom, {
                 preserveWhitespace: true
             })
             dispatch(state.tr.replaceSelectionWith(_temp))
             return;
-            // dispatch( state.tr.replaceSelectionWith(ProseMirror.buptleSchema.nodes.table.createAndFill(
-            //     {
-            //       class: '알수가없어',
-            //   }
-            // )) );
         },
         class: "btpm_add_table_menu",
         //label:"테이블",
@@ -2558,56 +2769,6 @@ function btpmGetState(_doc, comments, floating) {
     }))
 
     menu.blockMenu[0].push(makeImageMenuItem())
-    /**
-     <span class="tmpl_checkbox">
-         <input type="checkbox">
-         <label></label>
-     </span>
-     */
-
-    /** ======= 기존 리스트형 체크박스 START 메뉴 붙이기 시작 **
-    // menu.blockMenu[0].push(wrapListItem(buptleSchema.nodes.todo_list, {
-    //   title: "체크박스 만들기",
-    //   label: "체크박스",
-    //   class : "btpm_add_checkbox_menu",
-    //   id : "btpm_add_checkbox_menu",
-    //   icon:{
-    //       dom:crel('img', {style:'', src:BTPM_BASE_ICONS_PATH +'editor_24.svg'})  ,
-    //   },
-    //   attrs: {
-    //     "data-type": "todo_list"
-    //   }
-    // }));
-    /** ======= 기존 리스트형 체크박스 END 메뉴 붙이기 끝 */
-
-    /** 체크박스삭제/리스트삭제 */
-    // menu.blockMenu[0].push(liftListItemMenu);
-    // menu.blockMenu[0].push(liftTodoItemMenu);
-
-    if (false) {
-        menu.blockMenu[0].push(new MenuItem({
-            title: "체크박스 만들기",
-            run: function run(state, dispatch) {
-
-                var _tmpl_checkbox = $('<p>&nbsp;&nbsp;&nbsp;<span class="tmpl_checkbox"><input type="checkbox"><label></label>&nbsp;&nbsp;</p>').get(0);
-
-                // console.log(_tmpl_checkbox)
-                //DOMParser.fromSchema(buptleSchema);
-                let _temp = DOMParser.fromSchema(buptleSchema).parse(_tmpl_checkbox, {
-                    preserveWhitespace: true
-                })
-                // console.log("체크박스 파싱 결과==========")
-                // console.log(_temp)
-                dispatch(state.tr.replaceSelectionWith(_temp))
-            },
-            class: "btpm_add_checkbox_menu",
-            label: "체크박스"
-        }))
-    }
-
-
-
-
 
     if (_editorSpec.is_memo_activate) {
         pluginsArray = pluginsArray.concat(
@@ -2652,7 +2813,6 @@ function btpmGetState(_doc, comments, floating) {
             document.querySelector("#commitbutton").addEventListener("click", e => {
                 e.preventDefault()
                 var message = document.querySelector("#message").value;
-                console.log(message);
                 doCommit(message || "Unnamed")
                 document.querySelector("#message").value = ""
                 _editorView.focus()
@@ -2708,7 +2868,6 @@ const trackPlugin = new Plugin({
         apply(tr, tracked) {
             if (tr.docChanged) tracked = tracked.applyTransform(tr)
             let commitMessage = tr.getMeta(this)
-            console.log('커밋메세지 : ' + commitMessage);
             if (commitMessage) tracked = tracked.applyCommit(commitMessage, new Date(tr.time))
             return tracked
         }
@@ -2763,7 +2922,6 @@ const highlightPlugin = new Plugin({
     }
 });
 
-
 /** paste 플러그인 */
 const content_paste_plugin = new Plugin({
     props: {
@@ -2806,21 +2964,10 @@ const content_paste_plugin = new Plugin({
     }
 });
 
-
-
-
-
 function btpmGetAllComments() {
     var _decos = _editorView.state.commentPlugin$.decos.find()
     return _decos;
 }
-
-
-
-
-
-
-
 
 /****
  * 외부에서 export 혹은 내부에서 재정의하여 사용하자. 플러그인 방식 제작은 추후에 다시 리팩토링..
@@ -2869,7 +3016,7 @@ function btpmHandleCommentDraw(_comments, action) {
 
     // 엘리먼트 없다는 조건이 없어서 추가 (계속 오류뜸)
     const targetEl = document.querySelector("#" + ptpm_comment_list_target_element_id);
-    if (targetEl) { targetEl.innerHTML = _htmlText } else { return console.log('comment 엘리먼트가 없습니다.'); }
+    if (targetEl) { targetEl.innerHTML = _htmlText } else { return; }
 
     let _comments_panels = document.querySelectorAll("._comments_panel");
     for (var i = 0; i < _comments_panels.length; i++) {
@@ -3016,7 +3163,6 @@ function btpmRenderCommentHandler(comment, dispatch, state) {
     var rtn = crel("li", {
         class: "commentText"
     }, comment.text, btn);
-    console.log(rtn)
     return rtn
 }
 
@@ -3033,11 +3179,6 @@ function btpmMakeFocusToSelectedComment(_comment_id) {
             block: 'center',
             behavior: 'smooth'
         });
-
-        // _element.style.color = 'white';
-
-        console.log('코멘트 강조 킴 -> _comments_panel_id_' + _comment_id);
-        console.log('코멘트 강조 킴 -> html 확인 : ' + _element.outerHTML);
 
         //에디터 안에서 바꿔봄
         let _classesEle = document.getElementsByClassName('_inline_comment_' + _comment_id);
@@ -3080,92 +3221,10 @@ let getAllNode = function () {
     var _all_memos = _editorView.state.commentPlugin$.decos.find();
     var indx = 0;
     for (indx; indx < _all_memos.length; indx++) {
-        _all_memos[indx].type.attrs.class = 'turn_off'
-        console.log(_all_memos[indx].type.attrs.class)
+        _all_memos[indx].type.attrs.class = 'turn_off';
     }
     let _new_state = _editorView.state.apply(_editorView.state.tr);
-    //_editorView.updateState(_new_state);
-    //_editorView.dispatch(_editorView.state.tr)
-
-
-    return;
-    _editorView.state.tr.doc.descendants((node, pos) => {
-        if ("span" == node.type.name) {
-            if (node.attrs.class &&
-                (node.attrs.class.indexOf("buptleparam_content_required_none") !== -1 ||
-                    node.attrs.class.indexOf("buptleparam_content_none") !== -1 ||
-                    node.attrs.class.indexOf("memo") !== -1
-                )) {
-                // console.log(node.attrs.class)
-                node.attrs.class = 'active';
-                // console.log(node.attrs.class)
-
-
-                var _tr = _editorView.state.tr.setNodeMarkup(pos, node.type, {
-                    class: 'active_nonono'
-                })
-                // _editorView.dispatch(_tr)
-            } else if (node.attrs.class &&
-                (node.attrs.class.indexOf("memo") !== -1)) {
-                console.log("memo == > " + node.attrs.class)
-                node.attrs.class = 'active';
-                console.log(node.attrs.class)
-
-
-                var _tr = _editorView.state.tr.setNodeMarkup(pos, node.type, {
-                    class: 'active_nonono'
-                })
-                // _editorView.dispatch(_tr)
-            }
-
-        }
-    })
-
-
-    // let _new_state = _editorView.state.apply(_editorView.state.tr);
-    // _editorView.updateState(_new_state);
-
 }
-//
-//
-// function btpm_attach_drop_evt(){
-//     alert('드롭이벤트');
-//         document.getElementsByClassName('ProseMirror')[0].addEventListener('drop', e =>  {
-//             alert('드롭이벤트 시작');
-//       var files = e.dataTransfer.files;
-//       if (files.length > 0) {
-//         e.preventDefault();
-//         var file = files[0];
-//         var reader = new FileReader();
-//         reader.onload = function(e) {
-//           let imgAttr = {
-//             class: 'uploading',
-//             src: e.target.result
-//           }
-//           let image = buptleSchema.node('image', imgAttr);
-//           _editorView.state.tr.insertInline(_editorView.state.selection.anchor, image).apply();
-//
-//           let currentSel = _editorView.state.selection;
-//           let newAnchor = _editorView.state.selection.anchor.move(-1);
-//           let mr = _editorView.state.markRange( newAnchor, currentSel.anchor, {className: 'marked'});
-//
-//           let moveToSelection = new TextSelection(newAnchor);
-//           _editorView.state.setSelection(moveToSelection);
-//           options.imageUploader(file, function(err, data){
-//             if (err) return console.error(err);
-//             let image = buptleSchema.node('image', {
-//               src: data.imageUrl
-//             });
-//             let newSel = new TextSelection(mr.from, mr.to)
-//             _editorView.state.setSelection(newSel);
-//             _editorView.state.tr.replaceSelection(image, false).apply();
-//           });
-//         }
-//         reader.readAsDataURL(file);
-//       }
-//     });
-// }
-
 
 function openPrompt(options) {
     var wrapper = document.body.appendChild(document.createElement("div"));
@@ -3351,4 +3410,17 @@ function setAlignment(pos, dispatch, align) {
         align: align
     })
     dispatch(_tr)
+}
+
+function convertNewLinesAndSpacesToEntities(text) {
+    // 먼저 스페이스바를 &nbsp;로 변환합니다.
+    let convertedText = text.replace(/ /g, '&nbsp;');
+
+    // 윈도우즈 스타일의 줄바꿈(\r\n)을 처리합니다. (옵션)
+    convertedText = convertedText.replace(/\r\n/g, '&#13;&#10;');
+
+    // 유닉스/리눅스 스타일의 줄바꿈(\n)을 처리합니다.
+    convertedText = convertedText.replace(/\n/g, '&#10;');
+
+    return convertedText;
 }

@@ -6,87 +6,71 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BUPTLE - Prosemirror</title>
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/reset.css">
-    <!-- <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.min.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.structure.min.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/jquery-ui.theme.min.css"> -->
-    <!-- <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/application.css"> -->
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/css/style.css">
-    <link rel="stylesheet" type="text/css" href="http://test1.buptlestg.com/static/adele/scripts/buptle_editor.css">
+    <link rel="stylesheet" type="text/css" href="../static/adele/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="../static/adele/scripts/buptle_editor.css">
+    <link rel="stylesheet" type="text/css" href="../static/adele/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/adele/css/application.css">
+    <link rel="stylesheet" type="text/css" href="../static/adele/css/common.css">
 
-    <!-- SCRIPT -->
-    <script src="http://test1.buptlestg.com/static/tenant/js/jquery-3.3.1.min.js"></script>
-    <script src="http://test1.buptlestg.com/static/adele/scripts/jquery-ui.min.js"></script>
-    
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/polyfills.umd.js"></script> -->
+    <script src="https://adele.buptle.app/static/tenant/js/jquery-3.3.1.min.js"></script>
+    <script src="https://adele.buptle.app/static/adele/scripts/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.1.1/es6-promise.auto.js"></script>
-    <!-- <script type="text/javascript" src="../src/jspdf.min.js"></script> -->
-    
-    <style>
-        .box {
-            padding: 2em;
-        }
-        .btn {
-            border: 1px solid gray;
-            border-radius: 10px;
-            padding: .5em 1em;
-        }
-    </style>
 </head>
 
+<style>
+    [data-requied="true"] .field-title {
+        color: red;
+    }
+</style>
 <body>
-    <header class="box" style="color: #fff; background: #000;">
+    <header style="color: #fff; background: #000;">
         <h2>BUPTLE - Prosemirror</h2>
     </header>
     <!-- START test 용 -->
-    <section class="btn">
-        <h2>커스텀 기능</h2>
-        <article>
+    <section class="p-30" style="background-color: bisque;">
+        <article style="margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px;">저장 커밋메시지</h3>
             <form id="commit">
-                저장 커밋메시지
-                <input type="text" id="message" name="message">
-                <button class="btn" id="commitbutton" type="button" onclick="">버전저장</button>
+                <input type="text" id="message" name="message" style="border: 1px solid gray;">
+                <button id="commitbutton" type="button" onclick="">버전저장</button>
                 <div class="blame-wrap">
                     <button type="button" id="blame" style="display:none;">blame at cursor</button>
                 </div>
             </form>
         </article>
+
+        <article style="margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px;">커스텀 액션 버튼</h3>
+            <div class="flex items-center gap-10">
+                <button class="btn__b" onclick="handleCustomField({ required: true, disabled: false, title: `[필수]` })">필수 필드</button>
+                <button class="btn__b" onclick="handleCustomField({ required: false, disabled: false, title: `[선택]` })">선택 필드</button>
+            </div>
+        </article>
     </section>
     <!-- END test 용 -->
 
-    <section class="box" style="display: flex;">
-        <div>
-            <!-- START proseMirror -->
-            <section class="contract_view">
-                <div id="div-contract-content" class="contract_area pdfArea"></div>
-            
-                <div id="content" style="display: none;">
-                    <p>
-                        <span contenteditable="false" draggable="true" style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;">
-                            <span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
-                            <img contenteditable="false" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="" style="width: 19.25em; vertical-align: bottom !important;">
-                        </span>
-                    </p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
-                </div>
-            </section>
-            <!-- END proseMirror -->
-        </div>
+    <section class="flex justify-start">
+        <section class="contract_view">
+            <div id="div-contract-content" class="contract_area pdfArea"></div>
+        
+            <div id="content" style="display: none;">
+                <btpm_radio_field class="field-container ProseMirror-selectednode" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1; justify-content: flex-start;" data-align="right" data-id="field-container-28756" data-required="true" data-disabled="false" data-title="[필수]" data-description="고유식별정보 수집 허용" data-input-label-1="동의함" data-input-label-2="동의하지 않음" data-input-checked="0" data-alert-message="안녕하세요" contenteditable="false" draggable="true"><div class="field-title" style="padding: 0; margin: 0;">[필수]</div><div class="field-description" style="padding: 0; margin: 0;">고유식별정보 수집 허용</div><div><input type="radio" name="radio-name-8086" id="radio-51043" value="1"><label for="radio-51043">동의함</label></div><div><input type="radio" name="radio-name-8086" id="radio-75071" value="2"><label for="radio-75071">동의하지 않음</label></div></btpm_radio_field>
+                <btpm_radio_field class="field-container ProseMirror-selectednode" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1; justify-content: center;" data-align="left" data-id="field-container-46690" data-required="true" data-disabled="false" data-title="[필수]" data-description="고유식별정보 수집 허용" data-input-label-1="동의함" data-input-label-2="동의하지 않음" data-input-checked="0" data-alert-message="안녕하세요" contenteditable="false" draggable="true"><div class="field-title" style="padding: 0; margin: 0;">[필수]</div><div class="field-description" style="padding: 0; margin: 0;">고유식별정보 수집 허용</div><div><input type="radio" name="radio-name-85213" id="radio-59130" value="1"><label for="radio-59130">동의함</label></div><div><input type="radio" name="radio-name-85213" id="radio-39382" value="2"><label for="radio-39382">동의하지 않음</label></div></btpm_radio_field>
+                <!-- <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
+                <p>
+                    <span contenteditable="false" draggable="true" style="position: relative; width: 10em; display: inline-block; padding-left: 0.25em;">
+                        <span style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; border-top: none; border-right: 3px solid orange; border-bottom: 3px solid orange; border-left: none; border-image: initial; cursor: nwse-resize; display: none;"></span>
+                        <img contenteditable="false" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu2gszn8rjq-xLNIps0X24fMM186kforEe1Orw_G1bqXBc2P91" class="" style="width: 19.25em; vertical-align: bottom !important;">
+                    </span>
+                </p> -->
+            </div>
+        </section>
     </section>
 
     <!-- START src/index.js bundling -->
     <script src="../dist/buptle_editor.js"></script>
-    <!-- END src/index.js bundling -->
 
     <!-- START test script -->
     <script>
@@ -96,6 +80,7 @@
             var pm = ProseMirror;
             var _editorSpec = new pm.EditorSpec();
             // svg 아이콘 위치
+            // 이거 있어야 동작함 중요한 로직인데 외부에 있음 ;;
             if (activate_plugins) {
                 _editorSpec.icons_base_path = 'https://test1.buptlestg.com/static/adele/imgs/';
                 _editorSpec.div_target_id = 'div-contract-content';
@@ -107,55 +92,16 @@
                 };
                 _editorSpec.functions = {
                     getCheckboxEditable: function () {
-                        alert('못만짐');
                         return false;
                     },
                     get_comments: function () {
-                        var comments = {
-                            comments: []
-                        };
-
-                        var memos = []
-
-                        for (var indx in memos) {
-                            comments.comments.push({
-                                from: 3,
-                                to: 4,
-                                text: '메모',
-                                id: '1',
-                                extra: {
-                                    user_name: '유저네임',
-                                    user_id: '100'
-                                }
-                            });
-                        }
-
-                        return comments;
+                        return false;
                     },
                     addAnnotation: function (commentPlugin, state, dispatch, _Comment, _randomId_fnc) {
-                        // console.log(' >>>>>> ' + state);
-                        // console.log(' >>>>>> ' + dispatch);
-                        let sel = state.selection
-                        if (sel.empty) {
-                            return false
-                        }
-                        if (dispatch) {
-                            let text = prompt("진짜진짜진짜", "");
-                            if (text)
-                                dispatch(state.tr.setMeta(commentPlugin, {
-                                    type: "newComment",
-                                    from: sel.from,
-                                    to: sel.to,
-                                    comment: new _Comment(text, _randomId_fnc(), {
-                                        111: '2222'
-                                    })
-                                }))
-                        }
                         return true
 
                     },
                     btpmRenderCommentHandler: function (comment, dispatch, state) {
-                        return fn_handle_comment_in_editor(comment, dispatch, state);
                     }
                 };
 
@@ -174,96 +120,23 @@
         });
 
         ProseMirror.setPMContentFromHTML();
+        
+        function handleCustomField({required, disabled, title}) {
+            const node = ProseMirror.buptleSchema.nodes.btpm_radio_field.createAndFill({
+                "data-id": `field-container-${Math.floor(Math.random() * 100000)}`,
+                "data-align": "center",
+                "data-required": required,
+                "data-disabled": disabled,
+                "data-title": title,
+                "data-description": "고유식별정보 수집 허용",
+                "data-input-label-1": "동의함",
+                "data-input-label-2": "동의하지 않음",
+                "data-input-checked": 0,
+                "data-alert-message": "안녕하세요",
+            });
 
-        window.addEventListener('DOMContentLoaded', function () {
-            var _rs_fields = document.querySelectorAll('.buptleparam_content_required_none');
-            for (var i = 0; i < _rs_fields.length; i++) {
-                _rs_fields[i].addEventListener("click", function () {
-                    alert(this.innerText);
-                    this.innerText = '입력했음';
-                }, false)
-
-            }
-        })
-
-        function fn_handle_comment_in_editor(comment, dispatch, state) {
-            console.log('render comment outer !! -> ' + comment.id);
-            // let btn = crel("button", {class: "commentDelete", title: "delete하기"}, "삭제")
-            let btn = $('<button></button>').addClass('commentDelete').attr('title', 'del하자').text('delete');
-
-            try {
-                var test_function = function (id) {
-                    alert(id + "를 삭제합니다.");
-                }
-
-                btn.bind('click', function () {
-                    dispatch(state.tr.setMeta(ProseMirror.commentPlugin, {
-                        type: "deleteComment",
-                        comment: comment,
-                        ext_func: test_function
-                    }))
-                });
-            } catch (e) {
-                console.log(e);
-            }
-
-            // 선택된 코멘트 강조
-            var rtn = $('<li></li>').addClass('commentText').text(comment.text).append(btn.get(0)).get(0);
-            console.log(rtn);
-            return rtn
+            _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
         }
-
-        // 메모관련
-        function fn_draw_memo_handle(_comments, action) {
-            var _memo_html_text = "<li class='_comments_panel' id='_comments_panel_id_{id}'>";
-            _memo_html_text += '<div class="cont_memo_box">';
-            _memo_html_text += '  <div class="cont_memo_hd clearfix">';
-            _memo_html_text += '  <p class="sm_p">{user_name}</p>';
-            _memo_html_text += '  <p class="sm_pb4">{time}</p>';
-            _memo_html_text += '  </div>';
-            _memo_html_text += '  <div class="cont_memo_text">';
-            _memo_html_text += '    <p class="sm_p58"><pre>{comment}</pre>';
-            _memo_html_text += '   </p>';
-            _memo_html_text += '  </div>';
-
-            _memo_html_text += '  <div class="cont_memo_btn clearfix"><div class="fl reply_btn_wrap">';
-            _memo_html_text += '  <p class="btn_replay_s">수정</p><p class="btn_replay_s">삭제</p></div>';
-            _memo_html_text +=
-                '  <div class="fr reply_btn_wrap"><p class="btn_replay_s">회신</p><p class="btn_replay_s resolve">해결</p></div>';
-            _memo_html_text += '  </div>';
-            _memo_html_text += '</li>';
-
-
-            var _htmlText = '';
-            for (indx in _comments) {
-
-                var _oneComment = _comments[indx];
-                var _ex = _oneComment.spec.comment.extra
-
-                _htmlText += _memo_html_text.replace('{user_name}', _ex.user_name)
-                    .replace('{id}', _oneComment.spec.comment.id)
-                    .replace('{time}', _ex.time)
-                    .replace('{comment}', _oneComment.spec.comment.text);
-            }
-
-            document.querySelector("#indexhtml_comment_list_wrapper").innerHTML = _htmlText;
-            // $("#").html(_htmlText);
-
-            let _comments_panels = document.querySelectorAll("._comments_panel");
-            for (var i = 0; i < _comments_panels.length; i++) {
-                let _tmp_id = _comments_panels[i].id.split('_comments_panel_id_')[1];
-                try {
-                    _comments_panels[i].addEventListener("click", function () {
-                        // alert('tmp_id' + _tmp_id);
-                        ProseMirror.btpmOnCommentBtClicked(_tmp_id);
-                    }, false)
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-        }
-
-        // $('.ProseMirror').attr('contenteditable', false);
     </script>
     <!-- END test script -->
 </body>
