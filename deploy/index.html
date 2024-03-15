@@ -54,8 +54,6 @@
             <div id="div-contract-content" class="contract_area pdfArea"></div>
         
             <div id="content" style="display: none;">
-                <btpm_radio_field class="field-container ProseMirror-selectednode" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1; justify-content: flex-start;" data-align="right" data-id="field-container-28756" data-required="true" data-disabled="false" data-title="[필수]" data-description="고유식별정보 수집 허용" data-input-label-1="동의함" data-input-label-2="동의하지 않음" data-input-checked="0" data-alert-message="안녕하세요" contenteditable="false" draggable="true"><div class="field-title" style="padding: 0; margin: 0;">[필수]</div><div class="field-description" style="padding: 0; margin: 0;">고유식별정보 수집 허용</div><div><input type="radio" name="radio-name-8086" id="radio-51043" value="1"><label for="radio-51043">동의함</label></div><div><input type="radio" name="radio-name-8086" id="radio-75071" value="2"><label for="radio-75071">동의하지 않음</label></div></btpm_radio_field>
-                <btpm_radio_field class="field-container ProseMirror-selectednode" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1; justify-content: center;" data-align="left" data-id="field-container-46690" data-required="true" data-disabled="false" data-title="[필수]" data-description="고유식별정보 수집 허용" data-input-label-1="동의함" data-input-label-2="동의하지 않음" data-input-checked="0" data-alert-message="안녕하세요" contenteditable="false" draggable="true"><div class="field-title" style="padding: 0; margin: 0;">[필수]</div><div class="field-description" style="padding: 0; margin: 0;">고유식별정보 수집 허용</div><div><input type="radio" name="radio-name-85213" id="radio-59130" value="1"><label for="radio-59130">동의함</label></div><div><input type="radio" name="radio-name-85213" id="radio-39382" value="2"><label for="radio-39382">동의하지 않음</label></div></btpm_radio_field>
                 <!-- <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit consequuntur pariatur voluptatem nobis, beatae aliquam enim quis aperiam ipsam tenetur, iure accusamus qui? Neque, quod ad veritatis nobis natus, alias laborum,</p>
@@ -124,7 +122,7 @@
         function handleCustomField({required, disabled, title}) {
             const node = ProseMirror.buptleSchema.nodes.btpm_radio_field.createAndFill({
                 "data-id": `field-container-${Math.floor(Math.random() * 100000)}`,
-                "data-align": "center",
+                "data-align": "right",
                 "data-required": required,
                 "data-disabled": disabled,
                 "data-title": title,

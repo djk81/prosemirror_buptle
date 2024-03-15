@@ -1531,13 +1531,14 @@ const buptleRadio = {
     }]
 };
 
+// flex 로 하고 싶었는데 PDF 변환할 때 flex grid 사용이 불가능하다. 그냥 변환하는 Library 문제인 듯 ㄷㄷ
 const buptleRadioField = {
     attrs: {
         "class": {
             default: "field-container"
         },
         "style": {
-            default: "display: flex; flex-wrap: wrap; align-items: center; gap: 10px; line-height: 1;"
+            default: "display: block; line-height: 1;"
         },
         // 배치 방향
         "data-align": {
@@ -1596,7 +1597,7 @@ const buptleRadioField = {
                 "div",
                 {
                     class: 'field-title',
-                    style: "padding: 0; margin: 0;"
+                    style: "display: inline-block; padding: 0; margin: 0; vertical-align: middle;"
                 },
                 title
             ]
@@ -1607,7 +1608,7 @@ const buptleRadioField = {
                 "div",
                 {
                     class: "field-description",
-                    style: "padding: 0; margin: 0;"
+                    style: "display: inline-block; padding: 0; margin: 0 0 0 10px; vertical-align: middle;"
                 },
                 description
             ]
@@ -1618,7 +1619,9 @@ const buptleRadioField = {
 
             return [
                 "div", // input container
-                {}, // div 추가 attr
+                {
+                    style: "display: inline-block; margin-left: 10px;"
+                }, // div 추가 attr
                 [
                     "input", {
                         type: "radio",
@@ -1641,15 +1644,15 @@ const buptleRadioField = {
         let align = '';
         switch(node.attrs["data-align"]) {
             case "right": {
-                align = 'justify-content: flex-end;';
+                align = 'text-align: right;';
                 break;
             }
             case "center": {
-                align = 'justify-content: center;';
+                align = 'text-align: center;';
                 break;
             }
             default: {
-                align = 'justify-content: flex-start;';
+                align = 'text-align: left;';
             }
         }
         
