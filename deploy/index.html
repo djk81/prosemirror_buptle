@@ -44,6 +44,9 @@
             <div class="flex items-center gap-10">
                 <button class="btn__b" onclick="handleCustomField({ required: true, disabled: false, title: `[필수]` })">필수 필드</button>
                 <button class="btn__b" onclick="handleCustomField({ required: false, disabled: false, title: `[선택]` })">선택 필드</button>
+
+                <button class="btn__b" onclick="handleCustomGroup({ required: true, disabled: false, title: `[필수]` })">필수 Radio 그룹</button>
+                <button class="btn__b" onclick="handleCustomGroup({ required: false, disabled: false, title: `[선택]` })">선택 Radio 그룹</button>
             </div>
         </article>
     </section>
@@ -131,6 +134,22 @@
                 "data-input-label-2": "동의하지 않음",
                 "data-input-checked": 0,
                 "data-alert-message": "안녕하세요",
+            });
+
+            _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));
+        }
+
+        function handleCustomGroup({required, disabled, title}) {
+            const labels = Array.from({ length: 10 }).map((data, index) => ({ label: `테스트 라벨 ${index}`, value: index }));
+            const node = ProseMirror.buptleSchema.nodes.btpm_radio_group.createAndFill({
+                "data-id": `field-container-${Math.floor(Math.random() * 100000)}`,
+                "data-align": "left",
+                "data-required": required,
+                "data-disabled": disabled,
+                "data-title": title,
+                "data-description": "동적 Radio 설정",
+                "data-input-labels": JSON.stringify(labels),
+                "data-input-checked": 0,
             });
 
             _editorView.dispatch(_editorView.state.tr.replaceSelectionWith(node));

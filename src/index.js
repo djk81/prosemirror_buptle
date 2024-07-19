@@ -174,9 +174,10 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
         return true
     }
 
-    // radio field 선택
+    // radio field 선택 (항목 선택)
     if (node.type.name === 'btpm_radio_field') {
         const input = event.target.previousSibling;
+
         // radio 의 checked 값을 상위 dataset 에 업데이트
         if (input && input.nodeName === "INPUT") {
             // disabled 속성 있을 경우 동작 중지
@@ -207,6 +208,31 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
             });
 
             return showAlertOnRadioField({ editorView, node: targetNode, pos: nodePos });
+        }
+    }
+
+    // radio group 선택
+    if (node.type.name === 'btpm_radio_group') {
+        const input = event.target.previousSibling;
+        
+        // radio 의 checked 값을 상위 dataset 에 업데이트
+        if (input && input.nodeName === "INPUT") {
+            // disabled 속성 있을 경우 동작 중지
+            if (input.disabled) return;
+            const dataId = node.attrs["data-id"];
+
+            const newNode = editorView.state.tr.setNodeMarkup(nodePos, null, {
+                "data-id": dataId,
+                "data-align": node.attrs["data-align"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-labels": node.attrs["data-input-labels"],
+                "data-input-checked": input.value,
+            });
+
+            editorView.dispatch(newNode);
         }
     }
 }
@@ -1699,6 +1725,161 @@ const buptleRadioField = {
     ]
 };
 
+const buptleRadioGroup = {
+    attrs: {
+        "class": {
+            default: "field-container"
+        },
+        "style": {
+            default: "display: block; line-height: 1;"
+        },
+        // 배치 방향
+        "data-align": {
+            default: 'left'
+        },
+        "data-id": {
+            default: ""
+        },
+        // 필수 or 선택 여부
+        "data-required": {
+            default: false
+        },
+        // 하위 radio 활성화 여부
+        "data-disabled": {
+            default: false
+        },
+        // 필수 or 선택 에 들어가는 text (다국어 때문에 분리)
+        "data-title": {
+            default: "[선택]"
+        },
+        // 내용
+        "data-description": {
+            default: ""
+        },
+        // 동적으로 생성된 radio
+        "data-input-labels": {
+            default: "[]"
+        },
+        // 선택 된 input value
+        "data-input-checked": {
+            default: null
+        },
+    },
+    contentEditable: false,
+    selectable: true,
+    inline: false,
+    group: "block",
+    atom: true,
+    toDOM(node) {
+        const name = node.attrs["name"] ? node.attrs["name"] : `radio-name-${Math.floor(Math.random() * 100000)}`;
+        const title = node.attrs["data-title"];
+        const disabled = node.attrs["data-disabled"] === "true" ? node.attrs["data-disabled"] : null;
+        const description = node.attrs["data-description"];
+        const checked = node.attrs["data-input-checked"];
+
+        const _createTitle = () => {
+            return [
+                "div",
+                {
+                    class: 'field-title',
+                    style: "display: inline-block; padding: 0; margin: 0; vertical-align: middle;"
+                },
+                title
+            ]
+        }
+
+        const _createDescription = () => {
+            return [
+                "div",
+                {
+                    class: "field-description",
+                    style: "display: inline-block; padding: 0; margin: 0 0 0 10px; vertical-align: middle;"
+                },
+                description
+            ]
+        }
+
+        const _createInput = ({value, label}) => {
+            const id = `radio-${Math.floor(Math.random() * 100000)}`;
+
+            return [
+                "div", // input container
+                {
+                    style: "display: inline-block; margin-left: 10px;"
+                }, // div 추가 attr
+                [
+                    "input", {
+                        type: "radio",
+                        name,
+                        id,
+                        disabled,
+                        checked: Number(checked) === Number(value) ? true : null,
+                        value,
+                    },
+                ],
+                [
+                    "label", {
+                        for: id
+                    },
+                    label
+                ],
+            ]
+        };
+
+        let align = '';
+        switch(node.attrs["data-align"]) {
+            case "right": {
+                align = 'text-align: right;';
+                break;
+            }
+            case "center": {
+                align = 'text-align: center;';
+                break;
+            }
+            default: {
+                align = 'text-align: left;';
+            }
+        }
+        
+        const labels = JSON.parse(node.attrs["data-input-labels"]);
+        return [
+            'btpm_radio_group', {
+                "class": node.attrs["class"],
+                "style": `${node.attrs["style"]} ${align}`,
+                "data-align": node.attrs["data-align"],
+                "data-id": node.attrs["data-id"],
+                "data-required": node.attrs["data-required"],
+                "data-disabled": node.attrs["data-disabled"],
+                "data-title": node.attrs["data-title"],
+                "data-description": node.attrs["data-description"],
+                "data-input-labels": node.attrs["data-input-labels"],
+                "data-input-checked": node.attrs["data-input-checked"],
+            },
+            _createTitle(),
+            _createDescription(),
+            ...labels.map((label) => _createInput(label)),
+        ];
+    },
+    parseDOM: [
+        {
+            tag: "btpm_radio_group",
+            getAttrs(dom) {
+                return {
+                    "class": dom.getAttribute(["class"]),
+                    "data-align": dom.getAttribute(["data-align"]),
+                    "data-id": dom.getAttribute(["data-id"]),
+                    "data-required": dom.getAttribute(["data-required"]),
+                    "data-disabled": dom.getAttribute(["data-disabled"]),
+                    "data-title": dom.getAttribute(["data-title"]),
+                    "data-description": dom.getAttribute(["data-description"]),
+                    "data-input-labels": dom.getAttribute(["data-input-labels"]),
+                    "data-input-checked": dom.getAttribute(["data-input-checked"]),
+                };
+            },
+        },
+    ]
+};
+
 const buptleInputsSpec = {
     attrs: {
         id: {
@@ -1971,6 +2152,7 @@ const nodeSpec = schema.spec.nodes.remove('heading').addBefore('code_block', 'he
     .addBefore("span", "btpm_checkbox", buptleCheckbox)
     .addBefore("span", "btpm_radio", buptleRadio)
     .addBefore("div", "btpm_radio_field", buptleRadioField)
+    .addBefore("div", "btpm_radio_group", buptleRadioGroup)
     .remove('paragraph').addBefore('blockquote', 'paragraph', buptleParagraphSpec)
     .addBefore("buptleInputsSpec", "resizableImage", resizableImage)
 
