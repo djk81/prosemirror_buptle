@@ -230,6 +230,7 @@ function handleClickOn(editorView, pos, node, nodePos, event) {
                 "data-description": node.attrs["data-description"],
                 "data-input-labels": node.attrs["data-input-labels"],
                 "data-input-checked": input.value,
+                "data-user-limit-type": node.attrs["data-user-limit-type"],
             });
 
             editorView.dispatch(newNode);
@@ -1764,6 +1765,9 @@ const buptleRadioGroup = {
         "data-input-checked": {
             default: null
         },
+        'data-user-limit-type': {
+            default: false
+        },
     },
     contentEditable: false,
     selectable: true,
@@ -1854,6 +1858,7 @@ const buptleRadioGroup = {
                 "data-description": node.attrs["data-description"],
                 "data-input-labels": node.attrs["data-input-labels"],
                 "data-input-checked": node.attrs["data-input-checked"],
+                "data-user-limit-type": node.attrs["data-user-limit-type"] || false,
             },
             _createTitle(),
             _createDescription(),
@@ -1874,6 +1879,7 @@ const buptleRadioGroup = {
                     "data-description": dom.getAttribute(["data-description"]),
                     "data-input-labels": dom.getAttribute(["data-input-labels"]),
                     "data-input-checked": dom.getAttribute(["data-input-checked"]),
+                    "data-user-limit-type": dom.getAttribute(["data-user-limit-type"]),
                 };
             },
         },

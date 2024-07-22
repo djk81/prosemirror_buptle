@@ -40,13 +40,18 @@
         </article>
 
         <article style="margin-bottom: 20px;">
-            <h3 style="margin-bottom: 10px;">커스텀 액션 버튼</h3>
+            <h3 style="margin-bottom: 10px;">항목 필드(KC)</h3>
             <div class="flex items-center gap-10">
-                <button class="btn__b" onclick="handleCustomField({ required: true, disabled: false, title: `[필수]` })">필수 필드</button>
-                <button class="btn__b" onclick="handleCustomField({ required: false, disabled: false, title: `[선택]` })">선택 필드</button>
+                <button class="btn__b" onclick="handleCustomField({ required: true, disabled: false, title: `[필수]` })">필수 항목 필드</button>
+                <button class="btn__y" onclick="handleCustomField({ required: false, disabled: false, title: `[선택]` })">선택 항목 필드</button>
+            </div>
+        </article>
 
+        <article style="margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px;">Radio 그룹 필드(전체)</h3>
+            <div class="flex items-center gap-10">
                 <button class="btn__b" onclick="handleCustomGroup({ required: true, disabled: false, title: `[필수]` })">필수 Radio 그룹</button>
-                <button class="btn__b" onclick="handleCustomGroup({ required: false, disabled: false, title: `[선택]` })">선택 Radio 그룹</button>
+                <button class="btn__y" onclick="handleCustomGroup({ required: false, disabled: false, title: `[선택]` })">선택 Radio 그룹</button>
             </div>
         </article>
     </section>
